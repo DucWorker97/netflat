@@ -69,3 +69,44 @@ Nếu có mâu thuẫn, ưu tiên: PRD > Architecture > OpenAPI > Code.
 ## 8) Git hygiene
 - Commit message dạng: `feat(api): ...`, `fix(worker): ...`, `chore(repo): ...`
 - Không commit file .env thật; chỉ commit .env.example.
+
+## 9) Đồng bộ contract + đảm bảo E2E video pipeline không gãy
+
+Repo-specific rules override generic rules.
+Trong mọi thay đổi liên quan Upload/Encode/Playback, ưu tiên đúng “source-of-truth” và tuyệt đối không để lệch docs ↔ OpenAPI ↔ code ↔ smoke workflows.
+
+### 1) Canonical API Contract (không để lệch endpoint)
+- Mọi endpoint liên quan video pipeline (presign upload, upload-complete, encode status, playback URL) phải có “canonical path” duy nhất.
+- Nếu code thay đổi route / payload / query:
+  (a) Update OpenAPI (contract) cùng PR,
+  (b) Update docs liên quan (VIDEO_PIPELINE/ARCHITECTURE/README),
+  (c) Update workflows smoke:video và test script gọi đúng path.
+- Không được tồn tại 2 mô tả khác nhau cho cùng 1 bước (ví dụ upload-complete) giữa docs & code. Nếu cần backward-compatible thì tạo route alias, nhưng ghi DEPRECATED và kế hoạch xoá.
+
+### 2) Presigned Upload (đảm bảo upload chạy được từ browser)
+- Khi cấp presigned URL, contract phải quy định rõ:
+  - method (PUT/POST), required headers (đặc biệt Content-Type), expires/TTL.
+- Cảnh báo bắt buộc: Content-Type và headers khi client upload phải khớp với lúc server ký; sai khác dễ gây SignatureDoesNotMatch.
+- Nếu upload từ browser: bắt buộc cấu hình CORS đúng cho bucket/origin; nếu CORS sai thì UI sẽ “không upload được” dù backend ký đúng.
+- Không log presigned URL đầy đủ (phải mask query string/signature).
+
+### 3) HLS Playback (đảm bảo “xem được phim” khi bucket private)
+- HLS master playlist sẽ tham chiếu media playlists (variant) và media segments. (HLS spec/RFC8216)
+- Nếu storage private + dùng signed URL:
+  - Không được chỉ sign mỗi master.m3u8 rồi trả về client.
+  - BẮT BUỘC chọn 1 trong 3 cách:
+    A) Public-read prefix HLS (chỉ dev/staging), hoặc
+    B) Rewrite playlist: trả về playlists đã thay URI bằng signed URLs cho cả variant + segments, hoặc
+    C) Proxy streaming qua API (API fetch object từ storage và stream ra).
+- Tiêu chí PASS: Client player load được master → variant → segments mà không gặp 403/404.
+
+### 4) E2E Gate bắt buộc cho mọi thay đổi pipeline
+- PR nào đụng Upload/Encode/Playback phải chạy:
+  - pnpm -w verify
+  - pnpm -w smoke
+  - (ít nhất manual) pnpm -w smoke:video
+- smoke:video report phải ghi: request_id (x-request-id), job_id (BullMQ), movie_id/upload_id, và playback m3u8 HTTP 200.
+- Nếu dùng retries/backoff cho encode job: phải cấu hình backoff (không retry “ngay lập tức”) để tránh spam/loop.
+
+### 5) Authorization theo object (tối thiểu)
+- Bất kỳ endpoint nào nhận object ID từ client và truy cập dữ liệu phải kiểm tra quyền ở cấp object (BOLA) trước khi thao tác.
