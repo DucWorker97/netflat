@@ -1,6 +1,10 @@
 ---
+name: task-classification
+description: Classify requests into consult/build/debug/optimize.
+trigger: core
 activation: always_on
 ---
+
 
 # Task Classification
 

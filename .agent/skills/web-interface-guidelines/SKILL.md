@@ -1,17 +1,18 @@
 ---
 name: web-interface-guidelines
 description: Review UI code for Web Interface Guidelines compliance
+trigger: on_request
 ---
----
+## ---
 description: Review UI code for Vercel Web Interface Guidelines compliance
 argument-hint: <file-or-pattern>
----
+## ---
 
 # Web Interface Guidelines
 
 Review these files for compliance: $ARGUMENTS
 
-Read files, check against rules below. Output concise but comprehensive—sacrifice grammar for brevity. High signal-to-noise.
+Read files, check against rules below. Output concise but comprehensiveâ€”sacrifice grammar for brevity. High signal-to-noise.
 
 ## Rules
 
@@ -25,7 +26,7 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 - Decorative icons need `aria-hidden="true"`
 - Async updates (toasts, validation) need `aria-live="polite"`
 - Use semantic HTML (`<button>`, `<a>`, `<label>`, `<table>`) before ARIA
-- Headings hierarchical `<h1>`–`<h6>`; include skip link for main content
+- Headings hierarchical `<h1>`â€“`<h6>`; include skip link for main content
 - `scroll-margin-top` on heading anchors
 
 ### Focus States
@@ -45,7 +46,7 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 - Checkboxes/radios: label + control share single hit target (no dead zones)
 - Submit button stays enabled until request starts; spinner during request
 - Errors inline next to fields; focus first error on submit
-- Placeholders end with `…` and show example pattern
+- Placeholders end with `â€¦` and show example pattern
 - `autocomplete="off"` on non-auth fields to avoid password manager triggers
 - Warn before navigation with unsaved changes (`beforeunload` or router guard)
 
@@ -53,17 +54,17 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 
 - Honor `prefers-reduced-motion` (provide reduced variant or disable)
 - Animate `transform`/`opacity` only (compositor-friendly)
-- Never `transition: all`—list properties explicitly
+- Never `transition: all`â€”list properties explicitly
 - Set correct `transform-origin`
 - SVG: transforms on `<g>` wrapper with `transform-box: fill-box; transform-origin: center`
-- Animations interruptible—respond to user input mid-animation
+- Animations interruptibleâ€”respond to user input mid-animation
 
 ### Typography
 
-- `…` not `...`
+- `â€¦` not `...`
 - Curly quotes `"` `"` not straight `"`
-- Non-breaking spaces: `10&nbsp;MB`, `⌘&nbsp;K`, brand names
-- Loading states end with `…`: `"Loading…"`, `"Saving…"`
+- Non-breaking spaces: `10&nbsp;MB`, `âŒ˜&nbsp;K`, brand names
+- Loading states end with `â€¦`: `"Loadingâ€¦"`, `"Savingâ€¦"`
 - `font-variant-numeric: tabular-nums` for number columns/comparisons
 - Use `text-wrap: balance` or `text-pretty` on headings (prevents widows)
 
@@ -71,7 +72,7 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 
 - Text containers handle long content: `truncate`, `line-clamp-*`, or `break-words`
 - Flex children need `min-w-0` to allow text truncation
-- Handle empty states—don't render broken UI for empty strings/arrays
+- Handle empty statesâ€”don't render broken UI for empty strings/arrays
 - User-generated content: anticipate short, average, and very long inputs
 
 ### Images
@@ -91,10 +92,10 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 
 ### Navigation & State
 
-- URL reflects state—filters, tabs, pagination, expanded panels in query params
+- URL reflects stateâ€”filters, tabs, pagination, expanded panels in query params
 - Links use `<a>`/`<Link>` (Cmd/Ctrl+click, middle-click support)
 - Deep-link all stateful UI (if uses `useState`, consider URL sync via nuqs or similar)
-- Destructive actions need confirmation modal or undo window—never immediate
+- Destructive actions need confirmation modal or undo windowâ€”never immediate
 
 ### Touch & Interaction
 
@@ -102,7 +103,7 @@ Read files, check against rules below. Output concise but comprehensive—sacrif
 - `-webkit-tap-highlight-color` set intentionally
 - `overscroll-behavior: contain` in modals/drawers/sheets
 - During drag: disable text selection, `inert` on dragged elements
-- `autoFocus` sparingly—desktop only, single primary input; avoid on mobile
+- `autoFocus` sparinglyâ€”desktop only, single primary input; avoid on mobile
 
 ### Safe Areas & Layout
 
@@ -168,16 +169,16 @@ Group by file. Use `file:line` format (VS Code clickable). Terse findings.
 src/Button.tsx:42 - icon button missing aria-label
 src/Button.tsx:18 - input lacks label
 src/Button.tsx:55 - animation missing prefers-reduced-motion
-src/Button.tsx:67 - transition: all → list properties
+src/Button.tsx:67 - transition: all â†’ list properties
 
 ## src/Modal.tsx
 
 src/Modal.tsx:12 - missing overscroll-behavior: contain
-src/Modal.tsx:34 - "..." → "…"
+src/Modal.tsx:34 - "..." â†’ "â€¦"
 
 ## src/Card.tsx
 
-✓ pass
+âœ“ pass
 ```
 
 State issue + location. Skip explanation unless fix non-obvious. No preamble.

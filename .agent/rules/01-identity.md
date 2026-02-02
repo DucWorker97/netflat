@@ -1,6 +1,10 @@
 ---
+name: identity-core
+description: Agent identity and core principles.
+trigger: core
 activation: always_on
 ---
+
 
 # Agent Identity & Core Principles
 

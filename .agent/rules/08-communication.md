@@ -1,6 +1,10 @@
 ---
+name: communication-style
+description: Communication style and response formatting rules.
+trigger: core
 activation: always_on
 ---
+
 
 # Communication Style
 

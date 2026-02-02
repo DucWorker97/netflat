@@ -1,6 +1,9 @@
 ---
-description: UI/UX audit workflow using Vercel Web Interface Guidelines matching slash command /ui-audit
+name: workflow-ui-audit
+description: UI/UX audit using Web Interface Guidelines.
+trigger: manual
 ---
+
 
 # UI Audit Workflow (/ui-audit)
 

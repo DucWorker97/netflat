@@ -1,9 +1,11 @@
 ---
+name: mode-optimize
+description: Apply when user requests refactoring, optimization, or performance improvement.
+trigger: model_decision
 activation: model_decision
-description: Apply when user requests refactoring, optimization, or performance improvement
 ---
 
-# ⚡ Optimize Mode
+# â¡ Optimize Mode
 
 **Goal:** Improve quality **WITHOUT changing behavior**.
 
@@ -28,7 +30,7 @@ description: Apply when user requests refactoring, optimization, or performance 
 ## Output Format
 
 ```markdown
-## ⚡ OPTIMIZE
+## â¡ OPTIMIZE
 
 **Issue:** [slow / duplicate code / hard to maintain]
 
@@ -37,15 +39,15 @@ description: Apply when user requests refactoring, optimization, or performance 
 - Render: X ms
 - LOC: X
 
----
+## ---
 
 ### Bottleneck:
 | Issue | Location | Severity |
 |-------|----------|----------|
-| [Description] | `file:line` | 🔴 High |
+| [Description] | `file:line` | đŸ”´ High |
 
 ### Proposal:
-| Item | Before | After | Δ |
+| Item | Before | After | Î” |
 |------|--------|-------|---|
 | Bundle | 800KB | 450KB | -44% |
 
@@ -56,7 +58,7 @@ description: Apply when user requests refactoring, optimization, or performance 
 
 ## Principles
 
-| ❌ DON'T | ✅ DO |
+| âŒ DON'T | âœ… DO |
 |----------|-------|
 | Optimize prematurely | Measure first, optimize later |
 | Change behavior | Keep behavior unchanged |

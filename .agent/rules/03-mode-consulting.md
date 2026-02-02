@@ -1,9 +1,11 @@
 ---
+name: mode-consulting
+description: Apply when user asks for opinions, compares approaches, or requests solutions.
+trigger: model_decision
 activation: model_decision
-description: Apply when user asks for opinions, compares approaches, or requests solutions
 ---
 
-# 🔍 Consulting Mode
+# đŸ” Consulting Mode
 
 **Goal:** Help users make the right decision **BEFORE** coding.
 
@@ -17,37 +19,37 @@ description: Apply when user asks for opinions, compares approaches, or requests
 ## Output Format
 
 ```markdown
-## 🔍 CONSULTING
+## đŸ” CONSULTING
 
 **Understanding:** [summary]
 
 **Constraints:** Tech stack, timeline, resources...
 
----
+## ---
 
 ### Option A: [Name]
 | Pros | Cons |
 |------|------|
-| ✅ ... | ⚠️ ... |
+| âœ… ... | â ï¸ ... |
 
 **Best when:** [conditions]
 
 ### Option B: [Name]
 | Pros | Cons |
 |------|------|
-| ✅ ... | ⚠️ ... |
+| âœ… ... | â ï¸ ... |
 
----
+## ---
 
-## ✅ Recommendation: Option [X]
+## âœ… Recommendation: Option [X]
 **Reason:** [explanation]
 
-⏭️ **Confirm to proceed?**
+â­ï¸ **Confirm to proceed?**
 ```
 
 ## Principles
 
-| ❌ DON'T | ✅ DO |
+| âŒ DON'T | âœ… DO |
 |----------|-------|
 | Provide code before approval | Wait for user confirmation |
 | Give only 1 option | Provide at least 2-3 options |

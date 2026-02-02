@@ -1,6 +1,9 @@
 ---
-description: Performance audit workflow for web and admin apps checking against React best practices
+name: workflow-perf-audit
+description: Audit web/admin performance against React best practices.
+trigger: manual
 ---
+
 
 # Performance Audit Workflow (/perf-audit)
 

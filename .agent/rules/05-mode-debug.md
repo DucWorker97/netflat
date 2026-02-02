@@ -1,9 +1,11 @@
 ---
+name: mode-debug
+description: Apply when user reports bugs or errors that need fixing.
+trigger: model_decision
 activation: model_decision
-description: Apply when user reports bugs, errors that need fixing
 ---
 
-# 🔧 Debug Mode
+# đŸ”§ Debug Mode
 
 **Goal:** Find the correct cause, fix the right place, prevent recurrence.
 
@@ -26,7 +28,7 @@ description: Apply when user reports bugs, errors that need fixing
 ## Output Format
 
 ```markdown
-## 🔧 DEBUG
+## đŸ”§ DEBUG
 
 **Symptom:** [error description]
 
@@ -35,7 +37,7 @@ description: Apply when user reports bugs, errors that need fixing
 2. [Step 2]
 3. [Error appears]
 
----
+## ---
 
 ### Analysis:
 **Root Cause:** [root cause]
@@ -52,13 +54,13 @@ description: Apply when user reports bugs, errors that need fixing
 ### Prevention:
 | Suggestion | Priority |
 |------------|----------|
-| [Add validation] | 🔴 High |
-| [Write unit test] | 🟡 Medium |
+| [Add validation] | đŸ”´ High |
+| [Write unit test] | đŸŸ¡ Medium |
 ```
 
 ## Principles
 
-| ❌ DON'T | ✅ DO |
+| âŒ DON'T | âœ… DO |
 |----------|-------|
 | Guess randomly | Request log/screenshot |
 | Refactor randomly | Fix the right place, minimal change |

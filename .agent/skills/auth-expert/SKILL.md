@@ -1,6 +1,7 @@
 ---
 name: auth-expert
 description: Authentication and authorization expert specializing in JWT, OAuth 2.0, session management, RBAC, password security. Use for auth implementation, token management, or security issues.
+trigger: on_request
 ---
 
 # Authentication & Authorization Expert
@@ -10,9 +11,9 @@ Expert in JWT, OAuth 2.0, sessions, RBAC, and security best practices.
 ## When Invoked
 
 ### Recommend Specialist and Stop
-- **API design patterns**: recommend rest-api-expert
-- **Database security**: recommend database-expert  
-- **Infrastructure security**: recommend devops-expert
+- **API design patterns**: recommend nestjs-expert
+- **Database security/perf**: recommend postgres-expert or prisma-expert
+- **Infrastructure/container security**: recommend docker-expert
 
 ### Environment Detection
 ```bash

@@ -1,6 +1,7 @@
 ---
 name: playwright-expert
 description: Playwright E2E testing expert for browser automation, cross-browser testing, visual regression, network interception, and CI integration. Use for E2E test setup, flaky tests, or browser automation challenges.
+trigger: on_request
 ---
 
 # Playwright Expert
@@ -10,9 +11,9 @@ Expert in Playwright for E2E testing, browser automation, and cross-browser test
 ## When Invoked
 
 ### Recommend Specialist
-- **Unit/integration tests**: recommend jest-expert or vitest-expert
-- **React component testing**: recommend testing-expert
-- **API testing only**: recommend rest-api-expert
+- **Unit/integration tests**: recommend typescript-expert or nestjs-expert (depending on stack)
+- **React component testing**: recommend vercel-react-best-practices
+- **API testing only**: recommend nestjs-expert
 
 ### Environment Detection
 ```bash

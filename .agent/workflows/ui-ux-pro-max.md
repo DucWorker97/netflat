@@ -1,5 +1,7 @@
 ---
-description: Plan and implement UI
+name: workflow-ui-ux-pro-max
+description: Plan and implement UI with the UI/UX Pro Max playbook.
+trigger: manual
 ---
 
 # UI/UX Pro Max - Design Intelligence
@@ -31,7 +33,7 @@ sudo apt update && sudo apt install python3
 winget install Python.Python.3.12
 ```
 
----
+## ---
 
 ## How to Use This Workflow
 
@@ -74,7 +76,7 @@ python3 .shared/ui-ux-pro-max/scripts/search.py "<keyword>" --stack html-tailwin
 
 Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`
 
----
+## ---
 
 ## Search Reference
 
@@ -105,11 +107,11 @@ Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`
 | `flutter` | Widgets, State, Layout, Theming |
 | `shadcn` | shadcn/ui components, theming, forms, patterns |
 
----
+## ---
 
 ## Example Workflow
 
-**User request:** "Làm landing page cho dịch vụ chăm sóc da chuyên nghiệp"
+**User request:** "LĂ m landing page cho dá»‹ch vá»¥ chÄƒm sĂ³c da chuyĂªn nghiá»‡p"
 
 **AI should:**
 
@@ -139,7 +141,7 @@ python3 .shared/ui-ux-pro-max/scripts/search.py "layout responsive" --stack html
 
 **Then:** Synthesize all search results and implement the design.
 
----
+## ---
 
 ## Tips for Better Results
 
@@ -154,7 +156,7 @@ python3 .shared/ui-ux-pro-max/scripts/search.py "layout responsive" --stack html
    - Extract reusable styles into dedicated files
    - Keep each file focused and under 200-300 lines
 
----
+## ---
 
 ## Common Rules for Professional UI
 
@@ -164,7 +166,7 @@ These are frequently overlooked issues that make UI look unprofessional:
 
 | Rule | Do | Don't |
 |------|----|----- |
-| **No emoji icons** | Use SVG icons (Heroicons, Lucide, Simple Icons) | Use emojis like 🎨 🚀 ⚙️ as UI icons |
+| **No emoji icons** | Use SVG icons (Heroicons, Lucide, Simple Icons) | Use emojis like đŸ¨ đŸ€ â™ï¸ as UI icons |
 | **Stable hover states** | Use color/opacity transitions on hover | Use scale transforms that shift layout |
 | **Correct brand logos** | Research official SVG from Simple Icons | Guess or use incorrect logo paths |
 | **Consistent icon sizing** | Use fixed viewBox (24x24) with w-6 h-6 | Mix different icon sizes randomly |
@@ -194,7 +196,7 @@ These are frequently overlooked issues that make UI look unprofessional:
 | **Content padding** | Account for fixed navbar height | Let content hide behind fixed elements |
 | **Consistent max-width** | Use same `max-w-6xl` or `max-w-7xl` | Mix different container widths |
 
----
+## ---
 
 ## Pre-Delivery Checklist
 
