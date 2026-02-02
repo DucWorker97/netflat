@@ -43,3 +43,9 @@ Before large edits: list files to change.
   choose ONE: public HLS prefix (dev/staging) OR playlist rewrite with signed URLs OR API proxy.
 - Any pipeline change must run: pnpm -w verify, pnpm -w smoke, and (manual minimum) pnpm -w smoke:video.
 - Object-level authorization required for any endpoint taking an objectId (BOLA guardrails).
+
+## Contract Sync Checklist
+- Update PRD/ARCHITECTURE/OPENAPI first, then code + tests, then smoke workflows/scripts.
+- Keep canonical + deprecated alias paths explicit in docs and OpenAPI.
+- Update client callers (admin/web/mobile) to the canonical route.
+- Re-run smoke:video and include playbackUrl + segment 200 proof in reports.

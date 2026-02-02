@@ -1,0 +1,1586 @@
+# netflop API Specification
+# OpenAPI 3.1.0
+
+openapi: 3.1.0
+
+info:
+  title: netflop API
+  description: |
+    REST API cho ứng dụng xem video tự sản xuất theo trải nghiệm Netflix.
+    
+    ## Authentication
+    API sử dụng JWT Bearer token. Access token có thời hạn 15 phút, refresh token 7 ngày.
+    
+    ## Error Format
+    Tất cả lỗi trả về theo format:
+    ```json
+    {
+      "error": {
+        "code": "ERROR_CODE",
+        "message": "Human readable message",
+        "details": null,
+        "requestId": "uuid"
+      }
+    }
+    ```
+  version: 1.0.0
+  contact:
+    name: netflop Team
+    email: dev@netflop.local
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://api.netflop.example.com/api
+    description: Staging (placeholder)
+
+tags:
+  - name: Auth
+    description: Authentication endpoints (register, login, refresh, logout)
+  - name: Movies
+    description: Movie listing, detail, streaming
+  - name: Genres
+    description: Genre listing
+  - name: Favorites
+    description: User favorites / My List
+  - name: History
+    description: Watch history and progress
+  - name: Upload
+    description: File upload (admin only)
+  - name: Admin
+    description: Admin movie management
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token
+
+  schemas:
+    # ─────────────────────────────────────────────────────────────
+    # Common
+    # ─────────────────────────────────────────────────────────────
+    
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+        hasNext:
+          type: boolean
+          example: true
+        hasPrev:
+          type: boolean
+          example: false
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+            - requestId
+          properties:
+            code:
+              type: string
+              example: VALIDATION_FAILED
+            message:
+              type: string
+              example: Validation failed
+            details:
+              type: object
+              nullable: true
+              additionalProperties: true
+            requestId:
+              type: string
+              format: uuid
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    # ─────────────────────────────────────────────────────────────
+    # Auth
+    # ─────────────────────────────────────────────────────────────
+    
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          minLength: 6
+          example: mypassword123
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: mypassword123
+
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refreshToken:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            expiresIn:
+              type: integer
+              description: Access token expiry in seconds
+              example: 900
+            user:
+              $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        role:
+          type: string
+          enum: [viewer, admin]
+          example: viewer
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-01-01T00:00:00Z"
+
+    # ─────────────────────────────────────────────────────────────
+    # Movies
+    # ─────────────────────────────────────────────────────────────
+    
+    Movie:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          example: "Sample Action Movie"
+        description:
+          type: string
+          nullable: true
+          example: "An exciting action-packed adventure."
+        posterUrl:
+          type: string
+          nullable: true
+          example: "https://storage.example.com/posters/movie-id/poster.jpg"
+        backdropUrl:
+          type: string
+          nullable: true
+          example: "https://storage.example.com/posters/movie-id/backdrop.jpg"
+        durationSeconds:
+          type: integer
+          nullable: true
+          example: 7200
+        releaseYear:
+          type: integer
+          nullable: true
+          example: 2024
+        movieStatus:
+          type: string
+          enum: [draft, published]
+          example: published
+        encodeStatus:
+          type: string
+          enum: [pending, processing, ready, failed]
+          example: ready
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-01-01T00:00:00Z"
+
+    MovieListItem:
+      type: object
+      description: Simplified movie for list/rail display
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        posterUrl:
+          type: string
+          nullable: true
+        durationSeconds:
+          type: integer
+          nullable: true
+        releaseYear:
+          type: integer
+          nullable: true
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+
+    MovieListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieListItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    MovieDetailResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Movie'
+
+    StreamResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            playbackUrl:
+              type: string
+              description: |
+                HLS master playlist URL. In public mode this is a public URL; in signed mode it's a presigned URL.
+              example: "https://storage.example.com/hls/movie-id/master.m3u8?token=xxx&expires=xxx"
+            qualityOptions:
+              type: array
+              description: Optional variant playlists for manual quality selection
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "720p"
+                  url:
+                    type: string
+                    example: "https://storage.example.com/hls/movie-id/v2/prog_index.m3u8"
+            expiresAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: May be null in public mode
+              example: "2026-01-01T01:00:00Z"
+
+    ProgressResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            progressSeconds:
+              type: integer
+              example: 1234
+            durationSeconds:
+              type: integer
+              example: 7200
+            completed:
+              type: boolean
+              example: false
+            updatedAt:
+              type: string
+              format: date-time
+              example: "2026-01-01T00:30:00Z"
+
+    CreateMovieRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 500
+          example: "My New Movie"
+        description:
+          type: string
+          nullable: true
+          example: "A great movie about..."
+        genreIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
+        releaseYear:
+          type: integer
+          nullable: true
+          example: 2024
+
+    UpdateMovieRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 500
+          example: "Updated Title"
+        description:
+          type: string
+          nullable: true
+        genreIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        releaseYear:
+          type: integer
+          nullable: true
+        durationSeconds:
+          type: integer
+          nullable: true
+
+    PublishRequest:
+      type: object
+      required:
+        - published
+      properties:
+        published:
+          type: boolean
+          example: true
+
+    # ─────────────────────────────────────────────────────────────
+    # Genres
+    # ─────────────────────────────────────────────────────────────
+    
+    Genre:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          example: Action
+        slug:
+          type: string
+          example: action
+
+    GenreListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+
+    # ─────────────────────────────────────────────────────────────
+    # Favorites
+    # ─────────────────────────────────────────────────────────────
+    
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        movieId:
+          type: string
+          format: uuid
+        movie:
+          $ref: '#/components/schemas/MovieListItem'
+        createdAt:
+          type: string
+          format: date-time
+
+    FavoriteListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Favorite'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # ─────────────────────────────────────────────────────────────
+    # Watch History
+    # ─────────────────────────────────────────────────────────────
+    
+    WatchHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        movieId:
+          type: string
+          format: uuid
+        movie:
+          $ref: '#/components/schemas/MovieListItem'
+        progressSeconds:
+          type: integer
+          example: 1234
+        durationSeconds:
+          type: integer
+          example: 7200
+        completed:
+          type: boolean
+          example: false
+        updatedAt:
+          type: string
+          format: date-time
+
+    WatchHistoryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WatchHistory'
+
+    UpdateProgressRequest:
+      type: object
+      required:
+        - progressSeconds
+        - durationSeconds
+      properties:
+        progressSeconds:
+          type: integer
+          minimum: 0
+          example: 1234
+        durationSeconds:
+          type: integer
+          minimum: 1
+          example: 7200
+
+    # ─────────────────────────────────────────────────────────────
+    # Upload
+    # ─────────────────────────────────────────────────────────────
+    
+    PresignedUrlRequest:
+      type: object
+      required:
+        - fileName
+        - contentType
+        - sizeBytes
+      properties:
+        fileName:
+          type: string
+          example: "my-video.mp4"
+        contentType:
+          type: string
+          example: "video/mp4"
+        sizeBytes:
+          type: integer
+          format: int64
+          example: 104857600
+
+    PresignedUrlResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            uploadUrl:
+              type: string
+              description: Presigned PUT URL
+              example: "https://storage.example.com/originals/movie-id/original.mp4?X-Amz-..."
+            objectKey:
+              type: string
+              description: Object key for upload-complete callback
+              example: "originals/550e8400-e29b-41d4-a716-446655440000/original.mp4"
+            expiresAt:
+              type: string
+              format: date-time
+              example: "2026-01-01T00:30:00Z"
+
+    UploadCompleteRequest:
+      type: object
+      required:
+        - objectKey
+      properties:
+        objectKey:
+          type: string
+          example: "originals/550e8400-e29b-41d4-a716-446655440000/original.mp4"
+        fileType:
+          type: string
+          enum: [video, thumbnail]
+          default: video
+          example: video
+
+    UploadCompleteResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            movieId:
+              type: string
+              format: uuid
+            encodeStatus:
+              type: string
+              enum: [pending, processing, ready, failed]
+              example: pending
+            jobId:
+              type: string
+              description: BullMQ job ID (for video uploads)
+              example: "encode-123"
+              nullable: true
+            status:
+              type: string
+              description: Upload/encode enqueue status
+              example: queued
+              nullable: true
+            posterUrl:
+              type: string
+              description: Poster URL when fileType=thumbnail
+              nullable: true
+
+# ─────────────────────────────────────────────────────────────
+# Paths
+# ─────────────────────────────────────────────────────────────
+
+paths:
+  # ─────────────────────────────────────────────────────────────
+  # Auth
+  # ─────────────────────────────────────────────────────────────
+  
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new account
+      description: Create a new viewer account with email and password
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              email: "newuser@example.com"
+              password: "password123"
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: EMAIL_ALREADY_EXISTS
+                  message: "Email already registered"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: "user@example.com"
+              password: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: AUTH_INVALID_CREDENTIALS
+                  message: "Invalid email or password"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Revoke refresh token
+      operationId: logout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Logged out successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      description: Get authenticated user profile
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────────
+  # Movies (Public)
+  # ─────────────────────────────────────────────────────────────
+  
+  /movies:
+    get:
+      tags: [Movies]
+      summary: List movies
+      description: |
+        Get paginated list of published movies. 
+        Supports filtering by genre and search by keyword.
+      operationId: listMovies
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: genreId
+          in: query
+          description: Filter by genre ID
+          schema:
+            type: string
+            format: uuid
+        - name: q
+          in: query
+          description: Search keyword (title/description)
+          schema:
+            type: string
+        - name: continueWatching
+          in: query
+          description: Get user's continue watching list
+          schema:
+            type: boolean
+        - name: sort
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [createdAt, title, releaseYear]
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of movies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieListResponse'
+              example:
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    title: "Sample Action Movie"
+                    posterUrl: "https://storage.example.com/posters/movie-id/poster.jpg"
+                    durationSeconds: 7200
+                    releaseYear: 2024
+                    genres:
+                      - id: "550e8400-e29b-41d4-a716-446655440001"
+                        name: "Action"
+                        slug: "action"
+                meta:
+                  page: 1
+                  limit: 20
+                  total: 100
+                  totalPages: 5
+                  hasNext: true
+                  hasPrev: false
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Admin]
+      summary: Create movie (Admin)
+      description: Create a new movie draft. Requires admin role.
+      operationId: createMovie
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMovieRequest'
+      responses:
+        '201':
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/complete/{movieId}:
+    post:
+      tags: [Upload]
+      summary: Upload complete callback (Admin, deprecated)
+      description: |
+        Deprecated alias. Use `POST /movies/{id}/upload-complete` instead.
+        For video uploads, this triggers the encode job.
+      operationId: uploadCompleteLegacy
+      deprecated: true
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          description: Movie ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadCompleteRequest'
+      responses:
+        '200':
+          description: Upload processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadCompleteResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: FORBIDDEN_ADMIN_ONLY
+                  message: "This action requires admin role"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Get movie detail
+      description: Get full movie details by ID
+      operationId: getMovie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Movie detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Movie not available for viewing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: MOVIE_NOT_AVAILABLE
+                  message: "Movie is not available"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: MOVIE_NOT_FOUND
+                  message: "Movie not found"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    put:
+      tags: [Admin]
+      summary: Update movie (Admin)
+      description: Update movie details. Requires admin role.
+      operationId: updateMovie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMovieRequest'
+      responses:
+        '200':
+          description: Movie updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Admin]
+      summary: Delete movie (Admin)
+      description: Delete a movie. Requires admin role.
+      operationId: deleteMovie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Movie deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Movie deleted successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movies/{id}/stream:
+    get:
+      tags: [Movies]
+      summary: Get stream URL
+      description: |
+        Get signed HLS playback URL for the movie.
+        Only works for published + ready movies.
+      operationId: getStreamUrl
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stream URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found or not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movies/{id}/progress:
+    get:
+      tags: [History]
+      summary: Get watch progress
+      description: Get user's watch progress for a specific movie
+      operationId: getProgress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Watch progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No progress found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      progressSeconds:
+                        type: integer
+                        example: 0
+                      durationSeconds:
+                        type: integer
+                        example: 0
+                      completed:
+                        type: boolean
+                        example: false
+
+  /movies/{id}/publish:
+    patch:
+      tags: [Admin]
+      summary: Publish/Unpublish movie (Admin)
+      description: Toggle movie publish status. Requires admin role.
+      operationId: publishMovie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: Publish status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movies/{id}/upload-complete:
+    post:
+      tags: [Upload]
+      summary: Upload complete callback (Admin)
+      description: |
+        Canonical endpoint for upload completion.
+        For video uploads, this triggers the encode job.
+      operationId: uploadComplete
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Movie ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadCompleteRequest'
+      responses:
+        '200':
+          description: Upload processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadCompleteResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────────
+  # Genres
+  # ─────────────────────────────────────────────────────────────
+  
+  /genres:
+    get:
+      tags: [Genres]
+      summary: List genres
+      description: Get all available genres
+      operationId: listGenres
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of genres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenreListResponse'
+              example:
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Action"
+                    slug: "action"
+                  - id: "550e8400-e29b-41d4-a716-446655440002"
+                    name: "Comedy"
+                    slug: "comedy"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────────
+  # Favorites
+  # ─────────────────────────────────────────────────────────────
+  
+  /favorites:
+    get:
+      tags: [Favorites]
+      summary: List favorites
+      description: Get user's favorite movies (My List)
+      operationId: listFavorites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /favorites/{movieId}:
+    post:
+      tags: [Favorites]
+      summary: Add to favorites
+      description: Add a movie to user's My List
+      operationId: addFavorite
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Added to favorites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Favorite'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already in favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: FAVORITE_ALREADY_EXISTS
+                  message: "Movie already in favorites"
+                  details: null
+                  requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    delete:
+      tags: [Favorites]
+      summary: Remove from favorites
+      description: Remove a movie from user's My List
+      operationId: removeFavorite
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Removed from favorites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Removed from favorites"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not in favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────────
+  # Watch History
+  # ─────────────────────────────────────────────────────────────
+  
+  /history:
+    get:
+      tags: [History]
+      summary: List watch history
+      description: Get user's watch history (all movies with progress)
+      operationId: listHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: continueWatching
+          in: query
+          description: Only return in-progress movies
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Watch history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchHistoryListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /history/{movieId}:
+    post:
+      tags: [History]
+      summary: Update watch progress
+      description: |
+        Save or update watch progress for a movie.
+        Should be called every 5 seconds or on pause/exit.
+      operationId: updateProgress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProgressRequest'
+            example:
+              progressSeconds: 1234
+              durationSeconds: 7200
+      responses:
+        '200':
+          description: Progress saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────────
+  # Upload
+  # ─────────────────────────────────────────────────────────────
+  
+  /upload/presigned-url:
+    get:
+      tags: [Upload]
+      summary: Get presigned upload URL (Admin)
+      description: |
+        Get a presigned URL to upload a file directly to storage.
+        Requires admin role.
+      operationId: getPresignedUrl
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: query
+          required: true
+          description: Movie ID to upload for
+          schema:
+            type: string
+            format: uuid
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "video.mp4"
+        - name: contentType
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "video/mp4"
+        - name: sizeBytes
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 104857600
+        - name: fileType
+          in: query
+          schema:
+            type: string
+            enum: [video, thumbnail]
+            default: video
+      responses:
+        '200':
+          description: Presigned URL generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrlResponse'
+        '400':
+          description: Invalid file type or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Admin only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

@@ -15,7 +15,7 @@ Assumes these endpoints exist (per OPENAPI.yaml):
 - POST /api/auth/login
 - POST /api/movies (admin)
 - GET  /api/upload/presigned-url (admin)
-- POST /api/movies/{id}/upload-complete (admin)
+- POST /api/movies/{id}/upload-complete (admin) (alias deprecated: /api/upload/complete/{movieId})
 - GET  /api/movies/{id} (status includes encode_status)
 - GET  /api/movies/{id}/stream (viewer, returns playbackUrl)
 

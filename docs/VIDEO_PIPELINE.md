@@ -31,7 +31,7 @@ The pipeline consists of three main stages:
     - **Note**: This bypasses the NestJS API server to handle large files efficiently.
 
 3.  **Complete Upload**
-    - **Endpoint**: `POST /api/upload/complete/:movieId`
+    - **Endpoint**: `POST /api/movies/:id/upload-complete` (alias deprecated: `/api/upload/complete/:movieId`)
     - **Body**: `{ objectKey, fileType: "video" }`
     - **Logic**:
         - Verifies transaction.
