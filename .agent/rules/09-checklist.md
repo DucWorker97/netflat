@@ -1,11 +1,11 @@
 ---
 name: pre-delivery-checklist
-description: Pointer to the canonical pre-delivery checklist workflow.
+description: Deprecated pointer to the canonical pre-delivery checklist workflow.
 trigger: manual
 activation: manual
 ---
 
-# Pre-Delivery Checklist
+# Pre-Delivery Checklist (Deprecated)
 
 - Canonical DoD lives in `rules/netflop.md`.
 - Canonical checklist lives in `/verify` workflow.

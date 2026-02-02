@@ -9,6 +9,8 @@ trigger: manual
 
 Runs lint, typecheck, and build checks to ensure code quality.
 
+Canonical DoD lives in `rules/netflop.md`. This workflow is the canonical pre-delivery checklist (supersedes `rules/09-checklist.md`).
+
 ## Pass/Fail Criteria
 
 **PASS when:**
@@ -70,12 +72,7 @@ See `.github/workflows/ci.yml` for details.
 - [ ] Single Responsibility Principle
 
 ### UI/UX (if applicable)
-- [ ] Follows Design System
-- [ ] Responsive (mobile-first)
-- [ ] Loading states
-- [ ] Error states
-- [ ] Empty states
-- [ ] Accessibility (a11y)
+- [ ] Run `/ui-audit` and apply any required fixes
 
 ### Maintainability
 - [ ] Comments at complex logic
