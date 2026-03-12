@@ -92,27 +92,27 @@ jobs:
           sleep 10
           
           # Wait for postgres
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-postgres 2>/dev/null | grep -q healthy; do sleep 2; done' || true
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-postgres 2>/dev/null | grep -q healthy; do sleep 2; done' || true
           
           # Wait for redis
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-redis 2>/dev/null | grep -q healthy; do sleep 2; done' || true
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-redis 2>/dev/null | grep -q healthy; do sleep 2; done' || true
           
           # Wait for minio
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-minio 2>/dev/null | grep -q healthy; do sleep 2; done' || true
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-minio 2>/dev/null | grep -q healthy; do sleep 2; done' || true
           
           docker compose ps
 
       - name: Run Database Migrations
         run: pnpm db:migrate:deploy
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflop
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflat
 
       - name: Start API in Background
         run: |
-          pnpm --filter @netflop/api dev &
+          pnpm --filter @netflat/api dev &
           sleep 15  # Wait for API to start
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflop
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflat
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: ci-test-secret
           JWT_REFRESH_SECRET: ci-test-refresh-secret
@@ -120,7 +120,7 @@ jobs:
           S3_REGION: us-east-1
           S3_ACCESS_KEY: minioadmin
           S3_SECRET_KEY: minioadmin
-          S3_BUCKET: netflop-media
+          S3_BUCKET: netflat-media
 
       - name: Run Smoke Gate
         run: |

@@ -42,21 +42,6 @@ enum UploadStatus {
   failed
 }
 
-enum EncodeJobStatus {
-  pending
-  processing
-  completed
-  failed
-}
-
-enum MaturityRating {
-  G
-  PG
-  PG_13
-  R
-  NC_17
-}
-
 // ─────────────────────────────────────────────────────────────
 // Models
 // ─────────────────────────────────────────────────────────────
@@ -65,6 +50,8 @@ model User {
   id             String    @id @default(uuid()) @db.Uuid
   email          String    @unique @db.VarChar(255)
   passwordHash   String    @map("password_hash") @db.VarChar(255)
+  displayName    String?   @map("display_name") @db.VarChar(100)
+  avatarUrl      String?   @map("avatar_url") @db.VarChar(1000)
   role           UserRole  @default(viewer)
   isActive       Boolean   @default(true) @map("is_active")
   disabledAt     DateTime? @map("disabled_at") @db.Timestamptz
@@ -72,59 +59,27 @@ model User {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  subscription   Subscription?
-  paymentMethods PaymentMethod[]
-
-  refreshTokens RefreshToken[]
+  refreshTokens      RefreshToken[]
   passwordResetTokens PasswordResetToken[]
-  loginAttempts  LoginAttempt[]
-  profiles      Profile[]
-  favorites     Favorite[]
-  watchHistory  WatchHistory[]
-  ratings       Rating[]
-  playEvents    PlayEvent[]
-  notifications Notification[]
+  favorites          Favorite[]
+  ratings            Rating[]
+  watchHistory       WatchHistory[]
 
   @@map("users")
 }
 
-model Profile {
-  id         String         @id @default(uuid()) @db.Uuid
-  userId     String         @map("user_id") @db.Uuid
-  name       String         @db.VarChar(50)
-  avatarUrl  String?        @map("avatar_url")
-  isKids     Boolean        @default(false) @map("is_kids")
-  pinEnabled Boolean        @default(false) @map("pin_enabled")
-  pinHash    String?        @map("pin_hash") @db.VarChar(255)
-  maxRating  MaturityRating @default(NC_17) @map("max_rating")
-  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz
-
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  favorites    Favorite[]
-  watchHistory WatchHistory[]
-  ratings      Rating[]
-  playEvents   PlayEvent[]
-
-  @@index([userId])
-  @@map("profiles")
-}
-
-model PaymentMethod {
+model PasswordResetToken {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  brand     String   @db.VarChar(50)
-  last4     String   @db.VarChar(4)
-  expMonth  Int      @map("exp_month")
-  expYear   Int      @map("exp_year")
-  isDefault Boolean  @default(false) @map("is_default")
+  token     String   @unique @db.VarChar(512)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  used      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("payment_methods")
+  @@map("password_reset_tokens")
 }
 
 model RefreshToken {
@@ -141,37 +96,6 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model PasswordResetToken {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
-  expiresAt DateTime @map("expires_at") @db.Timestamptz
-  usedAt    DateTime? @map("used_at") @db.Timestamptz
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("password_reset_tokens")
-}
-
-model LoginAttempt {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String?  @map("user_id") @db.Uuid
-  email      String   @db.VarChar(255)
-  ipAddress  String?  @map("ip_address") @db.VarChar(64)
-  userAgent  String?  @map("user_agent") @db.VarChar(255)
-  succeeded  Boolean
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([email, ipAddress, createdAt(sort: Desc)])
-  @@index([userId, createdAt(sort: Desc)])
-  @@map("login_attempts")
-}
-
 model Movie {
   id              String       @id @default(uuid()) @db.Uuid
   title           String       @db.VarChar(500)
@@ -182,7 +106,6 @@ model Movie {
   releaseYear     Int?         @map("release_year")
   movieStatus     MovieStatus  @default(draft) @map("movie_status")
   encodeStatus    EncodeStatus @default(pending) @map("encode_status")
-  isPremium       Boolean      @default(false) @map("is_premium")
   playbackUrl     String?      @map("playback_url") @db.VarChar(1000)
   originalKey     String?      @map("original_key") @db.VarChar(500)
 
@@ -193,20 +116,17 @@ model Movie {
   voteCount        Int?    @default(0) @map("vote_count")
   originalLanguage String? @map("original_language") @db.VarChar(10)
   trailerUrl       String? @map("trailer_url") @db.VarChar(500)
-  subtitleUrl      String? @map("subtitle_url") @db.VarChar(1000)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  genres        MovieGenre[]
-  actors        MovieActor[]
-  favorites     Favorite[]
-  watchHistory  WatchHistory[]
-  uploads       Upload[]
-  encodeJobs    EncodeJob[]
-  ratings       Rating[]
-  playEvents    PlayEvent[]
-  notifications Notification[]
+  actors    String[]     @default([])
+
+  genres       MovieGenre[]
+  favorites    Favorite[]
+  uploads      Upload[]
+  ratings      Rating[]
+  watchHistory WatchHistory[]
 
   @@index([movieStatus, encodeStatus], name: "idx_movies_status")
   @@index([createdAt(sort: Desc)], name: "idx_movies_created_at")
@@ -220,8 +140,7 @@ model Genre {
   name String @unique @db.VarChar(100)
   slug String @unique @db.VarChar(100)
 
-  movies      MovieGenre[]
-  railConfigs RailConfig[]
+  movies MovieGenre[]
 
   @@map("genres")
 }
@@ -239,64 +158,24 @@ model MovieGenre {
 }
 
 model Actor {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(255)
-  avatarUrl String?  @map("avatar_url") @db.VarChar(1000)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  movies MovieActor[]
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique @db.VarChar(255)
 
   @@map("actors")
-}
-
-model MovieActor {
-  movieId String  @map("movie_id") @db.Uuid
-  actorId String  @map("actor_id") @db.Uuid
-  role    String? @db.VarChar(255) // Character name
-
-  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
-
-  @@id([movieId, actorId])
-  @@index([actorId])
-  @@map("movie_actors")
 }
 
 model Favorite {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  profileId String?  @map("profile_id") @db.Uuid
   movieId   String   @map("movie_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  movie   Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, movieId])
+  @@unique([userId, movieId])
   @@index([userId])
-  @@index([profileId])
   @@map("favorites")
-}
-
-model WatchHistory {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @map("user_id") @db.Uuid
-  profileId       String?  @map("profile_id") @db.Uuid
-  movieId         String   @map("movie_id") @db.Uuid
-  progressSeconds Int      @default(0) @map("progress_seconds")
-  durationSeconds Int      @default(0) @map("duration_seconds")
-  completed       Boolean  @default(false)
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  movie   Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, movieId])
-  @@index([userId, updatedAt(sort: Desc)], name: "idx_watch_history_user_updated")
-  @@index([profileId])
-  @@map("watch_history")
 }
 
 model Upload {
@@ -314,155 +193,38 @@ model Upload {
   @@map("uploads")
 }
 
-model EncodeJob {
-  id           String          @id @default(uuid()) @db.Uuid
-  movieId      String          @map("movie_id") @db.Uuid
-  inputKey     String          @unique @map("input_key") @db.VarChar(500)
-  outputPrefix String          @map("output_prefix") @db.VarChar(500)
-  status       EncodeJobStatus @default(pending)
-  attempts     Int             @default(0)
-  errorMessage String?         @map("error_message") @db.Text
-  startedAt    DateTime?       @map("started_at") @db.Timestamptz
-  completedAt  DateTime?       @map("completed_at") @db.Timestamptz
-  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
-
-  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
-
-  @@index([movieId])
-  @@index([status])
-  @@map("encode_jobs")
-}
-
 model Rating {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  profileId String?  @map("profile_id") @db.Uuid
   movieId   String   @map("movie_id") @db.Uuid
   rating    Int      @db.SmallInt // 1-5 stars
   comment   String?  @db.Text // optional review text
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  movie   Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, movieId])
+  @@unique([userId, movieId])
   @@index([movieId])
-  @@index([profileId])
   @@map("ratings")
 }
 
-model PlayEvent {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  profileId String?  @map("profile_id") @db.Uuid
-  movieId   String   @map("movie_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+model WatchHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  movieId         String   @map("movie_id") @db.Uuid
+  progressSeconds Int      @default(0) @map("progress_seconds")
+  durationSeconds Int      @default(0) @map("duration_seconds")
+  completed       Boolean  @default(false)
+  lastWatchedAt   DateTime @default(now()) @map("last_watched_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profile Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  movie   Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  @@index([movieId, createdAt(sort: Desc)])
-  @@index([userId])
-  @@index([profileId])
-  @@map("play_events")
-}
-
-model RailConfig {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @db.VarChar(100)
-  type      String   @db.VarChar(50) // genre, continue_watching, for_you, trending, recent
-  genreId   String?  @map("genre_id") @db.Uuid
-  position  Int      @default(0)
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  genre Genre? @relation(fields: [genreId], references: [id], onDelete: SetNull)
-
-  @@index([position])
-  @@map("rail_configs")
-}
-
-// ─────────────────────────────────────────────────────────────
-// Business & Monetization
-// ─────────────────────────────────────────────────────────────
-
-enum SubscriptionPlan {
-  FREE
-  BASIC
-  PREMIUM
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELED
-  PAST_DUE
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-}
-
-model Subscription {
-  id        String             @id @default(uuid()) @db.Uuid
-  userId    String             @unique @map("user_id") @db.Uuid
-  plan      SubscriptionPlan   @default(FREE)
-  status    SubscriptionStatus @default(ACTIVE)
-  startDate DateTime           @default(now()) @map("start_date") @db.Timestamptz
-  endDate   DateTime?          @map("end_date") @db.Timestamptz
-  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payments Payment[]
-
-  @@map("subscriptions")
-}
-
-model Payment {
-  id             String        @id @default(uuid()) @db.Uuid
-  subscriptionId String        @map("subscription_id") @db.Uuid
-  amount         Float
-  currency       String        @default("USD") @db.VarChar(3)
-  status         PaymentStatus @default(PENDING)
-  provider       String        @default("MOCK") // "STRIPE", "MOCK"
-  providerTxId   String?       @map("provider_tx_id")
-  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
-
-  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-
-  @@map("payments")
-}
-
-// ─────────────────────────────────────────────────────────────
-// Notifications
-// ─────────────────────────────────────────────────────────────
-
-enum NotificationType {
-  INFO
-  ALERT
-  NEW_MOVIE
-}
-
-model Notification {
-  id        String           @id @default(uuid()) @db.Uuid
-  userId    String?          @map("user_id") @db.Uuid // null for global
-  title     String           @db.VarChar(255)
-  message   String           @db.Text
-  type      NotificationType @default(INFO)
-  isRead    Boolean          @default(false) @map("is_read")
-  movieId   String?          @map("movie_id") @db.Uuid
-  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
-
-  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt(sort: Desc)])
-  @@map("notifications")
+  @@unique([userId, movieId])
+  @@index([userId, lastWatchedAt(sort: Desc)])
+  @@map("watch_history")
 }

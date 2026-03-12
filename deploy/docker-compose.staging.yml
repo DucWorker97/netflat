@@ -1,19 +1,19 @@
-# ═══════════════════════════════════════════════════════════════
-# Netflop Staging Docker Compose
+﻿# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# netflat Staging Docker Compose
 # Runs entire stack on single machine for demo/testing
-# ═══════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 services:
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Infrastructure
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   postgres:
     image: postgres:15-alpine
-    container_name: netflop-staging-postgres
+    container_name: netflat-staging-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-netflop}
+      POSTGRES_DB: ${POSTGRES_DB:-netflat}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
@@ -21,14 +21,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-netflop}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-netflat}" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: netflop-staging-redis
+    container_name: netflat-staging-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -40,7 +40,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: netflop-staging-minio
+    container_name: netflat-staging-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -59,7 +59,7 @@ services:
 
   minio-init:
     image: minio/mc:latest
-    container_name: netflop-staging-minio-init
+    container_name: netflat-staging-minio-init
     depends_on:
       minio:
         condition: service_started
@@ -67,43 +67,42 @@ services:
       /bin/sh -c "
         sleep 5;
         mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
-        mc mb -p local/${S3_BUCKET:-netflop-media} || true;
-        mc anonymous set download local/${S3_BUCKET:-netflop-media}/hls || true;
-        mc anonymous set download local/${S3_BUCKET:-netflop-media}/posters || true;
-        mc anonymous set download local/${S3_BUCKET:-netflop-media}/thumbnails || true;
-        mc anonymous set download local/${S3_BUCKET:-netflop-media}/subtitles || true;
+        mc mb -p local/${S3_BUCKET:-netflat-media} || true;
+        mc anonymous set download local/${S3_BUCKET:-netflat-media}/hls || true;
+        mc anonymous set download local/${S3_BUCKET:-netflat-media}/posters || true;
+        mc anonymous set download local/${S3_BUCKET:-netflat-media}/thumbnails || true;
         echo 'MinIO bucket initialized';
         exit 0;
       "
 
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Database Migration (runs once)
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   migrate:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
       target: builder
-    container_name: netflop-staging-migrate
+    container_name: netflat-staging-migrate
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-netflop}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-netflat}
     working_dir: /app/apps/api
     command: npx prisma migrate deploy
     restart: "no"
 
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Applications
-  # ─────────────────────────────────────────────────────────────
+  # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
-    container_name: netflop-staging-api
+    container_name: netflat-staging-api
     restart: unless-stopped
     depends_on:
       postgres:
@@ -117,7 +116,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-netflop}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-netflat}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
@@ -126,10 +125,10 @@ services:
       S3_ENDPOINT: http://minio:9000
       S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      S3_BUCKET: ${S3_BUCKET:-netflop-media}
+      S3_BUCKET: ${S3_BUCKET:-netflat-media}
       S3_REGION: us-east-1
       S3_PRESIGN_BASE_URL: ${S3_PRESIGN_BASE_URL:-http://localhost:9000}
-      S3_PUBLIC_BASE_URL: http://localhost:9000/${S3_BUCKET:-netflop-media}
+      S3_PUBLIC_BASE_URL: http://localhost:9000/${S3_BUCKET:-netflat-media}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001,http://localhost:19006}
     ports:
       - "3000:3000"
@@ -140,38 +139,11 @@ services:
       start_period: 10s
       retries: 3
 
-  worker:
-    build:
-      context: ..
-      dockerfile: apps/worker/Dockerfile
-    container_name: netflop-staging-worker
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-netflop}
-      REDIS_URL: redis://redis:6379
-      S3_ENDPOINT: http://minio:9000
-      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      S3_BUCKET: ${S3_BUCKET:-netflop-media}
-      S3_REGION: us-east-1
-    volumes:
-      - worker-temp:/tmp/netflop-worker
-
   admin:
     build:
       context: ..
       dockerfile: apps/admin/Dockerfile
-    container_name: netflop-staging-admin
+    container_name: netflat-staging-admin
     restart: unless-stopped
     depends_on:
       api:
@@ -183,11 +155,10 @@ services:
     ports:
       - "3001:3001"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Volumes
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 volumes:
   postgres-data:
   minio-data:
-  worker-temp:

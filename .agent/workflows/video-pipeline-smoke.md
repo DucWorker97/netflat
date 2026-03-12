@@ -1,14 +1,14 @@
----
+﻿---
 name: workflow-video-pipeline-smoke
 description: End-to-end smoke test for upload -> encode HLS -> playback.
 trigger: manual
 ---
 
 ## ---
-description: End-to-end smoke test for upload -> encode HLS -> playback (netflop)
+description: End-to-end smoke test for upload -> encode HLS -> playback (NETFLAT)
 ## ---
 
-# /video-pipeline-smoke â€” Netflop
+# /video-pipeline-smoke Ă¢â‚¬â€ NETFLAT
 
 ## Preconditions
 Assumes these endpoints exist (per OPENAPI.yaml):
@@ -26,4 +26,4 @@ docker compose up -d
 (Then run /dev or start api+worker)
 
 ## 1) Create a small sample MP4 locally
-... (giá»¯ nguyĂªn cĂ¡c bÆ°á»›c báº¡n Ä‘Ă£ viáº¿t)
+... (giĂ¡Â»Â¯ nguyÄ‚Âªn cÄ‚Â¡c bĂ†Â°Ă¡Â»â€ºc bĂ¡ÂºÂ¡n Ă„â€˜Ä‚Â£ viĂ¡ÂºÂ¿t)

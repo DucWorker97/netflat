@@ -1,11 +1,10 @@
 
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AiService } from '../ai/ai.service';
-import { PrismaService } from '../prisma/prisma.service'; // Kept as it's used
+import { PrismaService } from '../prisma/prisma.service';
+import { ActorsService } from '../actors/actors.service';
 import { MovieStatus, EncodeStatus, User, Prisma } from '@prisma/client';
-import { S3Client, GetObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { S3Client, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { ListMoviesDto } from './dto/list-movies.dto';
@@ -25,11 +24,11 @@ export class MoviesService {
     constructor(
         private prisma: PrismaService,
         private configService: ConfigService,
-        private aiService: AiService,
+        private actorsService: ActorsService,
     ) {
-        this.bucket = this.configService.get<string>('S3_BUCKET') || 'netflop-media';
+        this.bucket = this.configService.get<string>('S3_BUCKET') || 'netflat-media';
         this.s3Client = new S3Client({
-            endpoint: this.configService.get<string>('S3_ENDPOINT') || 'http://localhost:9000',
+            endpoint: this.configService.get<string>('S3_ENDPOINT') || 'http://localhost:9002',
             region: this.configService.get<string>('S3_REGION') || 'us-east-1',
             credentials: {
                 accessKeyId: this.configService.get<string>('S3_ACCESS_KEY') || 'minioadmin',
@@ -57,15 +56,10 @@ export class MoviesService {
             });
         }
 
-        // 2. Handle Actors (Link existing or Create new)
-        let actorOperations: Prisma.MovieActorCreateNestedManyWithoutMovieInput | undefined;
+        // 2. Normalize actor names and sync to dictionary
+        let actorNames: string[] = [];
         if (dto.actors && dto.actors.length > 0) {
-            const actorIds = await this.resolveActorIds(dto.actors);
-            actorOperations = {
-                create: actorIds.map((actorId) => ({
-                    actor: { connect: { id: actorId } },
-                })),
-            };
+            actorNames = await this.actorsService.syncNames(dto.actors);
         }
 
         // 3. Handle Genres
@@ -88,15 +82,13 @@ export class MoviesService {
                 backdropUrl: dto.backdropUrl,
                 originalLanguage: dto.originalLanguage,
                 trailerUrl: dto.trailerUrl,
-                subtitleUrl: dto.subtitleUrl,
                 movieStatus: MovieStatus.draft,
                 encodeStatus: EncodeStatus.pending,
-                actors: actorOperations,
+                actors: actorNames,
                 genres: genreOperations,
             },
             include: {
                 genres: { include: { genre: true } },
-                actors: { include: { actor: true } },
             },
         });
     }
@@ -105,7 +97,15 @@ export class MoviesService {
         const { page = 1, limit = 20, q: search } = query;
         const skip = (page - 1) * limit;
         const where: any = {};
-        if (search) where.title = { contains: search, mode: 'insensitive' };
+
+        if (search) {
+            // Search by title OR actor name
+            where.OR = [
+                { title: { contains: search, mode: 'insensitive' } },
+                { actors: { has: search } },
+                { actors: { hasSome: [search] } },
+            ];
+        }
 
         const [movies, total] = await Promise.all([
             this.prisma.movie.findMany({
@@ -115,7 +115,6 @@ export class MoviesService {
                 orderBy: { createdAt: 'desc' },
                 include: {
                     genres: { include: { genre: true } },
-                    actors: { include: { actor: true } },
                 },
             }),
             this.prisma.movie.count({ where })
@@ -129,7 +128,6 @@ export class MoviesService {
             where: { id },
             include: {
                 genres: { include: { genre: true } },
-                actors: { include: { actor: true } },
             },
         });
         if (!movie) throw new NotFoundException('Movie not found');
@@ -168,18 +166,12 @@ export class MoviesService {
             }
         }
 
-        // Handle actor updates
+        // Normalize actor names
+        let actorNames: string[] | undefined;
         if (dto.actors !== undefined) {
-            // Remove existing relations
-            await this.prisma.movieActor.deleteMany({ where: { movieId: id } });
-
-            if (dto.actors.length > 0) {
-                const actorIds = await this.resolveActorIds(dto.actors);
-                // Create new relations
-                await this.prisma.movieActor.createMany({
-                    data: actorIds.map((actorId) => ({ movieId: id, actorId })),
-                });
-            }
+            actorNames = dto.actors.length > 0
+                ? await this.actorsService.syncNames(dto.actors)
+                : [];
         }
 
         const movie = await this.prisma.movie.update({
@@ -189,36 +181,14 @@ export class MoviesService {
                 description: dto.description,
                 releaseYear: dto.releaseYear,
                 durationSeconds: dto.durationSeconds,
+                ...(actorNames !== undefined && { actors: actorNames }),
             },
             include: {
                 genres: { include: { genre: true } },
-                actors: { include: { actor: true } },
             },
         });
 
-        // Trigger AI retrain for metadata update
-        this.aiService.triggerRetrain().catch(err => console.warn('AI Retrain failed', err));
-
         return this.formatMovie(movie);
-    }
-
-    private async resolveActorIds(names: string[]): Promise<string[]> {
-        const uniqueNames = [...new Set(names.filter(n => n.trim().length > 0))];
-        if (uniqueNames.length === 0) return [];
-
-        const existingActors = await this.prisma.actor.findMany({
-            where: { name: { in: uniqueNames, mode: 'insensitive' } },
-        });
-
-        const existingNamesMap = new Set(existingActors.map((a) => a.name.toLowerCase()));
-        const missingNames = uniqueNames.filter((n) => !existingNamesMap.has(n.toLowerCase()));
-
-        // Create missing actors
-        const newActors = await Promise.all(
-            missingNames.map((name) => this.prisma.actor.create({ data: { name } }))
-        );
-
-        return [...existingActors, ...newActors].map((a) => a.id);
     }
 
     async publish(id: string, published: boolean) {
@@ -240,9 +210,6 @@ export class MoviesService {
             },
         });
 
-        // Trigger AI retrain on publish status change
-        this.aiService.triggerRetrain().catch(err => console.warn('AI Retrain failed', err));
-
         return this.formatMovie(movie);
     }
 
@@ -263,118 +230,25 @@ export class MoviesService {
             });
         }
 
-        // Check Premium Access
-        // @ts-ignore - isPremium might not yet be in generated client if migration failed
-        if (movie.isPremium) {
-            const subscription = await this.prisma.subscription.findUnique({
-                where: { userId: user.id },
-            });
+        const s3PublicBaseUrl = this.configService.get<string>('S3_PUBLIC_BASE_URL')
+            || 'http://localhost:9002/netflat-media';
 
-            // Check if active (BASIC or PREMIUM)
-            // @ts-ignore - PaymentStatus/SubscriptionStatus might be missing in client types
-            if (!subscription || (subscription.status !== 'ACTIVE' && subscription.status !== 'PAST_DUE')) {
-                throw new ForbiddenException({
-                    code: 'PREMIUM_REQUIRED',
-                    message: 'Premium subscription required',
-                });
-            }
-        }
+        const playbackUrl = `${s3PublicBaseUrl}/hls/${id}/master.m3u8`;
 
-        const ttl = parseInt(this.configService.get<string>('STREAM_URL_TTL_SECONDS') || '3600', 10);
-        // Requirement 2: Normalize prefix
-        const rawPrefix = this.configService.get<string>('HLS_PREFIX') || 'hls';
-        const prefix = rawPrefix.trim();
+        const qualityOptions = [
+            { name: '480p', url: `${s3PublicBaseUrl}/hls/${id}/v0/prog_index.m3u8` },
+            { name: '720p', url: `${s3PublicBaseUrl}/hls/${id}/v1/prog_index.m3u8` },
+        ];
 
-        // Requirement 3: Guard against whitespace
-        const buildKey = (p: string, mId: string, suffix: string) => {
-            const key = `${p}/${mId}/${suffix}`;
-            if (key.match(/\s/) || key.includes('%20')) {
-                console.warn(`[stream] Key malformed (contains whitespace): "${key}"`);
-            }
-            return key;
-        };
-
-        const masterKey = buildKey(prefix, id, 'master.m3u8');
-
-        let playbackUrl: string;
-        let qualityOptions: { name: string; url: string }[];
-        let expiresAt: string | null = null;
-
-        // Use S3_PUBLIC_BASE_URL for mobile compatibility (derived from DEV_PUBLIC_HOST)
-        const s3PublicBaseUrl = this.configService.get<string>('S3_PUBLIC_BASE_URL');
-
-        if (s3PublicBaseUrl) {
-            // Public URL mode - mobile-friendly (no signature, uses DEV_PUBLIC_HOST)
-            playbackUrl = `${s3PublicBaseUrl}/${masterKey}`;
-            console.log(`[stream] Generated public playbackUrl: ${playbackUrl}`);
-
-            const variants = [
-                { name: '360p', suffix: 'v0/prog_index.m3u8' },
-                { name: '480p', suffix: 'v1/prog_index.m3u8' },
-                { name: '720p', suffix: 'v2/prog_index.m3u8' },
-                { name: '1080p', suffix: 'v3/prog_index.m3u8' },
-            ];
-
-            qualityOptions = variants.map((v) => {
-                const key = buildKey(prefix, id, v.suffix);
-                return { name: v.name, url: `${s3PublicBaseUrl}/${key}` };
-            });
-        } else {
-            // Fallback: Presigned URL mode
-            const masterCommand = new GetObjectCommand({
-                Bucket: this.bucket,
-                Key: masterKey,
-            });
-            playbackUrl = await getSignedUrl(this.s3Client, masterCommand, { expiresIn: ttl });
-
-            const variants = [
-                { name: '360p', suffix: 'v0/prog_index.m3u8' },
-                { name: '480p', suffix: 'v1/prog_index.m3u8' },
-                { name: '720p', suffix: 'v2/prog_index.m3u8' },
-                { name: '1080p', suffix: 'v3/prog_index.m3u8' },
-            ];
-
-            qualityOptions = await Promise.all(
-                variants.map(async (v) => {
-                    const key = buildKey(prefix, id, v.suffix);
-                    const command = new GetObjectCommand({
-                        Bucket: this.bucket,
-                        Key: key,
-                    });
-                    const url = await getSignedUrl(this.s3Client, command, { expiresIn: ttl });
-                    return { name: v.name, url };
-                })
-            );
-
-            expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
-        }
-
-        return {
-            playbackUrl,
-            qualityOptions,
-            expiresAt,
-        };
+        return { playbackUrl, qualityOptions };
     }
 
     async getProgress(movieId: string, userId: string) {
-        const history = await this.prisma.watchHistory.findFirst({
-            where: { userId, movieId },
-        });
-
-        if (!history) {
-            return {
-                progressSeconds: 0,
-                durationSeconds: 0,
-                completed: false,
-                updatedAt: null,
-            };
-        }
-
         return {
-            progressSeconds: history.progressSeconds,
-            durationSeconds: history.durationSeconds,
-            completed: history.completed,
-            updatedAt: history.updatedAt.toISOString(),
+            progressSeconds: 0,
+            durationSeconds: 0,
+            completed: false,
+            updatedAt: null,
         };
     }
 
@@ -388,6 +262,7 @@ export class MoviesService {
         releaseYear: number | null;
         movieStatus: MovieStatus;
         encodeStatus: EncodeStatus;
+        actors: string[];
         createdAt: Date;
         updatedAt: Date;
         // TMDb fields
@@ -397,9 +272,8 @@ export class MoviesService {
         popularity?: number | null;
         originalLanguage?: string | null;
         trailerUrl?: string | null;
-        subtitleUrl?: string | null;
+        playbackUrl?: string | null;
         genres?: { genre: { id: string; name: string; slug: string } }[];
-        actors?: { actor: { id: string; name: string; avatarUrl: string | null } }[];
     }) {
         return {
             id: movie.id,
@@ -416,11 +290,7 @@ export class MoviesService {
                 name: mg.genre.name,
                 slug: mg.genre.slug,
             })) || [],
-            actors: movie.actors?.map((ma) => ({
-                id: ma.actor.id,
-                name: ma.actor.name,
-                avatarUrl: ma.actor.avatarUrl,
-            })) || [],
+            actors: movie.actors || [],
             // TMDb fields
             tmdbId: movie.tmdbId || null,
             voteAverage: movie.voteAverage || null,
@@ -428,7 +298,7 @@ export class MoviesService {
             popularity: movie.popularity || null,
             originalLanguage: movie.originalLanguage || null,
             trailerUrl: movie.trailerUrl || null,
-            subtitleUrl: movie.subtitleUrl || null,
+            playbackUrl: movie.playbackUrl || null,
             createdAt: movie.createdAt.toISOString(),
             updatedAt: movie.updatedAt.toISOString(),
         };
@@ -439,7 +309,6 @@ export class MoviesService {
             `originals/${movieId}/`,
             `hls/${movieId}/`,
             `posters/${movieId}/`,
-            `subtitles/${movieId}/`
         ];
 
         for (const prefix of prefixes) {

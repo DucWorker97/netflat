@@ -1,6 +1,6 @@
-# Deploy Staging Guide
+﻿# Deploy Staging Guide
 
-**Runs entire netflop stack on a single machine using Docker Compose**
+**Runs entire NETFLAT stack on a single machine using Docker Compose**
 
 ---
 
@@ -49,15 +49,15 @@ docker compose -f deploy/docker-compose.staging.yml logs -f
 ```
 
 Wait for:
-- `netflop-staging-migrate` exits with code 0
-- `netflop-staging-api` shows "Nest application started"
-- `netflop-staging-worker` shows "Worker started"
+- `NETFLAT-staging-migrate` exits with code 0
+- `NETFLAT-staging-api` shows "Nest application started"
+- `NETFLAT-staging-worker` shows "Worker started"
 
 ### 4. Seed Database (First Deploy Only)
 
 ```bash
 # Exec into API container to seed
-docker exec netflop-staging-api npx prisma db seed
+docker exec NETFLAT-staging-api npx prisma db seed
 ```
 
 ### 5. Verify
@@ -70,8 +70,8 @@ curl http://localhost:3000/health
 open http://localhost:3001/login
 
 # Credentials:
-# admin@netflop.local / admin123
-# viewer@netflop.local / viewer123
+# admin@NETFLAT.local / admin123
+# viewer@NETFLAT.local / viewer123
 ```
 
 ---
@@ -112,30 +112,30 @@ docker compose -f deploy/docker-compose.staging.yml up -d --build api
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Docker Network                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
-│  │ PostgreSQL│  │  Redis   │  │  MinIO   │                  │
-│  │   :5432  │  │  :6379   │  │:9000/:9001│                  │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘                  │
-│       │             │             │                         │
-│       └─────────────┼─────────────┘                         │
-│                     │                                       │
-│              ┌──────┴──────┐                                │
-│              │   API       │                                │
-│              │  :3000      │──────────────────┐             │
-│              └──────┬──────┘                  │             │
-│                     │                         │             │
-│         ┌──────────┴──────────┐       ┌──────┴──────┐      │
-│         │                     │       │             │      │
-│   ┌─────┴─────┐        ┌──────┴────┐  │   Admin    │      │
-│   │  Worker   │        │  Mobile   │  │   :3001    │      │
-│   │ (encode)  │        │ (external)│  │            │      │
-│   └───────────┘        └───────────┘  └────────────┘      │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                     Docker Network                          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                             â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                  â”‚
+â”‚  â”‚ PostgreSQLâ”‚  â”‚  Redis   â”‚  â”‚  MinIO   â”‚                  â”‚
+â”‚  â”‚   :5432  â”‚  â”‚  :6379   â”‚  â”‚:9000/:9001â”‚                  â”‚
+â”‚  â””â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”˜                  â”‚
+â”‚       â”‚             â”‚             â”‚                         â”‚
+â”‚       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                         â”‚
+â”‚                     â”‚                                       â”‚
+â”‚              â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”                                â”‚
+â”‚              â”‚   API       â”‚                                â”‚
+â”‚              â”‚  :3000      â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”             â”‚
+â”‚              â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜                  â”‚             â”‚
+â”‚                     â”‚                         â”‚             â”‚
+â”‚         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”      â”‚
+â”‚         â”‚                     â”‚       â”‚             â”‚      â”‚
+â”‚   â”Œâ”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”        â”Œâ”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”  â”‚   Admin    â”‚      â”‚
+â”‚   â”‚  Worker   â”‚        â”‚  Mobile   â”‚  â”‚   :3001    â”‚      â”‚
+â”‚   â”‚ (encode)  â”‚        â”‚ (external)â”‚  â”‚            â”‚      â”‚
+â”‚   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â”‚
+â”‚                                                             â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -158,7 +158,7 @@ kill -9 <PID>
 
 ```bash
 # Check migrate container logs
-docker logs netflop-staging-migrate
+docker logs NETFLAT-staging-migrate
 
 # Re-run migration
 docker compose -f deploy/docker-compose.staging.yml up -d migrate
@@ -168,7 +168,7 @@ docker compose -f deploy/docker-compose.staging.yml up -d migrate
 
 ```bash
 # Check worker logs
-docker logs netflop-staging-worker
+docker logs NETFLAT-staging-worker
 
 # Common issues:
 # - Redis connection failed: check REDIS_URL
@@ -180,17 +180,17 @@ docker logs netflop-staging-worker
 
 ```bash
 # Re-apply public policy
-docker exec netflop-staging-minio mc anonymous set download local/netflop-media/hls
-docker exec netflop-staging-minio mc anonymous set download local/netflop-media/posters
-docker exec netflop-staging-minio mc anonymous set download local/netflop-media/thumbnails
-docker exec netflop-staging-minio mc anonymous set download local/netflop-media/subtitles
+docker exec NETFLAT-staging-minio mc anonymous set download local/NETFLAT-media/hls
+docker exec NETFLAT-staging-minio mc anonymous set download local/NETFLAT-media/posters
+docker exec NETFLAT-staging-minio mc anonymous set download local/NETFLAT-media/thumbnails
+docker exec NETFLAT-staging-minio mc anonymous set download local/NETFLAT-media/subtitles
 ```
 
 ### API unhealthy
 
 ```bash
 # Check logs
-docker logs netflop-staging-api
+docker logs NETFLAT-staging-api
 
 # Common issues:
 # - Database connection: check DATABASE_URL
@@ -284,18 +284,18 @@ We adhere to **Least Privilege Access**:
       "Effect": "Allow",
       "Action": ["s3:GetObject"],
       "Resource": [
-        "arn:aws:s3:::netflop-media/hls/*",
-        "arn:aws:s3:::netflop-media/posters/*",
-        "arn:aws:s3:::netflop-media/thumbnails/*",
-        "arn:aws:s3:::netflop-media/subtitles/*"
+        "arn:aws:s3:::NETFLAT-media/hls/*",
+        "arn:aws:s3:::NETFLAT-media/posters/*",
+        "arn:aws:s3:::NETFLAT-media/thumbnails/*",
+        "arn:aws:s3:::NETFLAT-media/subtitles/*"
       ],
       "Principal": "*"
     },
     {
       "Effect": "Allow",
       "Action": ["s3:PutObject"],
-      "Resource": ["arn:aws:s3:::netflop-media/originals/*"],
-      "Principal": {"AWS": "arn:aws:iam::123456789012:user/netflop-api"}
+      "Resource": ["arn:aws:s3:::NETFLAT-media/originals/*"],
+      "Principal": {"AWS": "arn:aws:iam::123456789012:user/NETFLAT-api"}
     }
   ]
 }

@@ -1,8 +1,8 @@
-# Netflop Admin — Movie Upload UI Reference
+﻿# NETFLAT Admin â€” Movie Upload UI Reference
 
-> **MỤC ĐÍCH**: File này tổng hợp toàn bộ code giao diện liên quan đến quản lý/upload phim trong Admin app.  
-> Dùng để cho AI (Lovable) redesign lại giao diện.  
-> **CHỈ SỬA GIAO DIỆN**, không thay đổi logic upload (presigned URL, XHR upload, mutation hooks...).
+> **Má»¤C ÄĂCH**: File nĂ y tá»•ng há»£p toĂ n bá»™ code giao diá»‡n liĂªn quan Ä‘áº¿n quáº£n lĂ½/upload phim trong Admin app.  
+> DĂ¹ng Ä‘á»ƒ cho AI (Lovable) redesign láº¡i giao diá»‡n.  
+> **CHá»ˆ Sá»¬A GIAO DIá»†N**, khĂ´ng thay Ä‘á»•i logic upload (presigned URL, XHR upload, mutation hooks...).
 
 ---
 
@@ -16,67 +16,67 @@
 
 ---
 
-## Cấu trúc file
+## Cáº¥u trĂºc file
 
 ```
 apps/admin/src/
-├── lib/
-│   ├── queries.ts              ← API hooks (DO NOT CHANGE logic)
-│   └── use-locale-path.ts      ← Locale routing helper
-└── app/[locale]/(dashboard)/movies/
-    ├── page.tsx                 ← Movie List page
-    ├── movies.module.css        ← CSS cho movie list
-    ├── movie-form.module.css    ← CSS cho metadata form
-    ├── media-center.module.css  ← CSS cho standalone media center
-    ├── new/
-    │   └── page.tsx             ← Create New Movie page
-    └── [id]/
-        ├── page.tsx             ← Edit Movie page (3 tabs)
-        ├── edit.module.css      ← CSS cho edit page
-        ├── media/
-        │   └── page.tsx         ← Standalone Media Center (trùng lặp với MediaTab)
-        ├── upload/
-        │   ├── page.tsx         ← Redirect → ?tab=media
-        │   └── upload.module.css
-        └── _components/
-            ├── MediaTab.tsx     ← Tab upload video/poster/subtitle
-            ├── MetadataTab.tsx  ← Tab chỉnh sửa metadata
-            ├── SettingsTab.tsx  ← Tab settings + delete
-            └── StatusBadge.tsx  ← Badge component
+â”œâ”€â”€ lib/
+â”‚   â”œâ”€â”€ queries.ts              â† API hooks (DO NOT CHANGE logic)
+â”‚   â””â”€â”€ use-locale-path.ts      â† Locale routing helper
+â””â”€â”€ app/[locale]/(dashboard)/movies/
+    â”œâ”€â”€ page.tsx                 â† Movie List page
+    â”œâ”€â”€ movies.module.css        â† CSS cho movie list
+    â”œâ”€â”€ movie-form.module.css    â† CSS cho metadata form
+    â”œâ”€â”€ media-center.module.css  â† CSS cho standalone media center
+    â”œâ”€â”€ new/
+    â”‚   â””â”€â”€ page.tsx             â† Create New Movie page
+    â””â”€â”€ [id]/
+        â”œâ”€â”€ page.tsx             â† Edit Movie page (3 tabs)
+        â”œâ”€â”€ edit.module.css      â† CSS cho edit page
+        â”œâ”€â”€ media/
+        â”‚   â””â”€â”€ page.tsx         â† Standalone Media Center (trĂ¹ng láº·p vá»›i MediaTab)
+        â”œâ”€â”€ upload/
+        â”‚   â”œâ”€â”€ page.tsx         â† Redirect â†’ ?tab=media
+        â”‚   â””â”€â”€ upload.module.css
+        â””â”€â”€ _components/
+            â”œâ”€â”€ MediaTab.tsx     â† Tab upload video/poster/subtitle
+            â”œâ”€â”€ MetadataTab.tsx  â† Tab chá»‰nh sá»­a metadata
+            â”œâ”€â”€ SettingsTab.tsx  â† Tab settings + delete
+            â””â”€â”€ StatusBadge.tsx  â† Badge component
 ```
 
 ---
 
-## Flow người dùng
+## Flow ngÆ°á»i dĂ¹ng
 
-1. **Movie List** (`/movies`) → Xem danh sách, tìm kiếm, publish/unpublish/delete
-2. **Create Movie** (`/movies/new`) → Nhập title, description, year → redirect sang edit page tab Media
-3. **Edit Movie** (`/movies/[id]`) → 3 tabs:
+1. **Movie List** (`/movies`) â†’ Xem danh sĂ¡ch, tĂ¬m kiáº¿m, publish/unpublish/delete
+2. **Create Movie** (`/movies/new`) â†’ Nháº­p title, description, year â†’ redirect sang edit page tab Media
+3. **Edit Movie** (`/movies/[id]`) â†’ 3 tabs:
    - **Metadata**: title, description, year, duration, genres (toggle buttons), actors (creatable tags)
-   - **Media & Assets**: upload video, poster, subtitle (presigned URL → S3)
+   - **Media & Assets**: upload video, poster, subtitle (presigned URL â†’ S3)
    - **Settings**: status info, danger zone delete
-4. **Media Center** (`/movies/[id]/media`) → Standalone media upload page (logic trùng với MediaTab)
+4. **Media Center** (`/movies/[id]/media`) â†’ Standalone media upload page (logic trĂ¹ng vá»›i MediaTab)
 
 ---
 
-## API Hooks Interface (KHÔNG THAY ĐỔI)
+## API Hooks Interface (KHĂ”NG THAY Äá»”I)
 
 ```typescript
 // Queries
-useGenres() → Genre[]
-useMovies({ page, limit, q, genreId }) → { data: Movie[], meta: PaginationMeta }
-useMovie(id) → Movie
-useMoviePolling(id, enabled) → Movie (refetch mỗi 3s khi encoding)
+useGenres() â†’ Genre[]
+useMovies({ page, limit, q, genreId }) â†’ { data: Movie[], meta: PaginationMeta }
+useMovie(id) â†’ Movie
+useMoviePolling(id, enabled) â†’ Movie (refetch má»—i 3s khi encoding)
 
 // Mutations
-useCreateMovie() → mutateAsync({ title, description, releaseYear, genreIds?, actors? })
-useUpdateMovie() → mutateAsync({ id, input: { title, description, ... } })
-useDeleteMovie() → mutateAsync(id)
-usePublishMovie() → mutateAsync({ id, published })
-usePresignedUrl() → mutateAsync({ movieId, fileName, contentType, sizeBytes, fileType })
-useUploadComplete() → mutateAsync({ movieId, objectKey, fileType })
-useSubtitlePresignedUrl() → mutateAsync({ movieId, fileName })
-useSubtitleComplete() → mutateAsync({ movieId, objectKey })
+useCreateMovie() â†’ mutateAsync({ title, description, releaseYear, genreIds?, actors? })
+useUpdateMovie() â†’ mutateAsync({ id, input: { title, description, ... } })
+useDeleteMovie() â†’ mutateAsync(id)
+usePublishMovie() â†’ mutateAsync({ id, published })
+usePresignedUrl() â†’ mutateAsync({ movieId, fileName, contentType, sizeBytes, fileType })
+useUploadComplete() â†’ mutateAsync({ movieId, objectKey, fileType })
+useSubtitlePresignedUrl() â†’ mutateAsync({ movieId, fileName })
+useSubtitleComplete() â†’ mutateAsync({ movieId, objectKey })
 
 // Types
 Movie { id, title, description, posterUrl, durationSeconds, releaseYear, movieStatus, encodeStatus, genres[], actors[], videoUrl, subtitles[], playbackUrl }
@@ -85,7 +85,7 @@ Genre { id, name, slug }
 
 ---
 
-## 1. Movie List Page — `movies/page.tsx`
+## 1. Movie List Page â€” `movies/page.tsx`
 
 ```tsx
 'use client';
@@ -280,7 +280,7 @@ export default function MoviesPage() {
 
 ---
 
-## 2. Create New Movie — `movies/new/page.tsx`
+## 2. Create New Movie â€” `movies/new/page.tsx`
 
 ```tsx
 'use client';
@@ -412,7 +412,7 @@ export default function NewMoviePage() {
 
 ---
 
-## 3. Edit Movie Page (3 tabs) — `movies/[id]/page.tsx`
+## 3. Edit Movie Page (3 tabs) â€” `movies/[id]/page.tsx`
 
 ```tsx
 'use client';
@@ -512,7 +512,7 @@ export default function EditMoviePage({ params }: EditMoviePageProps) {
 
 ---
 
-## 4. MediaTab Component — `_components/MediaTab.tsx`
+## 4. MediaTab Component â€” `_components/MediaTab.tsx`
 
 ```tsx
 'use client';
@@ -595,7 +595,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [videoStatus, posterStatus, subtitleStatus]);
 
-    // -- Handlers (KHÔNG THAY ĐỔI LOGIC) --
+    // -- Handlers (KHĂ”NG THAY Äá»”I LOGIC) --
     const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) { setVideoFile(e.target.files[0]); setVideoStatus('idle'); setVideoError(null); }
     };
@@ -677,7 +677,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
 
     const displayPosterUrl = posterPreviewUrl || movie.posterUrl || null;
 
-    // ===== PHẦN GIAO DIỆN BÊN DƯỚI — CẦN REDESIGN =====
+    // ===== PHáº¦N GIAO DIá»†N BĂN DÆ¯á»I â€” Cáº¦N REDESIGN =====
     return (
         <div className="w-full max-w-none space-y-6 animate-fade-in">
             {showToast && (
@@ -719,7 +719,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             return (
                                 <div key={step} className="flex items-center gap-1.5 flex-1">
                                     <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${active ? 'bg-primary text-white' : 'bg-base-300 text-gray-500'}`}>
-                                        {active ? '✓' : i + 1}
+                                        {active ? 'âœ“' : i + 1}
                                     </div>
                                     <span className={`text-xs ${active ? 'text-white' : 'text-gray-500'}`}>{step}</span>
                                     {i < 2 && <div className={`flex-1 h-px ${active ? 'bg-primary' : 'bg-base-300'}`} />}
@@ -765,7 +765,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-white truncate">{videoFile.name}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{formatBytes(videoFile.size)} · {videoFile.type || 'video/mp4'}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{formatBytes(videoFile.size)} Â· {videoFile.type || 'video/mp4'}</p>
                             </div>
                             <div className="flex gap-2 shrink-0">
                                 <button onClick={startVideoUpload} className="btn btn-primary btn-xs">Upload</button>
@@ -780,7 +780,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                 </svg>
                                 <p className="text-sm text-gray-400 group-hover:text-primary transition-colors">Click to browse or drop video here</p>
-                                <p className="text-xs text-gray-600 mt-1">MP4, MKV, MOV · Max 10 GB</p>
+                                <p className="text-xs text-gray-600 mt-1">MP4, MKV, MOV Â· Max 10 GB</p>
                             </div>
                         </>
                     )}
@@ -825,7 +825,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             <div onClick={() => posterInputRef.current?.click()} className="border-2 border-dashed border-base-content/10 hover:border-info/30 rounded-lg py-8 flex flex-col items-center justify-center cursor-pointer transition-all group">
                                 <svg className="w-5 h-5 text-gray-500 group-hover:text-info transition-colors mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                 <span className="text-sm text-gray-400 group-hover:text-white transition-colors">Click to upload poster</span>
-                                <span className="text-xs text-gray-600 mt-0.5">JPG, PNG · 2:3 ratio</span>
+                                <span className="text-xs text-gray-600 mt-0.5">JPG, PNG Â· 2:3 ratio</span>
                             </div>
                         )}
                     </div>
@@ -865,7 +865,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                                 ) : (
                                     <div className="flex gap-1.5">
                                         <button className="btn btn-primary btn-xs" onClick={startSubtitleUpload}>Upload</button>
-                                        <button className="btn btn-ghost btn-xs text-error" onClick={() => setSubtitleFile(null)}>✕</button>
+                                        <button className="btn btn-ghost btn-xs text-error" onClick={() => setSubtitleFile(null)}>âœ•</button>
                                     </div>
                                 )}
                             </div>
@@ -886,7 +886,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
 
 ---
 
-## 5. MetadataTab Component — `_components/MetadataTab.tsx`
+## 5. MetadataTab Component â€” `_components/MetadataTab.tsx`
 
 ```tsx
 'use client';
@@ -961,7 +961,7 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
             {/* Basic Info */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
-                    <span className={styles.sectionIcon}>📝</span>
+                    <span className={styles.sectionIcon}>đŸ“</span>
                     <h2 className={styles.sectionTitle}>Basic Information</h2>
                 </div>
                 <div className={styles.sectionContent}>
@@ -991,7 +991,7 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
             {/* Cast */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
-                    <span className={styles.sectionIcon}>👥</span>
+                    <span className={styles.sectionIcon}>đŸ‘¥</span>
                     <h2 className={styles.sectionTitle}>Cast & Crew</h2>
                 </div>
                 <div className={styles.sectionContent}>
@@ -1024,7 +1024,7 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
             {/* Genres */}
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
-                    <span className={styles.sectionIcon}>🏷️</span>
+                    <span className={styles.sectionIcon}>đŸ·ï¸</span>
                     <h2 className={styles.sectionTitle}>Genres</h2>
                 </div>
                 <div className={styles.sectionContent}>
@@ -1069,7 +1069,7 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
 
 ---
 
-## 6. SettingsTab Component — `_components/SettingsTab.tsx`
+## 6. SettingsTab Component â€” `_components/SettingsTab.tsx`
 
 ```tsx
 'use client';
@@ -1103,7 +1103,7 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
         <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
             <div className="bg-base-200 rounded-xl border border-white/5 overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-                    <div className="w-8 h-8 rounded-lg bg-base-300 flex items-center justify-center text-sm">⚙️</div>
+                    <div className="w-8 h-8 rounded-lg bg-base-300 flex items-center justify-center text-sm">â™ï¸</div>
                     <h2 className="font-semibold text-lg">General Settings</h2>
                 </div>
                 <div className="p-5">
@@ -1118,11 +1118,11 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
                         </div>
                         <div className="bg-base-100 rounded-lg border border-white/5 p-4">
                             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Created</p>
-                            <p className="font-medium text-white text-sm">{movie.createdAt ? new Date(movie.createdAt).toLocaleDateString() : '—'}</p>
+                            <p className="font-medium text-white text-sm">{movie.createdAt ? new Date(movie.createdAt).toLocaleDateString() : 'â€”'}</p>
                         </div>
                         <div className="bg-base-100 rounded-lg border border-white/5 p-4">
                             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Last Updated</p>
-                            <p className="font-medium text-white text-sm">{movie.updatedAt ? new Date(movie.updatedAt).toLocaleDateString() : '—'}</p>
+                            <p className="font-medium text-white text-sm">{movie.updatedAt ? new Date(movie.updatedAt).toLocaleDateString() : 'â€”'}</p>
                         </div>
                     </div>
                 </div>
@@ -1130,7 +1130,7 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
 
             <div className="bg-base-200 rounded-xl border border-error/20 overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-error/10">
-                    <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-sm">🗑️</div>
+                    <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-sm">đŸ—‘ï¸</div>
                     <h2 className="font-semibold text-lg text-error">Danger Zone</h2>
                 </div>
                 <div className="p-5">
@@ -1159,7 +1159,7 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
 
 ---
 
-## 7. StatusBadge Component — `_components/StatusBadge.tsx`
+## 7. StatusBadge Component â€” `_components/StatusBadge.tsx`
 
 ```tsx
 interface StatusBadgeProps {
@@ -1194,9 +1194,9 @@ export default function StatusBadge({ status, type }: StatusBadgeProps) {
 
 ---
 
-## 8. Standalone Media Center — `movies/[id]/media/page.tsx`
+## 8. Standalone Media Center â€” `movies/[id]/media/page.tsx`
 
-> **NOTE**: Trang này trùng lặp logic với MediaTab. Có thể cân nhắc bỏ hoặc redirect sang edit page tab Media.
+> **NOTE**: Trang nĂ y trĂ¹ng láº·p logic vá»›i MediaTab. CĂ³ thá»ƒ cĂ¢n nháº¯c bá» hoáº·c redirect sang edit page tab Media.
 
 ```tsx
 'use client';
@@ -1222,8 +1222,8 @@ export default function MediaCenterPage() {
 
     useMoviePolling(movieId, movie?.encodeStatus === 'processing');
 
-    // States & handlers giống hệt MediaTab — xem MediaTab ở trên
-    // ... (logic upload video/poster/subtitle giống 100%)
+    // States & handlers giá»‘ng há»‡t MediaTab â€” xem MediaTab á»Ÿ trĂªn
+    // ... (logic upload video/poster/subtitle giá»‘ng 100%)
 
     if (isLoading) return <div className="p-8">Loading...</div>;
 
@@ -1238,17 +1238,17 @@ export default function MediaCenterPage() {
                 {/* Main Column: Video */}
                 <div className={styles.mainColumn}>
                     <div className={styles.card}>
-                        {/* Video upload UI – dùng CSS Module styles.uploadZone, styles.stepper... */}
-                        {/* Stepper 3 bước: Upload → Processing → Ready */}
-                        {/* Drop zone với icon cloud 64x64 */}
-                        {/* Progress bar với striped animation */}
+                        {/* Video upload UI â€“ dĂ¹ng CSS Module styles.uploadZone, styles.stepper... */}
+                        {/* Stepper 3 bÆ°á»›c: Upload â†’ Processing â†’ Ready */}
+                        {/* Drop zone vá»›i icon cloud 64x64 */}
+                        {/* Progress bar vá»›i striped animation */}
                     </div>
                 </div>
 
                 {/* Side Column */}
                 <div className={styles.sideColumn}>
-                    {/* Poster Card – dùng next/image Image fill (BUG: phóng to full screen) */}
-                    {/* Subtitle Card – danh sách + nút add */}
+                    {/* Poster Card â€“ dĂ¹ng next/image Image fill (BUG: phĂ³ng to full screen) */}
+                    {/* Subtitle Card â€“ danh sĂ¡ch + nĂºt add */}
                 </div>
             </div>
 
@@ -1328,27 +1328,27 @@ export default function MediaCenterPage() {
 .uploadZone:hover { border-color: #e50914; background: rgba(229,9,20,0.05); transform: translateY(-2px); }
 .uploadIcon { width: 64px; height: 64px; color: #666; transition: color 0.3s; }
 .uploadZone:hover .uploadIcon { color: #e50914; }
-/* Stepper, Progress bar styles... (xem file gốc) */
+/* Stepper, Progress bar styles... (xem file gá»‘c) */
 .actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #333; }
 ```
 
 ---
 
-## Ghi chú cho Lovable
+## Ghi chĂº cho Lovable
 
-### Vấn đề hiện tại cần fix:
-1. **Movie List** (`movies/page.tsx`): Giao diện bảng cơ bản, chưa đẹp, thiếu poster thumbnail rõ ràng
-2. **New Movie** (`movies/new/page.tsx`): Form đơn giản, chấp nhận được nhưng có thể đẹp hơn
-3. **Edit Movie tabs** (`[id]/page.tsx`): Tab navigation ok, nhưng layout tổng thể có thể cải thiện
-4. **MediaTab**: Giao diện upload hiện tại đã dùng SVG icons thay emoji, nhưng vẫn chưa thực sự đẹp
-5. **Media Center standalone** (`[id]/media/page.tsx`): Trùng lặp với MediaTab, dùng `next/image fill` gây bug poster phóng to full screen, icon upload 64x64 quá to
-6. **MetadataTab**: Dùng CSS Module + emoji section icons, cần thống nhất style
-7. **SettingsTab**: Tương đối ok nhưng vẫn dùng emoji icon
+### Váº¥n Ä‘á» hiá»‡n táº¡i cáº§n fix:
+1. **Movie List** (`movies/page.tsx`): Giao diá»‡n báº£ng cÆ¡ báº£n, chÆ°a Ä‘áº¹p, thiáº¿u poster thumbnail rĂµ rĂ ng
+2. **New Movie** (`movies/new/page.tsx`): Form Ä‘Æ¡n giáº£n, cháº¥p nháº­n Ä‘Æ°á»£c nhÆ°ng cĂ³ thá»ƒ Ä‘áº¹p hÆ¡n
+3. **Edit Movie tabs** (`[id]/page.tsx`): Tab navigation ok, nhÆ°ng layout tá»•ng thá»ƒ cĂ³ thá»ƒ cáº£i thiá»‡n
+4. **MediaTab**: Giao diá»‡n upload hiá»‡n táº¡i Ä‘Ă£ dĂ¹ng SVG icons thay emoji, nhÆ°ng váº«n chÆ°a thá»±c sá»± Ä‘áº¹p
+5. **Media Center standalone** (`[id]/media/page.tsx`): TrĂ¹ng láº·p vá»›i MediaTab, dĂ¹ng `next/image fill` gĂ¢y bug poster phĂ³ng to full screen, icon upload 64x64 quĂ¡ to
+6. **MetadataTab**: DĂ¹ng CSS Module + emoji section icons, cáº§n thá»‘ng nháº¥t style
+7. **SettingsTab**: TÆ°Æ¡ng Ä‘á»‘i ok nhÆ°ng váº«n dĂ¹ng emoji icon
 
-### Quy tắc:
-- **CHỈ SỬA GIAO DIỆN** — giữ nguyên tất cả hooks, mutations, handlers, state logic
-- Giữ nguyên cấu trúc file và component props
-- Styling: Tailwind CSS + DaisyUI (dark theme). Có thể dùng CSS Module hoặc inline Tailwind
-- Poster phải có kích thước cố định (không dùng `Image fill`), ví dụ: `w-[100px] h-[150px]`
-- Icons nên dùng SVG inline (w-4 h-4 hoặc w-5 h-5), KHÔNG dùng emoji
+### Quy táº¯c:
+- **CHá»ˆ Sá»¬A GIAO DIá»†N** â€” giá»¯ nguyĂªn táº¥t cáº£ hooks, mutations, handlers, state logic
+- Giá»¯ nguyĂªn cáº¥u trĂºc file vĂ  component props
+- Styling: Tailwind CSS + DaisyUI (dark theme). CĂ³ thá»ƒ dĂ¹ng CSS Module hoáº·c inline Tailwind
+- Poster pháº£i cĂ³ kĂ­ch thÆ°á»›c cá»‘ Ä‘á»‹nh (khĂ´ng dĂ¹ng `Image fill`), vĂ­ dá»¥: `w-[100px] h-[150px]`
+- Icons nĂªn dĂ¹ng SVG inline (w-4 h-4 hoáº·c w-5 h-5), KHĂ”NG dĂ¹ng emoji
 - Responsive: mobile-first, grid layouts cho desktop

@@ -14,8 +14,6 @@ const DEFAULT_TIMEOUTS = {
     infra: 90_000,
     api: 90_000,
     web: 90_000,
-    mobile: 120_000,
-    worker: 60_000,
 };
 
 const MONITOR_INTERVAL_MS = 5_000;
@@ -25,15 +23,7 @@ const GRACEFUL_STOP_TIMEOUT_MS = 5_000;
 const MODES = {
     web: {
         profile: '.env.web.local',
-        services: ['api', 'worker', 'web'],
-    },
-    mobile: {
-        profile: '.env.mobile.emu',
-        services: ['api', 'worker', 'mobile'],
-    },
-    dual: {
-        profile: '.env.lan.local',
-        services: ['api', 'worker', 'web', 'mobile'],
+        services: ['api', 'web'],
     },
 };
 
@@ -284,10 +274,6 @@ function parseUrlHost(url, key) {
 function ensureModeConsistency(mode, env) {
     const apiPublic = env.API_PUBLIC_BASE_URL;
     const nextApi = env.NEXT_PUBLIC_API_BASE_URL;
-    const expoApi = env.EXPO_PUBLIC_API_BASE_URL;
-    const s3Public = env.S3_PUBLIC_BASE_URL;
-    const nextS3 = env.NEXT_PUBLIC_S3_PUBLIC_BASE_URL;
-    const expoS3 = env.EXPO_PUBLIC_S3_PUBLIC_BASE_URL;
 
     if (!apiPublic) {
         throw new Error('API_PUBLIC_BASE_URL is missing in .env');
@@ -301,35 +287,6 @@ function ensureModeConsistency(mode, env) {
             throw new Error('Web mode host mismatch between NEXT_PUBLIC_API_BASE_URL and API_PUBLIC_BASE_URL');
         }
         return;
-    }
-
-    if (mode === 'mobile') {
-        if (!expoApi) {
-            throw new Error('EXPO_PUBLIC_API_BASE_URL is required for mobile mode');
-        }
-        const expoHost = parseUrlHost(expoApi, 'EXPO_PUBLIC_API_BASE_URL');
-        if (expoHost !== '10.0.2.2:3000' && expoHost.startsWith('localhost')) {
-            throw new Error('Mobile mode should not use localhost for EXPO_PUBLIC_API_BASE_URL');
-        }
-        return;
-    }
-
-    if (!nextApi || !expoApi || !nextS3 || !expoS3 || !s3Public) {
-        throw new Error('Dual mode requires API/S3 public URLs for both NEXT_PUBLIC_* and EXPO_PUBLIC_*');
-    }
-
-    const apiHost = parseUrlHost(apiPublic, 'API_PUBLIC_BASE_URL');
-    const nextApiHost = parseUrlHost(nextApi, 'NEXT_PUBLIC_API_BASE_URL');
-    const expoApiHost = parseUrlHost(expoApi, 'EXPO_PUBLIC_API_BASE_URL');
-    if (apiHost !== nextApiHost || apiHost !== expoApiHost) {
-        throw new Error('Dual mode host mismatch: API_PUBLIC_BASE_URL, NEXT_PUBLIC_API_BASE_URL, EXPO_PUBLIC_API_BASE_URL must share host:port');
-    }
-
-    const s3Host = parseUrlHost(s3Public, 'S3_PUBLIC_BASE_URL');
-    const nextS3Host = parseUrlHost(nextS3, 'NEXT_PUBLIC_S3_PUBLIC_BASE_URL');
-    const expoS3Host = parseUrlHost(expoS3, 'EXPO_PUBLIC_S3_PUBLIC_BASE_URL');
-    if (s3Host !== nextS3Host || s3Host !== expoS3Host) {
-        throw new Error('Dual mode host mismatch: S3_PUBLIC_BASE_URL, NEXT_PUBLIC_S3_PUBLIC_BASE_URL, EXPO_PUBLIC_S3_PUBLIC_BASE_URL must share host:port');
     }
 }
 
@@ -614,48 +571,20 @@ async function waitServiceReady(name) {
         await waitForHttp('http://localhost:3002', DEFAULT_TIMEOUTS.web, 'Web');
         return;
     }
-
-    if (name === 'mobile') {
-        await waitForHttp(
-            'http://localhost:8081/status',
-            DEFAULT_TIMEOUTS.mobile,
-            'Metro',
-            (_response, body) => body.includes('packager-status:running'),
-        );
-        return;
-    }
-
-    if (name === 'worker') {
-        const workerLog = path.join(LOG_DIR, 'worker.out.log');
-        await waitForLog(workerLog, /Worker ready|Listening on queue/i, DEFAULT_TIMEOUTS.worker, 'Worker');
-        return;
-    }
 }
 
 async function runCrossPlatformGate(mode) {
     const env = parseEnvFile(path.join(ROOT, '.env'));
     ensureModeConsistency(mode, env);
     await waitForHttp('http://localhost:3000/health', DEFAULT_TIMEOUTS.api, 'API health gate');
-    if (mode === 'web' || mode === 'dual') {
-        await waitForHttp('http://localhost:3002', DEFAULT_TIMEOUTS.web, 'Web gate');
-    }
-    if (mode === 'mobile' || mode === 'dual') {
-        await waitForHttp(
-            'http://localhost:8081/status',
-            DEFAULT_TIMEOUTS.mobile,
-            'Mobile gate',
-            (_response, body) => body.includes('packager-status:running'),
-        );
-    }
+    await waitForHttp('http://localhost:3002', DEFAULT_TIMEOUTS.web, 'Web gate');
 }
 
 const serviceRestartCounters = {};
 
 const serviceArgs = {
-    api: ['--filter', '@netflop/api', 'dev'],
-    worker: ['--filter', '@netflop/worker', 'dev'],
-    web: ['--filter', '@netflop/web', 'dev'],
-    mobile: ['--filter', '@netflop/mobile', 'start'],
+    api: ['--filter', '@NETFLAT/api', 'dev'],
+    web: ['--filter', '@NETFLAT/web', 'dev'],
 };
 
 function startProcessMonitor() {
@@ -714,7 +643,7 @@ async function startRuntime(options) {
     const env = parseEnvFile(path.join(ROOT, '.env'));
     ensureModeConsistency(options.mode, env);
 
-    const runtimePorts = [3000, 3002, 8081];
+    const runtimePorts = [3000, 3002];
     let busyPorts = await findBusyPorts(runtimePorts);
     if (busyPorts.length > 0 && options.forcePorts) {
         forceFreePorts(busyPorts);
@@ -773,12 +702,7 @@ async function startRuntime(options) {
     log('Runtime started successfully');
     log('URLs:');
     log('  API:    http://localhost:3000/health');
-    if (modeConfig.services.includes('web')) {
-        log('  Web:    http://localhost:3002');
-    }
-    if (modeConfig.services.includes('mobile')) {
-        log('  Mobile: http://localhost:8081/status');
-    }
+    log('  Web:    http://localhost:3002');
     log(`Logs: ${LOG_DIR}`);
 }
 

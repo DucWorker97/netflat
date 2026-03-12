@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import axios from 'axios';
@@ -17,21 +17,13 @@ const mapGenre = (tmdbGenre: any) => ({
 });
 
 async function main() {
-    console.log('🌱 Seeding database...');
+    console.log('đŸŒ± Seeding database...');
 
     // 1. CLEAR DATA (Preserve Users)
-    console.log('🧹 Clearing old movie data...');
+    console.log('đŸ§¹ Clearing old movie data...');
     // 1. CLEAR DATA
-    console.log('🧹 Clearing old movie data...');
+    console.log('đŸ§¹ Clearing old movie data...');
     try {
-        if (prisma.railConfig) {
-            console.log('  - Deleting RailConfig...');
-            await prisma.railConfig.deleteMany({});
-        }
-        if (prisma.playEvent) {
-            console.log('  - Deleting PlayEvent...');
-            await prisma.playEvent.deleteMany({});
-        }
         if (prisma.rating) {
             console.log('  - Deleting Rating...');
             await prisma.rating.deleteMany({});
@@ -40,21 +32,9 @@ async function main() {
             console.log('  - Deleting Favorite...');
             await prisma.favorite.deleteMany({});
         }
-        if (prisma.watchHistory) {
-            console.log('  - Deleting WatchHistory...');
-            await prisma.watchHistory.deleteMany({});
-        }
-        if (prisma.encodeJob) {
-            console.log('  - Deleting EncodeJob...');
-            await prisma.encodeJob.deleteMany({});
-        }
         if (prisma.upload) {
             console.log('  - Deleting Upload...');
             await prisma.upload.deleteMany({});
-        }
-        if (prisma.movieActor) {
-            console.log('  - Deleting MovieActor...');
-            await prisma.movieActor.deleteMany({});
         }
         if (prisma.movieGenre) {
             console.log('  - Deleting MovieGenre...');
@@ -73,17 +53,17 @@ async function main() {
             await prisma.genre.deleteMany({});
         }
     } catch (err) {
-        console.error('❌ Error during cleanup:', err);
+        console.error('âŒ Error during cleanup:', err);
         throw err;
     }
 
     // 2. CREATE USERS (Idempotent)
     const adminPassword = await bcrypt.hash('admin123', 10);
     await prisma.user.upsert({
-        where: { email: 'admin@netflop.local' },
+        where: { email: 'admin@netflat.local' },
         update: {},
         create: {
-            email: 'admin@netflop.local',
+            email: 'admin@netflat.local',
             passwordHash: adminPassword,
             role: UserRole.admin,
         },
@@ -91,18 +71,18 @@ async function main() {
 
     const viewerPassword = await bcrypt.hash('viewer123', 10);
     await prisma.user.upsert({
-        where: { email: 'viewer@netflop.local' },
+        where: { email: 'viewer@netflat.local' },
         update: {},
         create: {
-            email: 'viewer@netflop.local',
+            email: 'viewer@netflat.local',
             passwordHash: viewerPassword,
             role: UserRole.viewer,
         },
     });
-    console.log('✅ Users verified (admin@netflop.local / viewer@netflop.local)');
+    console.log('âœ… Users verified (admin@netflat.local / viewer@netflat.local)');
 
     // 3. FETCH GENRES
-    console.log('📥 Fetching users genres from TMDB...');
+    console.log('đŸ“¥ Fetching users genres from TMDB...');
     const genresResponse = await axios.get(`${TMDB_BASE_URL}/genre/movie/list`, {
         params: { api_key: TMDB_API_KEY }
     });
@@ -114,10 +94,10 @@ async function main() {
         const created = await prisma.genre.create({ data: { name: mapped.name, slug: mapped.slug } });
         genreMap.set(g.id, created.id);
     }
-    console.log(`✅ Created ${tmdbGenres.length} genres`);
+    console.log(`âœ… Created ${tmdbGenres.length} genres`);
 
     // 4. FETCH MOVIES
-    console.log('📥 Fetching popular movies from TMDB...');
+    console.log('đŸ“¥ Fetching popular movies from TMDB...');
     // Fetch 2 pages (40 movies)
     let movies: any[] = [];
     for (let page = 1; page <= 2; page++) {
@@ -165,28 +145,22 @@ async function main() {
                 }
             }
 
-            // Link Actors (Top 5)
+            // Link Actors (Top 5) — stored as String[] on Movie
             const cast = details.credits?.cast?.slice(0, 5) || [];
-            for (const c of cast) {
-                // Upsert actor
-                let actor = await prisma.actor.findFirst({ where: { name: c.name } });
-                if (!actor) {
-                    actor = await prisma.actor.create({
-                        data: {
-                            name: c.name,
-                            avatarUrl: c.profile_path ? `${IMAGE_BASE_URL}${c.profile_path}` : null
-                        }
+            const actorNames = cast.map((c: any) => c.name).filter(Boolean);
+            if (actorNames.length > 0) {
+                await prisma.movie.update({
+                    where: { id: createdMovie.id },
+                    data: { actors: actorNames },
+                });
+                // Also sync to Actor dictionary
+                for (const name of actorNames) {
+                    await prisma.actor.upsert({
+                        where: { name },
+                        update: {},
+                        create: { name },
                     });
                 }
-
-                // Link
-                await prisma.movieActor.create({
-                    data: {
-                        movieId: createdMovie.id,
-                        actorId: actor.id,
-                        role: c.character || 'Unknown'
-                    }
-                });
             }
             console.log(`  Processed: ${m.title}`);
 
@@ -195,12 +169,12 @@ async function main() {
         }
     }
 
-    console.log('🎉 Seeding completed!');
+    console.log('đŸ‰ Seeding completed!');
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Seeding failed:', e);
+        console.error('âŒ Seeding failed:', e);
         process.exit(1);
     })
     .finally(async () => {

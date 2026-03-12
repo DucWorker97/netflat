@@ -4,10 +4,8 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { CaptchaService } from './captcha.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
-import { MailModule } from '../mail/mail.module';
 import { SecurityConfig } from '../config/security.config';
 
 @Module({
@@ -27,10 +25,9 @@ import { SecurityConfig } from '../config/security.config';
             inject: [ConfigService],
         }),
         UsersModule,
-        MailModule,
     ],
     controllers: [AuthController],
-    providers: [AuthService, CaptchaService, JwtStrategy],
-    exports: [AuthService, CaptchaService, JwtModule],
+    providers: [AuthService, JwtStrategy],
+    exports: [AuthService, JwtModule],
 })
 export class AuthModule { }

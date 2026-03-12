@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { MoviesController } from './movies.controller';
 import { MoviesService } from './movies.service';
 
-import { AiModule } from '../ai/ai.module';
 import { UploadModule } from '../upload/upload.module';
+import { ActorsModule } from '../actors/actors.module';
 
 @Module({
-    imports: [AiModule, UploadModule],
+    imports: [UploadModule, ActorsModule],
     controllers: [MoviesController],
     providers: [MoviesService],
     exports: [MoviesService],

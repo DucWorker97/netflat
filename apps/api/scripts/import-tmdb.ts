@@ -1,7 +1,7 @@
-/**
+﻿/**
  * TMDb Import Script
  * Fetches popular movies and cast from The Movie Database API
- * and imports them into the Netflop database.
+ * and imports them into the netflat database.
  * 
  * Usage:
  *   1. Add TMDB_ACCESS_TOKEN to your .env file
@@ -18,7 +18,7 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
 
 if (!TMDB_ACCESS_TOKEN) {
-    console.error('❌ TMDB_ACCESS_TOKEN is not set in .env file');
+    console.error('âŒ TMDB_ACCESS_TOKEN is not set in .env file');
     console.error('   Get your token from: https://www.themoviedb.org/settings/api');
     process.exit(1);
 }
@@ -28,7 +28,7 @@ const headers = {
     'Content-Type': 'application/json',
 };
 
-// Genre mapping from TMDb to Netflop slugs
+// Genre mapping from TMDb to netflat slugs
 const GENRE_MAP: Record<number, string> = {
     28: 'action',
     12: 'action',      // Adventure -> Action
@@ -153,7 +153,7 @@ async function ensureGenresExist(): Promise<void> {
             create: genre,
         });
     }
-    console.log('✅ Genres ready');
+    console.log('âœ… Genres ready');
 }
 
 async function importActor(castMember: TMDbCastMember): Promise<string> {
@@ -166,12 +166,10 @@ async function importActor(castMember: TMDbCastMember): Promise<string> {
         actor = await prisma.actor.create({
             data: {
                 name: castMember.name,
-                avatarUrl: castMember.profile_path
-                    ? `${TMDB_IMAGE_BASE}/w200${castMember.profile_path}`
-                    : null,
+
             },
         });
-        console.log(`  👤 Created actor: ${castMember.name}`);
+        console.log(`  đŸ‘¤ Created actor: ${castMember.name}`);
     }
 
     return actor.id;
@@ -184,7 +182,7 @@ async function importMovie(tmdbMovie: TMDbMovie): Promise<void> {
     });
 
     if (existing) {
-        console.log(`  ⏭️  Skipping existing: ${tmdbMovie.title}`);
+        console.log(`  â­ï¸  Skipping existing: ${tmdbMovie.title}`);
         return;
     }
 
@@ -220,7 +218,7 @@ async function importMovie(tmdbMovie: TMDbMovie): Promise<void> {
         },
     });
 
-    console.log(`🎬 Imported: ${movie.title} (${details.release_date?.split('-')[0] || 'N/A'})`);
+    console.log(`đŸ¬ Imported: ${movie.title} (${details.release_date?.split('-')[0] || 'N/A'})`);
 
     // Link genres
     const genreIds = details.genres?.map(g => g.id) || tmdbMovie.genre_ids || [];
@@ -240,26 +238,23 @@ async function importMovie(tmdbMovie: TMDbMovie): Promise<void> {
         }
     }
 
-    // Import top 5 cast members
+    // Import top 5 cast members as String[] on movie
     const topCast = credits.cast.slice(0, 5);
+    const actorNames: string[] = [];
     for (const castMember of topCast) {
-        const actorId = await importActor(castMember);
-        try {
-            await prisma.movieActor.create({
-                data: {
-                    movieId: movie.id,
-                    actorId: actorId,
-                    role: castMember.character || null,
-                },
-            });
-        } catch {
-            // Ignore duplicate
-        }
+        await importActor(castMember); // sync to Actor dictionary
+        actorNames.push(castMember.name);
+    }
+    if (actorNames.length > 0) {
+        await prisma.movie.update({
+            where: { id: movie.id },
+            data: { actors: actorNames },
+        });
     }
 }
 
 async function main() {
-    console.log('🚀 TMDb Import Script');
+    console.log('đŸ€ TMDb Import Script');
     console.log('=====================\n');
 
     await ensureGenresExist();
@@ -268,7 +263,7 @@ async function main() {
     const pagesToFetch = 3; // 60 movies total
 
     for (let page = 1; page <= pagesToFetch; page++) {
-        console.log(`\n📄 Fetching page ${page}/${pagesToFetch}...`);
+        console.log(`\nđŸ“„ Fetching page ${page}/${pagesToFetch}...`);
 
         const movies = await getPopularMovies(page);
 
@@ -278,17 +273,17 @@ async function main() {
                 // Small delay to avoid rate limiting
                 await new Promise(resolve => setTimeout(resolve, 250));
             } catch (error) {
-                console.error(`  ❌ Failed to import "${movie.title}":`, error);
+                console.error(`  âŒ Failed to import "${movie.title}":`, error);
             }
         }
     }
 
-    console.log('\n✅ Import completed!');
+    console.log('\nâœ… Import completed!');
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Import failed:', e);
+        console.error('âŒ Import failed:', e);
         process.exit(1);
     })
     .finally(async () => {

@@ -1,13 +1,13 @@
----
-name: netflop
-description: Netflop workspace rules and pipeline invariants.
+﻿---
+name: NETFLAT
+description: NETFLAT workspace rules and pipeline invariants.
 trigger: always_on
 ---
 
 ## Description
-Workspace rules for Netflop (Netflix mini graduation project).
+Workspace rules for NETFLAT (Netflix mini graduation project).
 
-# netflop â€” Workspace Rules (Always Follow)
+# NETFLAT Ă¢â‚¬â€ Workspace Rules (Always Follow)
 
 ## Source of Truth
 - PRD.md
@@ -26,7 +26,7 @@ Priority when conflict: PRD > Architecture > OpenAPI > Code.
 - Node.js worker (FFmpeg/HLS)
 
 ## Delivery Rhythm
-Plan â†’ Implement â†’ Verify (commands) â†’ Summarize changes.
+Plan Ă¢â€ â€™ Implement Ă¢â€ â€™ Verify (commands) Ă¢â€ â€™ Summarize changes.
 Before large edits: list files to change.
 
 ## Minimal DoD
@@ -37,9 +37,9 @@ Before large edits: list files to change.
 - Update README when scripts/ports/runbook change
 
 ## Video Pipeline Invariants (Upload/Encode/Playback)
-- Canonical endpoints must match OPENAPI.yaml; keep docs â†” OpenAPI â†” code â†” smoke in sync.
+- Canonical endpoints must match OPENAPI.yaml; keep docs Ă¢â€ â€ OpenAPI Ă¢â€ â€ code Ă¢â€ â€ smoke in sync.
 - Presigned upload must document required headers (esp. Content-Type) + TTL; mask signatures in logs.
-- HLS playback must ensure master â†’ variant â†’ segments are accessible:
+- HLS playback must ensure master Ă¢â€ â€™ variant Ă¢â€ â€™ segments are accessible:
   choose ONE: public HLS prefix (dev/staging) OR playlist rewrite with signed URLs OR API proxy.
 - Any pipeline change must run: pnpm -w verify, pnpm -w smoke, and (manual minimum) pnpm -w smoke:video.
 - Object-level authorization required for any endpoint taking an objectId (BOLA guardrails).

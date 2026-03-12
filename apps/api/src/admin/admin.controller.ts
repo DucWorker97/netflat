@@ -22,24 +22,6 @@ export class AdminController {
     }
 
     /**
-     * Get encode jobs status
-     */
-    @Get('encode-jobs')
-    async getEncodeJobs(@Query('movieId') movieId?: string) {
-        const jobs = await this.adminService.getEncodeJobs(movieId);
-        return { data: jobs };
-    }
-
-    /**
-     * Get queue summary (waiting/active/completed/failed counts)
-     */
-    @Get('queue/encode/summary')
-    async getQueueSummary() {
-        const summary = await this.adminService.getQueueSummary();
-        return { data: summary };
-    }
-
-    /**
      * Get users with pagination
      */
     @Get('users')
@@ -56,12 +38,6 @@ export class AdminController {
             role,
         });
         return result;
-    }
-
-    @Get('subscriptions')
-    async getSubscriptions() {
-        const result = await this.adminService.getSubscriptionsOverview();
-        return { data: result };
     }
 
     /**

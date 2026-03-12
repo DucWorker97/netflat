@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { IsString, Matches, MinLength, IsOptional, MaxLength } from 'class-validator';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,6 +18,18 @@ class ChangePasswordDto {
     newPassword!: string;
 }
 
+class UpdateProfileDto {
+    @IsOptional()
+    @IsString()
+    @MaxLength(100)
+    displayName?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
+    avatarUrl?: string;
+}
+
 class DisableUserDto {
     @IsOptional()
     @IsString()
@@ -33,6 +45,16 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     async getProfile(@Req() req: any) {
         const profile = await this.usersService.getProfile(req.user.id);
+        return { data: profile };
+    }
+
+    @Put('profile')
+    @UseGuards(JwtAuthGuard)
+    async updateProfile(
+        @Req() req: any,
+        @Body() dto: UpdateProfileDto,
+    ) {
+        const profile = await this.usersService.updateProfile(req.user.id, dto);
         return { data: profile };
     }
 

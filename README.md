@@ -1,10 +1,10 @@
-# Netflop Observability
+﻿# NETFLAT Observability
 
-This directory contains Grafana dashboards and configuration for monitoring the Netflop pipeline.
+This directory contains Grafana dashboards and configuration for monitoring the NETFLAT pipeline.
 
 ## Dashboards
 
-### Pipeline Trace (`netflop-pipeline.json`)
+### Pipeline Trace (`NETFLAT-pipeline.json`)
 Correlate API and Worker logs using `requestId`.
 
 **Requirements:**
@@ -26,7 +26,7 @@ Correlate API and Worker logs using `requestId`.
 ## Importing
 1. Login to Grafana
 2. Dashboards > New > Import
-3. Upload `dashboards/netflop-pipeline.json`
+3. Upload `dashboards/NETFLAT-pipeline.json`
 4. Select your Loki datasource
 
 ---
@@ -76,7 +76,7 @@ pnpm dev:runtime:start
 
 ## Environment Configuration
 
-Netflop uses a **single root `.env`** file. Use env profiles to generate it:
+NETFLAT uses a **single root `.env`** file. Use env profiles to generate it:
 `.env.web.local`, `.env.mobile.emu`, `.env.lan.local` (copied into `.env` by scripts).
 
 ### Running on Different Platforms
@@ -157,10 +157,10 @@ pnpm mobile:fix
 ## Smoke Test (Pass/Fail)
 
 **PASS when:**
-1. ✅ API `/health` returns 200
-2. ✅ Upload movie + Worker encodes to `READY`
-3. ✅ Emulator fetches `master.m3u8` via `10.0.2.2:9000`
-4. ✅ Mobile player plays video
+1. âœ… API `/health` returns 200
+2. âœ… Upload movie + Worker encodes to `READY`
+3. âœ… Emulator fetches `master.m3u8` via `10.0.2.2:9000`
+4. âœ… Mobile player plays video
 
 **Quick health check:**
 ```powershell

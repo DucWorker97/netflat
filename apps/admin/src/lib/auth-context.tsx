@@ -11,24 +11,11 @@ interface User {
     createdAt: string;
 }
 
-interface ForgotPasswordResult {
-    message: string;
-    resetToken?: string;
-    resetUrl?: string;
-    expiresAt?: string;
-}
-
-interface PasswordActionResult {
-    message: string;
-}
-
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
-    forgotPassword: (email: string) => Promise<ForgotPasswordResult>;
-    resetPassword: (token: string, newPassword: string) => Promise<PasswordActionResult>;
     logout: () => void;
 }
 
@@ -86,19 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push(`/${getLocale()}/movies`);
     };
 
-    const forgotPassword = async (email: string) => {
-        const res = await api.post<{ data: ForgotPasswordResult }>('/api/auth/forgot-password', { email });
-        return res.data;
-    };
-
-    const resetPassword = async (token: string, newPassword: string) => {
-        const res = await api.post<{ data: PasswordActionResult }>('/api/auth/reset-password', {
-            token,
-            newPassword,
-        });
-        return res.data;
-    };
-
     const logout = () => {
         api.clearTokens();
         setUser(null);
@@ -112,8 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 isAuthenticated: !!user,
                 login,
-                forgotPassword,
-                resetPassword,
                 logout,
             }}
         >

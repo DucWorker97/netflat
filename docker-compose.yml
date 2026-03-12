@@ -1,28 +1,28 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: netflop-postgres
+    container_name: netflat-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: netflop
+      POSTGRES_DB: netflat
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d netflop" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d netflat" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: netflop-redis
+    container_name: netflat-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -31,7 +31,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: netflop-minio
+    container_name: netflat-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -39,8 +39,8 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
       MINIO_API_CORS_ALLOW_ORIGIN: "*"
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9002:9000"
+      - "9003:9001"
     volumes:
       - minio-data:/data
     healthcheck:
@@ -51,69 +51,15 @@ services:
 
   minio-init:
     image: minio/mc:latest
-    container_name: netflop-minio-init
+    container_name: netflat-minio-init
     depends_on:
       minio:
         condition: service_started
+    volumes:
+      - ./minio-cors.json:/tmp/minio-cors.json:ro
     entrypoint: >
-      /bin/sh -c " sleep 5; mc alias set local http://minio:9000 minioadmin minioadmin; mc mb -p local/netflop-media || true; mc anonymous set download local/netflop-media/hls || true; mc anonymous set download local/netflop-media/posters || true; mc anonymous set download local/netflop-media/thumbnails || true; mc anonymous set download local/netflop-media/subtitles || true; echo 'MinIO bucket initialized'; exit 0; "
-
-  # ClickHouse for Analytics (Big Data)
-  clickhouse:
-    image: clickhouse/clickhouse-server:24-alpine
-    container_name: netflop-clickhouse
-    restart: unless-stopped
-    environment:
-      CLICKHOUSE_DB: netflop_analytics
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: clickhouse
-    ports:
-      - "8123:8123" # HTTP interface
-      - "9009:9000" # Native interface (remapped to avoid MinIO conflict)
-    volumes:
-      - clickhouse-data:/var/lib/clickhouse
-    healthcheck:
-      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8123/ping" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # AI Curator – hybrid recommendation engine (FastAPI + ML)
-  ai-curator:
-    build:
-      context: ./apps/ai-curator
-      dockerfile: Dockerfile
-    container_name: netflop-ai-curator
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      clickhouse:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/netflop
-      REDIS_URL: redis://redis:6379/0
-      CLICKHOUSE_HOST: clickhouse
-      CLICKHOUSE_PORT: 8123
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: clickhouse
-      CLICKHOUSE_DB: netflop_analytics
-      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
-      MODEL_PATH: /app/models
-    ports:
-      - "8000:8000"
-    volumes:
-      - ai-models:/app/models
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+      /bin/sh -c " sleep 5; mc alias set local http://minio:9000 minioadmin minioadmin; mc mb -p local/netflat-media || true; mc anonymous set download local/netflat-media/hls || true; mc anonymous set download local/netflat-media/posters || true; mc anonymous set download local/netflat-media/thumbnails || true; mc cors set local/netflat-media /tmp/minio-cors.json || true; echo 'MinIO bucket initialized with CORS'; exit 0; "
 
 volumes:
   postgres-data:
   minio-data:
-  clickhouse-data:
-  ai-models:

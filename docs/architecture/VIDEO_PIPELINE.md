@@ -1,6 +1,6 @@
-# Netflop Video Pipeline Documentation
+﻿# NETFLAT Video Pipeline Documentation
 
-This document details the end-to-end flow for uploading, encoding, and streaming movies in Netflop.
+This document details the end-to-end flow for uploading, encoding, and streaming movies in NETFLAT.
 
 ## Overview
 
@@ -41,7 +41,7 @@ The pipeline consists of three main stages:
 
 ## 2. Encoding Flow (Worker)
 
-The `@netflop/worker` service listens to the `encode` queue.
+The `@NETFLAT/worker` service listens to the `encode` queue.
 
 ### Job Processor: `processEncodeJob`
 1.  **Claim Job**: Checks if movie is already `ready` or `processing`. Marks DB as `processing`.
@@ -93,7 +93,7 @@ The `@netflop/worker` service listens to the `encode` queue.
 
 ## Configuration Keys (`.env`)
 
-- `S3_BUCKET`: MinIO bucket name (default: `netflop-media`).
+- `S3_BUCKET`: MinIO bucket name (default: `NETFLAT-media`).
 - `S3_PRESIGN_BASE_URL`: Public MinIO/S3 base used for presigned upload URLs.
 - `S3_PUBLIC_BASE_URL`: Public base URL for playback assets (hls/posters/thumbnails/subtitles).
 - `UPLOAD_MAX_MB`: Max file size limit (default: 500).

@@ -20,7 +20,7 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
         ? `${window.location.origin}/movies/${movieId}`
         : '';
 
-    const shareText = `Check out "${movieTitle}" on Netflop!`;
+    const shareText = `Check out "${movieTitle}" on Netflat!`;
 
     useEffect(() => {
         if (!isOpen || !shareUrl) return;

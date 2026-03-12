@@ -1,12 +1,12 @@
-# Netflop Upload & Playback Flow (Web + Mobile)
+﻿# NETFLAT Upload & Playback Flow (Web + Mobile)
 
-> **Tài liệu tổng hợp**: Chi tiết luồng xử lý video từ lúc Admin upload đến lúc Viewer xem song song trên Web và Mobile App.
+> **TĂ i liá»‡u tá»•ng há»£p**: Chi tiáº¿t luá»“ng xá»­ lĂ½ video tá»« lĂºc Admin upload Ä‘áº¿n lĂºc Viewer xem song song trĂªn Web vĂ  Mobile App.
 
 ---
 
-## 1. Tổng quan hệ thống (Parallel Architecture)
+## 1. Tá»•ng quan há»‡ thá»‘ng (Parallel Architecture)
 
-Hệ thống Netflop cho phép xem phim đồng bộ trên cả **Web** và **Mobile** nhờ vào kiến trúc API tập trung và Streaming chuẩn HLS.
+Há»‡ thá»‘ng NETFLAT cho phĂ©p xem phim Ä‘á»“ng bá»™ trĂªn cáº£ **Web** vĂ  **Mobile** nhá» vĂ o kiáº¿n trĂºc API táº­p trung vĂ  Streaming chuáº©n HLS.
 
 ```mermaid
 graph TD
@@ -30,12 +30,12 @@ graph TD
 
 ---
 
-## 2. Quy trình Upload (Admin Side)
+## 2. Quy trĂ¬nh Upload (Admin Side)
 
-**Mục tiêu**: Đưa file `mp4` gốc lên storage và kích hoạt encode.
+**Má»¥c tiĂªu**: ÄÆ°a file `mp4` gá»‘c lĂªn storage vĂ  kĂ­ch hoáº¡t encode.
 
-### B1. Lấy Presigned URL
-Admin Web gọi API để xin quyền upload trực tiếp lên Storage, tránh tắc nghẽn API server.
+### B1. Láº¥y Presigned URL
+Admin Web gá»i API Ä‘á»ƒ xin quyá»n upload trá»±c tiáº¿p lĂªn Storage, trĂ¡nh táº¯c ngháº½n API server.
 
 - **Endpoint**: `GET /api/upload/presigned-url`
 - **Request**:
@@ -50,47 +50,47 @@ Admin Web gọi API để xin quyền upload trực tiếp lên Storage, tránh 
 - **Response**:
   ```json
   {
-    "uploadUrl": "http://localhost:9000/netflop/originals/...?signature=...",
+    "uploadUrl": "http://localhost:9000/NETFLAT/originals/...?signature=...",
     "objectKey": "originals/uuid/avatar.mp4"
   }
   ```
-  - Host của `uploadUrl` lấy từ `S3_PRESIGN_BASE_URL`.
+  - Host cá»§a `uploadUrl` láº¥y tá»« `S3_PRESIGN_BASE_URL`.
 
 ### B2. Upload Binary
-Browser gửi `PUT` request trực tiếp tới `uploadUrl` với body là file binary.
+Browser gá»­i `PUT` request trá»±c tiáº¿p tá»›i `uploadUrl` vá»›i body lĂ  file binary.
 
-### B3. Xác nhận hoàn tất (Trigger Encode)
-Sau khi upload xong 100%, Admin Web báo cho API biết để bắt đầu xử lý.
+### B3. XĂ¡c nháº­n hoĂ n táº¥t (Trigger Encode)
+Sau khi upload xong 100%, Admin Web bĂ¡o cho API biáº¿t Ä‘á»ƒ báº¯t Ä‘áº§u xá»­ lĂ½.
 - **Endpoint**: `POST /api/movies/:id/upload-complete` (alias deprecated: `/api/upload/complete/:movieId`)
 - **Body**: `{ "objectKey": "...", "fileType": "video" }`
-- **Hệ thống xử lý**:
-  1. Cập nhật `movie.original_key`.
-  2. Chuyển `encode_status` -> `pending`.
-  3. Đẩy job vào hàng đợi `encode` (Redis BullMQ).
+- **Há»‡ thá»‘ng xá»­ lĂ½**:
+  1. Cáº­p nháº­t `movie.original_key`.
+  2. Chuyá»ƒn `encode_status` -> `pending`.
+  3. Äáº©y job vĂ o hĂ ng Ä‘á»£i `encode` (Redis BullMQ).
 
 ---
 
-## 3. Quy trình Xử lý (Encode Worker)
+## 3. Quy trĂ¬nh Xá»­ lĂ½ (Encode Worker)
 
-Worker chạy ngầm (background) để chuyển đổi video.
+Worker cháº¡y ngáº§m (background) Ä‘á»ƒ chuyá»ƒn Ä‘á»•i video.
 
-1. **Nhận Job**: Worker nhận task từ Redis. `encode_status` -> `processing`.
-2. **Download**: Tải file gốc từ MinIO về máy.
+1. **Nháº­n Job**: Worker nháº­n task tá»« Redis. `encode_status` -> `processing`.
+2. **Download**: Táº£i file gá»‘c tá»« MinIO vá» mĂ¡y.
 3. **Transcode (FFmpeg)**:
-   - Tạo các bản `360p`, `720p` (HLS format).
-   - Tự động cắt video thành các file nhỏ (`.ts`) dài 6s.
-   - Tạo file `master.m3u8` chứa danh sách các độ phân giải.
-4. **Upload Output**: Đẩy toàn bộ folder HLS ngược lại MinIO (`hls/{movieId}/*`).
-5. **Callback**: Gọi API để báo xong. `encode_status` -> `ready`.
+   - Táº¡o cĂ¡c báº£n `360p`, `720p` (HLS format).
+   - Tá»± Ä‘á»™ng cáº¯t video thĂ nh cĂ¡c file nhá» (`.ts`) dĂ i 6s.
+   - Táº¡o file `master.m3u8` chá»©a danh sĂ¡ch cĂ¡c Ä‘á»™ phĂ¢n giáº£i.
+4. **Upload Output**: Äáº©y toĂ n bá»™ folder HLS ngÆ°á»£c láº¡i MinIO (`hls/{movieId}/*`).
+5. **Callback**: Gá»i API Ä‘á»ƒ bĂ¡o xong. `encode_status` -> `ready`.
 
 ---
 
-## 4. Quy trình Playback (Parallel Viewing)
+## 4. Quy trĂ¬nh Playback (Parallel Viewing)
 
-Cả Web và Mobile đều sử dụng chung một cơ chế lấy link, nhưng khác nhau về player và cấu hình mạng (đặc biệt khi chạy local/dev).
+Cáº£ Web vĂ  Mobile Ä‘á»u sá»­ dá»¥ng chung má»™t cÆ¡ cháº¿ láº¥y link, nhÆ°ng khĂ¡c nhau vá» player vĂ  cáº¥u hĂ¬nh máº¡ng (Ä‘áº·c biá»‡t khi cháº¡y local/dev).
 
 ### B1. Authenticate & Get Stream URL
-Client gọi API để lấy link xem phim. Link này có thể là **public URL** (dev/staging) hoặc **Signed URL** (có thời hạn) để bảo vệ nội dung.
+Client gá»i API Ä‘á»ƒ láº¥y link xem phim. Link nĂ y cĂ³ thá»ƒ lĂ  **public URL** (dev/staging) hoáº·c **Signed URL** (cĂ³ thá»i háº¡n) Ä‘á»ƒ báº£o vá»‡ ná»™i dung.
 
 - **Endpoint**: `GET /api/movies/:id/stream`
 - **Auth**: Header `Authorization: Bearer <token>`
@@ -98,54 +98,54 @@ Client gọi API để lấy link xem phim. Link này có thể là **public URL
   ```json
   {
     "data": {
-      "playbackUrl": "http://192.168.1.5:9000/netflop/hls/uuid/master.m3u8?signature=..."
+      "playbackUrl": "http://192.168.1.5:9000/NETFLAT/hls/uuid/master.m3u8?signature=..."
     }
   }
   ```
 
 ### B2. Client Implementation
 
-| Đặc điểm | **Web App** (`apps/web`) | **Mobile App** (`apps/mobile`) |
+| Äáº·c Ä‘iá»ƒm | **Web App** (`apps/web`) | **Mobile App** (`apps/mobile`) |
 |----------|--------------------------|--------------------------------|
-| **Player Lib** | `hls.js` (hoặc Safari native) | `expo-av` (`Video` component) |
+| **Player Lib** | `hls.js` (hoáº·c Safari native) | `expo-av` (`Video` component) |
 | **File** | `VideoPlayer.tsx` | `app/player/[id].tsx` |
-| **Network** | `localhost:3000` | **IP LAN** (vd: `10.0.2.2` hoặc `192.168.x.x`) |
-| **Lưu Progress** | Mỗi 10 giây (`timeupdate`) | Mỗi 5 giây + khi App background |
-| **Quality** | `hls.js` tự động (ABR) | Auto hoặc chọn thủ công (UI custom) |
+| **Network** | `localhost:3000` | **IP LAN** (vd: `10.0.2.2` hoáº·c `192.168.x.x`) |
+| **LÆ°u Progress** | Má»—i 10 giĂ¢y (`timeupdate`) | Má»—i 5 giĂ¢y + khi App background |
+| **Quality** | `hls.js` tá»± Ä‘á»™ng (ABR) | Auto hoáº·c chá»n thá»§ cĂ´ng (UI custom) |
 
-### ⚠️ Lưu ý quan trọng về Môi trường (Parallel Dev)
+### â ï¸ LÆ°u Ă½ quan trá»ng vá» MĂ´i trÆ°á»ng (Parallel Dev)
 
-Để xem được song song trên Web và Mobile Emulator/Physical Device:
+Äá»ƒ xem Ä‘Æ°á»£c song song trĂªn Web vĂ  Mobile Emulator/Physical Device:
 
 1. **Host Configuration**:
-   - File `.env` gốc phải set `DEV_PUBLIC_HOST` là **IP LAN** máy bạn (hoặc `10.0.2.2` nếu chỉ dùng emulator), **KHÔNG DÙNG** `localhost`.
-   - Ví dụ: `DEV_PUBLIC_HOST=192.168.1.10`.
+   - File `.env` gá»‘c pháº£i set `DEV_PUBLIC_HOST` lĂ  **IP LAN** mĂ¡y báº¡n (hoáº·c `10.0.2.2` náº¿u chá»‰ dĂ¹ng emulator), **KHĂ”NG DĂ™NG** `localhost`.
+   - VĂ­ dá»¥: `DEV_PUBLIC_HOST=192.168.1.10`.
 
-2. **Tại sao?**
-   - **Web**: Chạy trên máy tính, hiểu `localhost`.
-   - **Mobile**: Là thiết bị riêng biệt. Nếu API trả về link `http://localhost:9000/...`, điện thoại sẽ tìm server "trên chính nó" và lỗi kết nối.
-   - **Giải pháp**: API sẽ trả về link dựa trên `DEV_PUBLIC_HOST` để cả 2 thiết bị đều truy cập được MinIO.
+2. **Táº¡i sao?**
+   - **Web**: Cháº¡y trĂªn mĂ¡y tĂ­nh, hiá»ƒu `localhost`.
+   - **Mobile**: LĂ  thiáº¿t bá»‹ riĂªng biá»‡t. Náº¿u API tráº£ vá» link `http://localhost:9000/...`, Ä‘iá»‡n thoáº¡i sáº½ tĂ¬m server "trĂªn chĂ­nh nĂ³" vĂ  lá»—i káº¿t ná»‘i.
+   - **Giáº£i phĂ¡p**: API sáº½ tráº£ vá» link dá»±a trĂªn `DEV_PUBLIC_HOST` Ä‘á»ƒ cáº£ 2 thiáº¿t bá»‹ Ä‘á»u truy cáº­p Ä‘Æ°á»£c MinIO.
 
 ---
 
-## 5. Dữ liệu đồng bộ (Sync)
+## 5. Dá»¯ liá»‡u Ä‘á»“ng bá»™ (Sync)
 
-Do dùng chung Backend, trạng thái xem được đồng bộ giữa 2 nền tảng:
+Do dĂ¹ng chung Backend, tráº¡ng thĂ¡i xem Ä‘Æ°á»£c Ä‘á»“ng bá»™ giá»¯a 2 ná»n táº£ng:
 
 1. **Watch History**:
-   - Web xem đến phút 10 -> API lưu `progressSeconds: 600`.
-   - Mở Mobile -> App gọi `GET /progress` -> Nhận `600` -> Player seek tới phút 10.
-   - **Kết quả**: Seamless experience (trải nghiệm liền mạch).
+   - Web xem Ä‘áº¿n phĂºt 10 -> API lÆ°u `progressSeconds: 600`.
+   - Má»Ÿ Mobile -> App gá»i `GET /progress` -> Nháº­n `600` -> Player seek tá»›i phĂºt 10.
+   - **Káº¿t quáº£**: Seamless experience (tráº£i nghiá»‡m liá»n máº¡ch).
 
-2. **My List (Yêu thích)**:
-   - Web thêm vào "My List".
-   - Mobile reload -> Thấy phim đó trong danh sách yêu thích.
+2. **My List (YĂªu thĂ­ch)**:
+   - Web thĂªm vĂ o "My List".
+   - Mobile reload -> Tháº¥y phim Ä‘Ă³ trong danh sĂ¡ch yĂªu thĂ­ch.
 
 ---
 
-## Tóm tắt kỹ thuật
+## TĂ³m táº¯t ká»¹ thuáº­t
 
 - **Upload**: Direct-to-S3 (Presigned URL) -> High Performance.
 - **Encode**: Async Queue -> Non-blocking API.
-- **Stream**: HLS (Adaptive Bitrate) -> Tối ưu băng thông cho Mobile/Web.
-- **Sync**: Centralized DB (Postgres) -> Dữ liệu xem liên thông.
+- **Stream**: HLS (Adaptive Bitrate) -> Tá»‘i Æ°u bÄƒng thĂ´ng cho Mobile/Web.
+- **Sync**: Centralized DB (Postgres) -> Dá»¯ liá»‡u xem liĂªn thĂ´ng.

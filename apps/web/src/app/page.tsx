@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import { useMovies, useGenres, useContinueWatching, useRecentlyAdded } from '@/lib/queries';
+import { useMovies, useGenres, useRecentlyAdded, useContinueWatching } from '@/lib/queries';
 import { HeroBannerSkeleton, RailSkeleton, MovieCardSkeleton } from '@/components/skeletons';
 import { ErrorState, EmptyState } from '@/components/error-states';
 import Link from 'next/link';
@@ -11,7 +11,6 @@ import { HeroBanner } from '@/components/hero-banner';
 import { MovieRail } from '@/components/movie-rail';
 import { Pagination } from '@/components/pagination';
 import { SurpriseMe } from '@/components/SurpriseMe';
-import { FEATURE_FLAGS } from '@/lib/feature-flags';
 
 const MOVIES_PER_PAGE = 20;
 
@@ -26,8 +25,8 @@ export default function HomePage() {
         limit: MOVIES_PER_PAGE,
         genreId: selectedGenre || undefined
     });
-    const { data: continueWatching, isLoading: cwLoading } = useContinueWatching();
     const { data: recentlyAdded, isLoading: recentLoading } = useRecentlyAdded(10);
+    const { data: continueWatching, isLoading: cwLoading } = useContinueWatching(10);
 
     // Pick a featured movie for hero (prefer movie with backdrop, fallback to first movie)
     const featuredMovie = moviesData?.data?.find(m => m.backdropUrl || m.posterUrl) || moviesData?.data?.[0];
@@ -44,34 +43,13 @@ export default function HomePage() {
 
             <main className="container" style={{ paddingBottom: '4rem' }}>
                 {/* Continue Watching Rail */}
-                {isAuthenticated && !cwLoading && continueWatching && continueWatching.length > 0 && (
-                    <div style={{ marginBottom: '3rem', marginTop: '2rem' }}>
-                        <div className="section-header">
-                            <h2 className="section-title">Continue Watching</h2>
-                        </div>
-                        <div style={{
-                            display: 'flex',
-                            gap: '1rem',
-                            overflowX: 'auto',
-                            paddingBottom: '1rem'
-                        }}>
-                            {continueWatching.map((item) => {
-                                const progressPercent = item.durationSeconds > 0
-                                    ? (item.progressSeconds / item.durationSeconds) * 100
-                                    : 0;
-                                return (
-                                    <div key={item.id} style={{ minWidth: '200px' }}>
-                                        <MovieCard
-                                            movie={item.movie}
-                                            progress={progressPercent}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                {isAuthenticated && (
+                    <MovieRail
+                        title="Continue Watching"
+                        movies={continueWatching?.map(item => item.movie)}
+                        isLoading={cwLoading}
+                    />
                 )}
-                {isAuthenticated && cwLoading && <div style={{ marginTop: '2rem' }}><RailSkeleton count={4} /></div>}
 
                 {/* Recently Added Rail */}
                 <MovieRail
@@ -91,64 +69,6 @@ export default function HomePage() {
                     marginBottom: '2rem'
                 }}>
                     <SurpriseMe variant="card" />
-                    {FEATURE_FLAGS.browseLanguage && (
-                        <Link href="/browse-language" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-                            border: '2px solid #3b82f6',
-                            borderRadius: '16px',
-                            padding: '1.5rem',
-                            textDecoration: 'none',
-                            color: 'inherit',
-                            transition: 'all 0.3s'
-                        }}>
-                            <div style={{
-                                width: '60px',
-                                height: '60px',
-                                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '2rem'
-                            }}>🌍</div>
-                            <div>
-                                <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.25rem' }}>Browse by Language</h3>
-                                <p style={{ margin: 0, color: '#888', fontSize: '0.875rem' }}>Explore content in 15+ languages</p>
-                            </div>
-                        </Link>
-                    )}
-                    {FEATURE_FLAGS.top10 && (
-                        <Link href="/top10" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-                            border: '2px solid #3b82f6',
-                            borderRadius: '16px',
-                            padding: '1.5rem',
-                            textDecoration: 'none',
-                            color: 'inherit',
-                            transition: 'all 0.3s'
-                        }}>
-                            <div style={{
-                                width: '60px',
-                                height: '60px',
-                                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '2rem'
-                            }}>🔥</div>
-                            <div>
-                                <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.25rem' }}>Top 10 Today</h3>
-                                <p style={{ margin: 0, color: '#888', fontSize: '0.875rem' }}>Most popular right now</p>
-                            </div>
-                        </Link>
-                    )}
                 </div>
 
                 {/* Genre Filter */}

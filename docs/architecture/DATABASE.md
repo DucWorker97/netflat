@@ -1,15 +1,15 @@
-# DATABASE_SCHEMA.md – netflop
+﻿# DATABASE_SCHEMA.md â€“ NETFLAT
 
-> **Phiên bản:** 1.0  
-> **Ngày tạo:** 01-01-2026  
-> **Tác giả:** System Architect
+> **PhiĂªn báº£n:** 1.0  
+> **NgĂ y táº¡o:** 01-01-2026  
+> **TĂ¡c giáº£:** System Architect
 
 ---
 
-## Mục lục
+## Má»¥c lá»¥c
 
 1. [Entity Relationship Diagram (ERD)](#1-entity-relationship-diagram-erd)
-2. [Chi tiết từng bảng](#2-chi-tiết-từng-bảng)
+2. [Chi tiáº¿t tá»«ng báº£ng](#2-chi-tiáº¿t-tá»«ng-báº£ng)
 3. [Enums](#3-enums)
 4. [Business Rules Mapping](#4-business-rules-mapping)
 5. [Prisma Schema](#5-prisma-schema)
@@ -119,20 +119,20 @@ erDiagram
 
 ---
 
-# 2. Chi tiết từng bảng
+# 2. Chi tiáº¿t tá»«ng báº£ng
 
 ## 2.1 users
 
-Lưu thông tin người dùng (viewer + admin).
+LÆ°u thĂ´ng tin ngÆ°á»i dĂ¹ng (viewer + admin).
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `email` | `VARCHAR(255)` | ✅ | - | Email đăng nhập, unique |
-| `password_hash` | `VARCHAR(255)` | ✅ | - | Bcrypt hash |
-| `role` | `user_role` | ✅ | `'viewer'` | Enum: viewer / admin |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm tạo |
-| `updated_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm cập nhật |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `email` | `VARCHAR(255)` | âœ… | - | Email Ä‘Äƒng nháº­p, unique |
+| `password_hash` | `VARCHAR(255)` | âœ… | - | Bcrypt hash |
+| `role` | `user_role` | âœ… | `'viewer'` | Enum: viewer / admin |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm táº¡o |
+| `updated_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm cáº­p nháº­t |
 
 **Constraints:**
 - `PK`: `id`
@@ -145,20 +145,20 @@ Lưu thông tin người dùng (viewer + admin).
 
 ## 2.2 refresh_tokens
 
-Lưu refresh tokens để quản lý session.
+LÆ°u refresh tokens Ä‘á»ƒ quáº£n lĂ½ session.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `user_id` | `UUID` | ✅ | - | FK → users.id |
-| `token` | `VARCHAR(512)` | ✅ | - | Refresh token string |
-| `expires_at` | `TIMESTAMPTZ` | ✅ | - | Thời điểm hết hạn |
-| `revoked` | `BOOLEAN` | ✅ | `false` | Đã thu hồi chưa |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm tạo |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `user_id` | `UUID` | âœ… | - | FK â†’ users.id |
+| `token` | `VARCHAR(512)` | âœ… | - | Refresh token string |
+| `expires_at` | `TIMESTAMPTZ` | âœ… | - | Thá»i Ä‘iá»ƒm háº¿t háº¡n |
+| `revoked` | `BOOLEAN` | âœ… | `false` | ÄĂ£ thu há»“i chÆ°a |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm táº¡o |
 
 **Constraints:**
 - `PK`: `id`
-- `FK`: `user_id` → `users.id` ON DELETE CASCADE
+- `FK`: `user_id` â†’ `users.id` ON DELETE CASCADE
 - `UNIQUE`: `token`
 
 **Indexes:**
@@ -169,43 +169,43 @@ Lưu refresh tokens để quản lý session.
 
 ## 2.3 movies
 
-Lưu thông tin phim / video.
+LÆ°u thĂ´ng tin phim / video.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `title` | `VARCHAR(500)` | ✅ | - | Tiêu đề phim |
-| `description` | `TEXT` | ❌ | `NULL` | Mô tả chi tiết |
-| `poster_url` | `VARCHAR(1000)` | ❌ | `NULL` | URL ảnh poster |
-| `backdrop_url` | `VARCHAR(1000)` | ❌ | `NULL` | URL ảnh backdrop (hero) |
-| `duration_seconds` | `INTEGER` | ❌ | `NULL` | Thời lượng video (giây) |
-| `release_year` | `INTEGER` | ❌ | `NULL` | Năm phát hành |
-| `movie_status` | `movie_status` | ✅ | `'draft'` | Enum: draft / published |
-| `encode_status` | `encode_status` | ✅ | `'pending'` | Enum: pending / processing / ready / failed |
-| `playback_url` | `VARCHAR(1000)` | ❌ | `NULL` | URL master.m3u8 khi encode xong |
-| `original_key` | `VARCHAR(500)` | ❌ | `NULL` | Object key của file gốc (originals/...) |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm tạo |
-| `updated_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm cập nhật |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `title` | `VARCHAR(500)` | âœ… | - | TiĂªu Ä‘á» phim |
+| `description` | `TEXT` | âŒ | `NULL` | MĂ´ táº£ chi tiáº¿t |
+| `poster_url` | `VARCHAR(1000)` | âŒ | `NULL` | URL áº£nh poster |
+| `backdrop_url` | `VARCHAR(1000)` | âŒ | `NULL` | URL áº£nh backdrop (hero) |
+| `duration_seconds` | `INTEGER` | âŒ | `NULL` | Thá»i lÆ°á»£ng video (giĂ¢y) |
+| `release_year` | `INTEGER` | âŒ | `NULL` | NÄƒm phĂ¡t hĂ nh |
+| `movie_status` | `movie_status` | âœ… | `'draft'` | Enum: draft / published |
+| `encode_status` | `encode_status` | âœ… | `'pending'` | Enum: pending / processing / ready / failed |
+| `playback_url` | `VARCHAR(1000)` | âŒ | `NULL` | URL master.m3u8 khi encode xong |
+| `original_key` | `VARCHAR(500)` | âŒ | `NULL` | Object key cá»§a file gá»‘c (originals/...) |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm táº¡o |
+| `updated_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm cáº­p nháº­t |
 
 **Constraints:**
 - `PK`: `id`
 
 **Indexes:**
-- `idx_movies_status` on `(movie_status, encode_status)` — filter phim công khai
-- `idx_movies_title_search` on `title` using GIN `gin_trgm_ops` — full-text search (hoặc ILIKE)
-- `idx_movies_created_at` on `created_at DESC` — sort mới nhất
+- `idx_movies_status` on `(movie_status, encode_status)` â€” filter phim cĂ´ng khai
+- `idx_movies_title_search` on `title` using GIN `gin_trgm_ops` â€” full-text search (hoáº·c ILIKE)
+- `idx_movies_created_at` on `created_at DESC` â€” sort má»›i nháº¥t
 
 ---
 
 ## 2.4 genres
 
-Danh mục thể loại phim.
+Danh má»¥c thá»ƒ loáº¡i phim.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `name` | `VARCHAR(100)` | ✅ | - | Tên hiển thị (Action, Comedy...) |
-| `slug` | `VARCHAR(100)` | ✅ | - | URL-friendly slug |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `name` | `VARCHAR(100)` | âœ… | - | TĂªn hiá»ƒn thá»‹ (Action, Comedy...) |
+| `slug` | `VARCHAR(100)` | âœ… | - | URL-friendly slug |
 
 **Constraints:**
 - `PK`: `id`
@@ -216,17 +216,17 @@ Danh mục thể loại phim.
 
 ## 2.5 movie_genres
 
-Bảng liên kết many-to-many giữa movies và genres.
+Báº£ng liĂªn káº¿t many-to-many giá»¯a movies vĂ  genres.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `movie_id` | `UUID` | ✅ | - | FK → movies.id |
-| `genre_id` | `UUID` | ✅ | - | FK → genres.id |
+| `movie_id` | `UUID` | âœ… | - | FK â†’ movies.id |
+| `genre_id` | `UUID` | âœ… | - | FK â†’ genres.id |
 
 **Constraints:**
 - `PK`: `(movie_id, genre_id)` (composite)
-- `FK`: `movie_id` → `movies.id` ON DELETE CASCADE
-- `FK`: `genre_id` → `genres.id` ON DELETE CASCADE
+- `FK`: `movie_id` â†’ `movies.id` ON DELETE CASCADE
+- `FK`: `genre_id` â†’ `genres.id` ON DELETE CASCADE
 
 **Indexes:**
 - `idx_movie_genres_genre_id` on `genre_id` (query movies by genre)
@@ -235,20 +235,20 @@ Bảng liên kết many-to-many giữa movies và genres.
 
 ## 2.6 favorites
 
-Danh sách phim yêu thích của user.
+Danh sĂ¡ch phim yĂªu thĂ­ch cá»§a user.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `user_id` | `UUID` | ✅ | - | FK → users.id |
-| `movie_id` | `UUID` | ✅ | - | FK → movies.id |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm thêm |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `user_id` | `UUID` | âœ… | - | FK â†’ users.id |
+| `movie_id` | `UUID` | âœ… | - | FK â†’ movies.id |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm thĂªm |
 
 **Constraints:**
 - `PK`: `id`
-- `FK`: `user_id` → `users.id` ON DELETE CASCADE
-- `FK`: `movie_id` → `movies.id` ON DELETE CASCADE
-- `UNIQUE`: `(user_id, movie_id)` — không cho trùng
+- `FK`: `user_id` â†’ `users.id` ON DELETE CASCADE
+- `FK`: `movie_id` â†’ `movies.id` ON DELETE CASCADE
+- `UNIQUE`: `(user_id, movie_id)` â€” khĂ´ng cho trĂ¹ng
 
 **Indexes:**
 - `idx_favorites_user_id` on `user_id`
@@ -257,47 +257,47 @@ Danh sách phim yêu thích của user.
 
 ## 2.7 watch_history
 
-Lịch sử xem của user, dùng cho Continue Watching và Resume.
+Lá»‹ch sá»­ xem cá»§a user, dĂ¹ng cho Continue Watching vĂ  Resume.
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `user_id` | `UUID` | ✅ | - | FK → users.id |
-| `movie_id` | `UUID` | ✅ | - | FK → movies.id |
-| `progress_seconds` | `INTEGER` | ✅ | `0` | Vị trí đang xem (giây) |
-| `duration_seconds` | `INTEGER` | ✅ | `0` | Tổng thời lượng (denormalize) |
-| `completed` | `BOOLEAN` | ✅ | `false` | Đã xem xong (>= 90%) |
-| `updated_at` | `TIMESTAMPTZ` | ✅ | `now()` | Lần cập nhật cuối |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `user_id` | `UUID` | âœ… | - | FK â†’ users.id |
+| `movie_id` | `UUID` | âœ… | - | FK â†’ movies.id |
+| `progress_seconds` | `INTEGER` | âœ… | `0` | Vá»‹ trĂ­ Ä‘ang xem (giĂ¢y) |
+| `duration_seconds` | `INTEGER` | âœ… | `0` | Tá»•ng thá»i lÆ°á»£ng (denormalize) |
+| `completed` | `BOOLEAN` | âœ… | `false` | ÄĂ£ xem xong (>= 90%) |
+| `updated_at` | `TIMESTAMPTZ` | âœ… | `now()` | Láº§n cáº­p nháº­t cuá»‘i |
 
 **Constraints:**
 - `PK`: `id`
-- `FK`: `user_id` → `users.id` ON DELETE CASCADE
-- `FK`: `movie_id` → `movies.id` ON DELETE CASCADE
-- `UNIQUE`: `(user_id, movie_id)` — mỗi user + movie 1 record
+- `FK`: `user_id` â†’ `users.id` ON DELETE CASCADE
+- `FK`: `movie_id` â†’ `movies.id` ON DELETE CASCADE
+- `UNIQUE`: `(user_id, movie_id)` â€” má»—i user + movie 1 record
 
 **Indexes:**
-- `idx_watch_history_user_updated` on `(user_id, updated_at DESC)` — Continue Watching query
-- `idx_watch_history_continue` on `(user_id)` WHERE `progress_seconds > 0 AND completed = false` — partial index
+- `idx_watch_history_user_updated` on `(user_id, updated_at DESC)` â€” Continue Watching query
+- `idx_watch_history_continue` on `(user_id)` WHERE `progress_seconds > 0 AND completed = false` â€” partial index
 
 ---
 
 ## 2.8 uploads
 
-Theo dõi file upload (thumbnail, video).
+Theo dĂµi file upload (thumbnail, video).
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `movie_id` | `UUID` | ✅ | - | FK → movies.id |
-| `object_key` | `VARCHAR(500)` | ✅ | - | S3/MinIO object key |
-| `file_type` | `upload_file_type` | ✅ | - | Enum: video / thumbnail |
-| `upload_status` | `upload_status` | ✅ | `'uploading'` | Enum: uploading / uploaded / failed |
-| `size_bytes` | `BIGINT` | ❌ | `NULL` | Kích thước file |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm tạo |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `movie_id` | `UUID` | âœ… | - | FK â†’ movies.id |
+| `object_key` | `VARCHAR(500)` | âœ… | - | S3/MinIO object key |
+| `file_type` | `upload_file_type` | âœ… | - | Enum: video / thumbnail |
+| `upload_status` | `upload_status` | âœ… | `'uploading'` | Enum: uploading / uploaded / failed |
+| `size_bytes` | `BIGINT` | âŒ | `NULL` | KĂ­ch thÆ°á»›c file |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm táº¡o |
 
 **Constraints:**
 - `PK`: `id`
-- `FK`: `movie_id` → `movies.id` ON DELETE CASCADE
+- `FK`: `movie_id` â†’ `movies.id` ON DELETE CASCADE
 
 **Indexes:**
 - `idx_uploads_movie_id` on `movie_id`
@@ -306,23 +306,23 @@ Theo dõi file upload (thumbnail, video).
 
 ## 2.9 encode_jobs
 
-Theo dõi encode jobs (queue).
+Theo dĂµi encode jobs (queue).
 
 | Column | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `id` | `UUID` | ✅ | `gen_random_uuid()` | Primary key |
-| `movie_id` | `UUID` | ✅ | - | FK → movies.id |
-| `input_key` | `VARCHAR(500)` | ✅ | - | Object key file input |
-| `output_prefix` | `VARCHAR(500)` | ✅ | - | Prefix cho output (hls/{movieId}) |
-| `status` | `encode_job_status` | ✅ | `'pending'` | Enum: pending / processing / completed / failed |
-| `error_message` | `TEXT` | ❌ | `NULL` | Thông tin lỗi nếu failed |
-| `started_at` | `TIMESTAMPTZ` | ❌ | `NULL` | Thời điểm bắt đầu encode |
-| `completed_at` | `TIMESTAMPTZ` | ❌ | `NULL` | Thời điểm hoàn thành |
-| `created_at` | `TIMESTAMPTZ` | ✅ | `now()` | Thời điểm tạo job |
+| `id` | `UUID` | âœ… | `gen_random_uuid()` | Primary key |
+| `movie_id` | `UUID` | âœ… | - | FK â†’ movies.id |
+| `input_key` | `VARCHAR(500)` | âœ… | - | Object key file input |
+| `output_prefix` | `VARCHAR(500)` | âœ… | - | Prefix cho output (hls/{movieId}) |
+| `status` | `encode_job_status` | âœ… | `'pending'` | Enum: pending / processing / completed / failed |
+| `error_message` | `TEXT` | âŒ | `NULL` | ThĂ´ng tin lá»—i náº¿u failed |
+| `started_at` | `TIMESTAMPTZ` | âŒ | `NULL` | Thá»i Ä‘iá»ƒm báº¯t Ä‘áº§u encode |
+| `completed_at` | `TIMESTAMPTZ` | âŒ | `NULL` | Thá»i Ä‘iá»ƒm hoĂ n thĂ nh |
+| `created_at` | `TIMESTAMPTZ` | âœ… | `now()` | Thá»i Ä‘iá»ƒm táº¡o job |
 
 **Constraints:**
 - `PK`: `id`
-- `FK`: `movie_id` → `movies.id` ON DELETE CASCADE
+- `FK`: `movie_id` â†’ `movies.id` ON DELETE CASCADE
 
 **Indexes:**
 - `idx_encode_jobs_movie_id` on `movie_id`
@@ -340,8 +340,8 @@ CREATE TYPE user_role AS ENUM ('viewer', 'admin');
 
 | Value | Description |
 |-------|-------------|
-| `viewer` | Người xem thông thường |
-| `admin` | Quản trị viên CMS |
+| `viewer` | NgÆ°á»i xem thĂ´ng thÆ°á»ng |
+| `admin` | Quáº£n trá»‹ viĂªn CMS |
 
 ## 3.2 movie_status
 
@@ -351,8 +351,8 @@ CREATE TYPE movie_status AS ENUM ('draft', 'published');
 
 | Value | Description |
 |-------|-------------|
-| `draft` | Nháp, chưa public |
-| `published` | Đã publish, viewer có thể thấy |
+| `draft` | NhĂ¡p, chÆ°a public |
+| `published` | ÄĂ£ publish, viewer cĂ³ thá»ƒ tháº¥y |
 
 ## 3.3 encode_status
 
@@ -362,10 +362,10 @@ CREATE TYPE encode_status AS ENUM ('pending', 'processing', 'ready', 'failed');
 
 | Value | Description |
 |-------|-------------|
-| `pending` | Chờ encode |
-| `processing` | Đang encode |
-| `ready` | Encode xong, có thể play |
-| `failed` | Encode thất bại |
+| `pending` | Chá» encode |
+| `processing` | Äang encode |
+| `ready` | Encode xong, cĂ³ thá»ƒ play |
+| `failed` | Encode tháº¥t báº¡i |
 
 ## 3.4 upload_file_type
 
@@ -391,14 +391,14 @@ CREATE TYPE encode_job_status AS ENUM ('pending', 'processing', 'completed', 'fa
 
 ## 4.1 Viewer Visibility
 
-Viewer chỉ thấy phim khi:
+Viewer chá»‰ tháº¥y phim khi:
 ```sql
 WHERE movie_status = 'published' AND encode_status = 'ready'
 ```
 
 ## 4.2 Continue Watching
 
-Phim xuất hiện trong "Continue Watching" khi:
+Phim xuáº¥t hiá»‡n trong "Continue Watching" khi:
 ```sql
 WHERE user_id = :userId 
   AND progress_seconds > 0 
@@ -408,7 +408,7 @@ ORDER BY updated_at DESC
 
 ## 4.3 Completion Rule
 
-Phim được đánh dấu `completed = true` khi:
+Phim Ä‘Æ°á»£c Ä‘Ă¡nh dáº¥u `completed = true` khi:
 ```typescript
 completed = (progress_seconds >= 0.9 * duration_seconds)
 ```
@@ -426,12 +426,12 @@ await prisma.watchHistory.upsert({
 
 ## 4.4 Unique Favorite
 
-Mỗi user chỉ có thể favorite 1 movie 1 lần. Thêm lại:
+Má»—i user chá»‰ cĂ³ thá»ƒ favorite 1 movie 1 láº§n. ThĂªm láº¡i:
 - Option 1: Return conflict error
 - Option 2: Ignore (upsert)
 
 ```sql
--- Constraint đảm bảo
+-- Constraint Ä‘áº£m báº£o
 UNIQUE (user_id, movie_id)
 ```
 
@@ -451,9 +451,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Enums
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 enum UserRole {
   viewer
@@ -490,9 +490,9 @@ enum EncodeJobStatus {
   failed
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Models
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model User {
   id            String   @id @default(uuid()) @db.Uuid
@@ -660,10 +660,10 @@ async function main() {
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 10);
   await prisma.user.upsert({
-    where: { email: 'admin@netflop.local' },
+    where: { email: 'admin@NETFLAT.local' },
     update: {},
     create: {
-      email: 'admin@netflop.local',
+      email: 'admin@NETFLAT.local',
       passwordHash: adminPassword,
       role: UserRole.admin,
     },
@@ -672,10 +672,10 @@ async function main() {
   // Create viewer user
   const viewerPassword = await bcrypt.hash('viewer123', 10);
   await prisma.user.upsert({
-    where: { email: 'viewer@netflop.local' },
+    where: { email: 'viewer@NETFLAT.local' },
     update: {},
     create: {
-      email: 'viewer@netflop.local',
+      email: 'viewer@NETFLAT.local',
       passwordHash: viewerPassword,
       role: UserRole.viewer,
     },
@@ -722,4 +722,4 @@ main()
 
 ---
 
-> **Ghi chú:** Schema này là baseline, có thể mở rộng thêm fields khi cần (subtitles, ratings, views count...).
+> **Ghi chĂº:** Schema nĂ y lĂ  baseline, cĂ³ thá»ƒ má»Ÿ rá»™ng thĂªm fields khi cáº§n (subtitles, ratings, views count...).

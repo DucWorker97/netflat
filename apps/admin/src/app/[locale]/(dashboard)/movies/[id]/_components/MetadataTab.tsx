@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import CreatableSelect from 'react-select/creatable';
-import { useGenres, useUpdateMovie } from '@/lib/queries';
+import { useGenres, useUpdateMovie, useActorSuggest } from '@/lib/queries';
 
 const schema = z.object({
     title: z.string().min(1, 'Title is required').max(500),
@@ -28,6 +28,8 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
     const { data: genres } = useGenres();
     const updateMutation = useUpdateMovie();
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    const [actorInput, setActorInput] = useState('');
+    const { data: actorSuggestions = [] } = useActorSuggest(actorInput);
 
     const {
         register,
@@ -186,6 +188,8 @@ export default function MetadataTab({ movie }: MetadataTabProps) {
                                 ref={ref}
                                 isMulti
                                 placeholder="Type actor name and press Enter..."
+                                options={actorSuggestions.map((name) => ({ label: name, value: name }))}
+                                onInputChange={(val) => setActorInput(val)}
                                 onChange={(val) => onChange(val ? val.map((v: any) => v.value) : [])}
                                 value={value?.map((v) => ({ label: v, value: v }))}
                                 className="react-select-container"

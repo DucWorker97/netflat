@@ -1,115 +1,115 @@
-# PRD – netflop (Netflix Mini)
+﻿# PRD â€“ NETFLAT (Netflix Mini)
 
-> **Phiên bản:** 1.0  
-> **Ngày tạo:** 01-01-2026  
-> **Tác giả:** Product Manager / Tech Lead  
-> **Trạng thái:** Draft → Review
+> **PhiĂªn báº£n:** 1.0  
+> **NgĂ y táº¡o:** 01-01-2026  
+> **TĂ¡c giáº£:** Product Manager / Tech Lead  
+> **Tráº¡ng thĂ¡i:** Draft â†’ Review
 
 ---
 
-## Mục lục
+## Má»¥c lá»¥c
 
-1. [Tổng quan sản phẩm](#1-tổng-quan-sản-phẩm)
-2. [Đối tượng người dùng & use cases](#2-đối-tượng-người-dùng--use-cases)
-3. [Phạm vi & tính năng (MoSCoW)](#3-phạm-vi--tính-năng-moscow)
-4. [Luồng trải nghiệm (UX Flows)](#4-luồng-trải-nghiệm-ux-flows)
-5. [Danh sách màn hình & yêu cầu UI](#5-danh-sách-màn-hình--yêu-cầu-ui)
-6. [Dữ liệu & quy tắc nghiệp vụ](#6-dữ-liệu--quy-tắc-nghiệp-vụ)
-7. [Yêu cầu phi chức năng (NFR)](#7-yêu-cầu-phi-chức-năng-nfr)
+1. [Tá»•ng quan sáº£n pháº©m](#1-tá»•ng-quan-sáº£n-pháº©m)
+2. [Äá»‘i tÆ°á»£ng ngÆ°á»i dĂ¹ng & use cases](#2-Ä‘á»‘i-tÆ°á»£ng-ngÆ°á»i-dĂ¹ng--use-cases)
+3. [Pháº¡m vi & tĂ­nh nÄƒng (MoSCoW)](#3-pháº¡m-vi--tĂ­nh-nÄƒng-moscow)
+4. [Luá»“ng tráº£i nghiá»‡m (UX Flows)](#4-luá»“ng-tráº£i-nghiá»‡m-ux-flows)
+5. [Danh sĂ¡ch mĂ n hĂ¬nh & yĂªu cáº§u UI](#5-danh-sĂ¡ch-mĂ n-hĂ¬nh--yĂªu-cáº§u-ui)
+6. [Dá»¯ liá»‡u & quy táº¯c nghiá»‡p vá»¥](#6-dá»¯-liá»‡u--quy-táº¯c-nghiá»‡p-vá»¥)
+7. [YĂªu cáº§u phi chá»©c nÄƒng (NFR)](#7-yĂªu-cáº§u-phi-chá»©c-nÄƒng-nfr)
 8. [Acceptance Criteria (Definition of Done)](#8-acceptance-criteria-definition-of-done)
-9. [Kế hoạch 8 tuần (Milestones)](#9-kế-hoạch-8-tuần-milestones)
-10. [Kịch bản demo cuối kỳ](#10-kịch-bản-demo-cuối-kỳ)
-11. [Tiêu chí chấm điểm (Scoring Rubric)](#11-tiêu-chí-chấm-điểm-scoring-rubric)
-12. [Rủi ro & phương án giảm thiểu](#12-rủi-ro--phương-án-giảm-thiểu)
-13. [Tóm tắt & next steps](#13-tóm-tắt--next-steps)
+9. [Káº¿ hoáº¡ch 8 tuáº§n (Milestones)](#9-káº¿-hoáº¡ch-8-tuáº§n-milestones)
+10. [Ká»‹ch báº£n demo cuá»‘i ká»³](#10-ká»‹ch-báº£n-demo-cuá»‘i-ká»³)
+11. [TiĂªu chĂ­ cháº¥m Ä‘iá»ƒm (Scoring Rubric)](#11-tiĂªu-chĂ­-cháº¥m-Ä‘iá»ƒm-scoring-rubric)
+12. [Rá»§i ro & phÆ°Æ¡ng Ă¡n giáº£m thiá»ƒu](#12-rá»§i-ro--phÆ°Æ¡ng-Ă¡n-giáº£m-thiá»ƒu)
+13. [TĂ³m táº¯t & next steps](#13-tĂ³m-táº¯t--next-steps)
 
 ---
 
-# 1. Tổng quan sản phẩm
+# 1. Tá»•ng quan sáº£n pháº©m
 
-## 1.1 Tên sản phẩm
+## 1.1 TĂªn sáº£n pháº©m
 
-**netflop** — Netflix mini cho video tự sản xuất.
+**NETFLAT** â€” Netflix mini cho video tá»± sáº£n xuáº¥t.
 
-## 1.2 Vấn đề & cơ hội
+## 1.2 Váº¥n Ä‘á» & cÆ¡ há»™i
 
-| Vấn đề | Cơ hội |
+| Váº¥n Ä‘á» | CÆ¡ há»™i |
 |--------|--------|
-| Người dùng (content creator / sinh viên) muốn xem nội dung video tự sản xuất trên điện thoại nhưng thiếu nền tảng streaming chuyên nghiệp. | Xây dựng trải nghiệm "Netflix vibe" (tìm kiếm, rails theo thể loại, xem tiếp, danh sách yêu thích) cho video tự làm. |
-| Quản lý nội dung (upload, encode, publish) phức tạp, không có admin UI. | CMS web giúp admin upload, theo dõi tiến trình encode HLS và publish nội dung dễ dàng. |
-| Demo đồ án thiếu kiến trúc streaming rõ ràng (encode → HLS → playback). | Triển khai pipeline: MP4 → FFmpeg encode multi-bitrate HLS → lưu storage → playback trên mobile. |
+| NgÆ°á»i dĂ¹ng (content creator / sinh viĂªn) muá»‘n xem ná»™i dung video tá»± sáº£n xuáº¥t trĂªn Ä‘iá»‡n thoáº¡i nhÆ°ng thiáº¿u ná»n táº£ng streaming chuyĂªn nghiá»‡p. | XĂ¢y dá»±ng tráº£i nghiá»‡m "Netflix vibe" (tĂ¬m kiáº¿m, rails theo thá»ƒ loáº¡i, xem tiáº¿p, danh sĂ¡ch yĂªu thĂ­ch) cho video tá»± lĂ m. |
+| Quáº£n lĂ½ ná»™i dung (upload, encode, publish) phá»©c táº¡p, khĂ´ng cĂ³ admin UI. | CMS web giĂºp admin upload, theo dĂµi tiáº¿n trĂ¬nh encode HLS vĂ  publish ná»™i dung dá»… dĂ ng. |
+| Demo Ä‘á»“ Ă¡n thiáº¿u kiáº¿n trĂºc streaming rĂµ rĂ ng (encode â†’ HLS â†’ playback). | Triá»ƒn khai pipeline: MP4 â†’ FFmpeg encode multi-bitrate HLS â†’ lÆ°u storage â†’ playback trĂªn mobile. |
 
-## 1.3 Mục tiêu (Goals)
+## 1.3 Má»¥c tiĂªu (Goals)
 
-### Product goals (trải nghiệm)
-- **PG-1:** Viewer có thể duyệt phim theo thể loại / collection trực quan, tìm kiếm, xem trailer/video, **resume** vị trí đã xem.
-- **PG-2:** Viewer có thể lưu phim vào danh sách yêu thích và xem lại qua "My List".
-- **PG-3:** Admin có thể upload video, theo dõi encode status, publish/unpublish mà không cần dùng CLI.
+### Product goals (tráº£i nghiá»‡m)
+- **PG-1:** Viewer cĂ³ thá»ƒ duyá»‡t phim theo thá»ƒ loáº¡i / collection trá»±c quan, tĂ¬m kiáº¿m, xem trailer/video, **resume** vá»‹ trĂ­ Ä‘Ă£ xem.
+- **PG-2:** Viewer cĂ³ thá»ƒ lÆ°u phim vĂ o danh sĂ¡ch yĂªu thĂ­ch vĂ  xem láº¡i qua "My List".
+- **PG-3:** Admin cĂ³ thá»ƒ upload video, theo dĂµi encode status, publish/unpublish mĂ  khĂ´ng cáº§n dĂ¹ng CLI.
 
-### Technical goals (kỹ thuật)
-- **TG-1:** Streaming video chuẩn HLS (m3u8) với ≥ 2 variant (360p + 720p).
-- **TG-2:** Encode pipeline tự động: upload MP4 → job queue → FFmpeg → output HLS → callback API.
-- **TG-3:** API RESTful, phân quyền JWT, database quan hệ với migration.
-- **TG-4:** Mobile app cross-platform (Expo React Native) chạy iOS & Android.
+### Technical goals (ká»¹ thuáº­t)
+- **TG-1:** Streaming video chuáº©n HLS (m3u8) vá»›i â‰¥ 2 variant (360p + 720p).
+- **TG-2:** Encode pipeline tá»± Ä‘á»™ng: upload MP4 â†’ job queue â†’ FFmpeg â†’ output HLS â†’ callback API.
+- **TG-3:** API RESTful, phĂ¢n quyá»n JWT, database quan há»‡ vá»›i migration.
+- **TG-4:** Mobile app cross-platform (Expo React Native) cháº¡y iOS & Android.
 
-### Success metrics (demo đồ án)
+### Success metrics (demo Ä‘á»“ Ă¡n)
 
-| Metric | Mục tiêu |
+| Metric | Má»¥c tiĂªu |
 |--------|----------|
-| Time-to-first-frame (TTFF) trên WiFi LAN | ≤ 3 giây |
-| Tỉ lệ lỗi playback (crash/buffer stall) trong demo | < 5 % |
-| Độ chính xác resume (sai lệch) | ≤ 5 giây |
-| Thời gian encode 1 phút video (720p) | ≤ 2 phút trên máy dev |
-| Số bước demo end-to-end (upload → viewer play) | ≤ 10 bước |
+| Time-to-first-frame (TTFF) trĂªn WiFi LAN | â‰¤ 3 giĂ¢y |
+| Tá»‰ lá»‡ lá»—i playback (crash/buffer stall) trong demo | < 5 % |
+| Äá»™ chĂ­nh xĂ¡c resume (sai lá»‡ch) | â‰¤ 5 giĂ¢y |
+| Thá»i gian encode 1 phĂºt video (720p) | â‰¤ 2 phĂºt trĂªn mĂ¡y dev |
+| Sá»‘ bÆ°á»›c demo end-to-end (upload â†’ viewer play) | â‰¤ 10 bÆ°á»›c |
 
-## 1.4 Không nằm trong phạm vi (Out of scope)
+## 1.4 KhĂ´ng náº±m trong pháº¡m vi (Out of scope)
 
-- **DRM thương mại** (Widevine, FairPlay license server) — chỉ bảo vệ nhẹ bằng auth + signed URL.
-- **Recommendation ML phức tạp** (collaborative filtering, deep learning).
-- **Multi-device sync cấp độ production** (xem trên TV tiếp tục trên điện thoại real-time).
-- **Hệ thống thanh toán / subscription billing**.
-- **Live streaming** (chỉ hỗ trợ VOD).
+- **DRM thÆ°Æ¡ng máº¡i** (Widevine, FairPlay license server) â€” chá»‰ báº£o vá»‡ nháº¹ báº±ng auth + signed URL.
+- **Recommendation ML phá»©c táº¡p** (collaborative filtering, deep learning).
+- **Multi-device sync cáº¥p Ä‘á»™ production** (xem trĂªn TV tiáº¿p tá»¥c trĂªn Ä‘iá»‡n thoáº¡i real-time).
+- **Há»‡ thá»‘ng thanh toĂ¡n / subscription billing**.
+- **Live streaming** (chá»‰ há»— trá»£ VOD).
 - **Offline download** (cache local).
-- **Multi-tenant** (chỉ 1 tenant).
+- **Multi-tenant** (chá»‰ 1 tenant).
 
 ---
 
-# 2. Đối tượng người dùng & use cases
+# 2. Äá»‘i tÆ°á»£ng ngÆ°á»i dĂ¹ng & use cases
 
 ## 2.1 Persona
 
-### Viewer (người xem)
-| Thuộc tính | Mô tả |
+### Viewer (ngÆ°á»i xem)
+| Thuá»™c tĂ­nh | MĂ´ táº£ |
 |------------|-------|
-| Vai trò | Sinh viên, bạn bè, người quan tâm nội dung tự sản xuất. |
-| Thiết bị | Điện thoại Android/iOS (chủ yếu), có thể mở rộng web. |
-| Mục tiêu | Xem video nhanh, mượt; lưu lại những phim thích; tiếp tục xem dở. |
-| Pain point | Không muốn nhớ vị trí xem; khó tìm video trong danh sách dài. |
+| Vai trĂ² | Sinh viĂªn, báº¡n bĂ¨, ngÆ°á»i quan tĂ¢m ná»™i dung tá»± sáº£n xuáº¥t. |
+| Thiáº¿t bá»‹ | Äiá»‡n thoáº¡i Android/iOS (chá»§ yáº¿u), cĂ³ thá»ƒ má»Ÿ rá»™ng web. |
+| Má»¥c tiĂªu | Xem video nhanh, mÆ°á»£t; lÆ°u láº¡i nhá»¯ng phim thĂ­ch; tiáº¿p tá»¥c xem dá»Ÿ. |
+| Pain point | KhĂ´ng muá»‘n nhá»› vá»‹ trĂ­ xem; khĂ³ tĂ¬m video trong danh sĂ¡ch dĂ i. |
 
 ### Admin / Content Manager
-| Thuộc tính | Mô tả |
+| Thuá»™c tĂ­nh | MĂ´ táº£ |
 |------------|-------|
-| Vai trò | Người upload, quản lý nội dung (thường là chủ sản phẩm hoặc thành viên team). |
-| Thiết bị | Desktop browser (Chrome, Edge). |
-| Mục tiêu | Upload nhanh, biết khi nào encode xong, publish/unpublish linh hoạt. |
-| Pain point | Phải chờ encode lâu; không biết lỗi ở đâu nếu encode fail. |
+| Vai trĂ² | NgÆ°á»i upload, quáº£n lĂ½ ná»™i dung (thÆ°á»ng lĂ  chá»§ sáº£n pháº©m hoáº·c thĂ nh viĂªn team). |
+| Thiáº¿t bá»‹ | Desktop browser (Chrome, Edge). |
+| Má»¥c tiĂªu | Upload nhanh, biáº¿t khi nĂ o encode xong, publish/unpublish linh hoáº¡t. |
+| Pain point | Pháº£i chá» encode lĂ¢u; khĂ´ng biáº¿t lá»—i á»Ÿ Ä‘Ă¢u náº¿u encode fail. |
 
 ## 2.2 User stories (MVP)
 
 | # | Role | Story | Acceptance hint |
 |---|------|-------|-----------------|
-| US-01 | Viewer | As a viewer, I want to **register & login** with email/password so that I can access content securely. | Đăng ký thành công, nhận JWT, lưu session. |
-| US-02 | Viewer | As a viewer, I want to see a **Home screen with hero banner and genre rails** so that I can browse content visually. | Tối thiểu 1 hero + 3 rails (Trending, Action, Comedy…). |
-| US-03 | Viewer | As a viewer, I want to **search movies by keyword** so that I can quickly find what I want. | Search trả về kết quả có title/description chứa keyword. |
-| US-04 | Viewer | As a viewer, I want to view **movie detail** (poster, synopsis, genres, duration) so that I know if I want to watch. | Hiển thị đầy đủ thông tin; nút Play + Add to My List. |
-| US-05 | Viewer | As a viewer, I want to **play HLS video**, control play/pause/seek, and adjust quality if available, so that I can watch smoothly. | Player hiển thị controls; seek hoạt động; quality switch (nếu có). |
-| US-06 | Viewer | As a viewer, I want my **watch progress saved** automatically so that I can resume later. | Progress lưu mỗi 5s hoặc khi pause/exit. |
-| US-07 | Viewer | As a viewer, I want a **"Continue Watching"** rail on Home so that I can quickly resume movies. | Hiển thị phim có progress > 0 và chưa hoàn thành. |
-| US-08 | Viewer | As a viewer, I want to **add/remove movies to My List** so that I can save favorites. | Nút toggle; My List screen hiển thị đúng danh sách. |
+| US-01 | Viewer | As a viewer, I want to **register & login** with email/password so that I can access content securely. | ÄÄƒng kĂ½ thĂ nh cĂ´ng, nháº­n JWT, lÆ°u session. |
+| US-02 | Viewer | As a viewer, I want to see a **Home screen with hero banner and genre rails** so that I can browse content visually. | Tá»‘i thiá»ƒu 1 hero + 3 rails (Trending, Action, Comedyâ€¦). |
+| US-03 | Viewer | As a viewer, I want to **search movies by keyword** so that I can quickly find what I want. | Search tráº£ vá» káº¿t quáº£ cĂ³ title/description chá»©a keyword. |
+| US-04 | Viewer | As a viewer, I want to view **movie detail** (poster, synopsis, genres, duration) so that I know if I want to watch. | Hiá»ƒn thá»‹ Ä‘áº§y Ä‘á»§ thĂ´ng tin; nĂºt Play + Add to My List. |
+| US-05 | Viewer | As a viewer, I want to **play HLS video**, control play/pause/seek, and adjust quality if available, so that I can watch smoothly. | Player hiá»ƒn thá»‹ controls; seek hoáº¡t Ä‘á»™ng; quality switch (náº¿u cĂ³). |
+| US-06 | Viewer | As a viewer, I want my **watch progress saved** automatically so that I can resume later. | Progress lÆ°u má»—i 5s hoáº·c khi pause/exit. |
+| US-07 | Viewer | As a viewer, I want a **"Continue Watching"** rail on Home so that I can quickly resume movies. | Hiá»ƒn thá»‹ phim cĂ³ progress > 0 vĂ  chÆ°a hoĂ n thĂ nh. |
+| US-08 | Viewer | As a viewer, I want to **add/remove movies to My List** so that I can save favorites. | NĂºt toggle; My List screen hiá»ƒn thá»‹ Ä‘Ăºng danh sĂ¡ch. |
 | US-09 | Viewer | As a viewer, I want to see **loading, empty, and error states** clearly so that I understand what is happening. | Skeleton loader, empty message, error retry. |
-| US-10 | Admin | As an admin, I want to **login** to CMS so that only authorized people manage content. | Trang login riêng; chỉ user role=admin mới vào được CMS page. |
-| US-11 | Admin | As an admin, I want to **CRUD movies** (title, description, genres, status) so that I can manage catalog. | Tạo, sửa, xóa, list với pagination. |
-| US-12 | Admin | As an admin, I want to **upload MP4 and thumbnail**, track **encode status** (pending/processing/ready/failed), and **publish/unpublish** so that movies become available to viewers. | Upload qua presigned URL; status cập nhật real-time hoặc polling; publish toggle. |
+| US-10 | Admin | As an admin, I want to **login** to CMS so that only authorized people manage content. | Trang login riĂªng; chá»‰ user role=admin má»›i vĂ o Ä‘Æ°á»£c CMS page. |
+| US-11 | Admin | As an admin, I want to **CRUD movies** (title, description, genres, status) so that I can manage catalog. | Táº¡o, sá»­a, xĂ³a, list vá»›i pagination. |
+| US-12 | Admin | As an admin, I want to **upload MP4 and thumbnail**, track **encode status** (pending/processing/ready/failed), and **publish/unpublish** so that movies become available to viewers. | Upload qua presigned URL; status cáº­p nháº­t real-time hoáº·c polling; publish toggle. |
 
 ## 2.3 User stories (Nice-to-have)
 
@@ -126,207 +126,207 @@
 
 ---
 
-# 3. Phạm vi & tính năng (MoSCoW)
+# 3. Pháº¡m vi & tĂ­nh nÄƒng (MoSCoW)
 
-## 3.1 MUST (bắt buộc cho demo)
+## 3.1 MUST (báº¯t buá»™c cho demo)
 
 ### Viewer (Mobile App)
 
-| ID | Tính năng | Mô tả ngắn |
+| ID | TĂ­nh nÄƒng | MĂ´ táº£ ngáº¯n |
 |----|-----------|------------|
 | M-V01 | Login / Register | Email + password, JWT auth. |
-| M-V02 | Home – Hero Banner | Slider hoặc random featured movie. |
-| M-V03 | Home – Genre Rails | Horizontal scroll rails theo genre / collection. |
-| M-V04 | Search | Input keyword → kết quả list. |
+| M-V02 | Home â€“ Hero Banner | Slider hoáº·c random featured movie. |
+| M-V03 | Home â€“ Genre Rails | Horizontal scroll rails theo genre / collection. |
+| M-V04 | Search | Input keyword â†’ káº¿t quáº£ list. |
 | M-V05 | Movie Detail | Poster, title, synopsis, genres, duration, Play, My List button. |
 | M-V06 | HLS Player | Play/pause, seek bar, buffer indicator. |
-| M-V07 | Watch History & Resume | Lưu progress, resume khi mở lại. |
-| M-V08 | Continue Watching Rail | Hiển thị phim đang xem dở. |
-| M-V09 | My List / Favorites | Add/remove, xem danh sách riêng. |
+| M-V07 | Watch History & Resume | LÆ°u progress, resume khi má»Ÿ láº¡i. |
+| M-V08 | Continue Watching Rail | Hiá»ƒn thá»‹ phim Ä‘ang xem dá»Ÿ. |
+| M-V09 | My List / Favorites | Add/remove, xem danh sĂ¡ch riĂªng. |
 | M-V10 | Loading / Empty / Error States | Skeleton, empty illustration, retry button. |
 
 ### Admin Web (CMS)
 
-| ID | Tính năng | Mô tả ngắn |
+| ID | TĂ­nh nÄƒng | MĂ´ táº£ ngáº¯n |
 |----|-----------|------------|
-| M-A01 | Admin Login | Riêng biệt với viewer; role check. |
-| M-A02 | Movie List | Bảng pagination, filter status. |
+| M-A01 | Admin Login | RiĂªng biá»‡t vá»›i viewer; role check. |
+| M-A02 | Movie List | Báº£ng pagination, filter status. |
 | M-A03 | Create / Edit Movie | Form: title, description, genres (multi-select), status draft/published. |
-| M-A04 | Upload Thumbnail | Chọn file ảnh, preview. |
+| M-A04 | Upload Thumbnail | Chá»n file áº£nh, preview. |
 | M-A05 | Upload Video (MP4) | Presigned URL upload; progress bar. |
-| M-A06 | Encode Status | Hiển thị pending/processing/ready/failed; polling hoặc websocket. |
-| M-A07 | Publish / Unpublish | Toggle publish; viewer chỉ thấy published + ready. |
+| M-A06 | Encode Status | Hiá»ƒn thá»‹ pending/processing/ready/failed; polling hoáº·c websocket. |
+| M-A07 | Publish / Unpublish | Toggle publish; viewer chá»‰ tháº¥y published + ready. |
 
 ### Backend API
 
-| ID | Tính năng | Mô tả ngắn |
+| ID | TĂ­nh nÄƒng | MĂ´ táº£ ngáº¯n |
 |----|-----------|------------|
-| M-B01 | Auth – Register / Login / Refresh / Me | JWT access + refresh token. |
-| M-B02 | Movies – List / Search / Detail | Pagination, filter genre, search keyword. |
-| M-B03 | Genres – List | Trả về danh sách genres. |
-| M-B04 | Favorites – Add / Remove / List | CRUD yêu thích. |
-| M-B05 | Watch History – Upsert / List | Lưu & lấy progress. |
-| M-B06 | Admin – Movie CRUD | Chỉ role admin. |
-| M-B07 | Upload – Presigned URL | Tạo presigned PUT URL cho S3/MinIO. |
-| M-B08 | Upload – Complete callback | Trigger encode job khi client báo upload xong. |
-| M-B09 | Stream URL | Trả m3u8 URL (có thể signed / ticket). |
+| M-B01 | Auth â€“ Register / Login / Refresh / Me | JWT access + refresh token. |
+| M-B02 | Movies â€“ List / Search / Detail | Pagination, filter genre, search keyword. |
+| M-B03 | Genres â€“ List | Tráº£ vá» danh sĂ¡ch genres. |
+| M-B04 | Favorites â€“ Add / Remove / List | CRUD yĂªu thĂ­ch. |
+| M-B05 | Watch History â€“ Upsert / List | LÆ°u & láº¥y progress. |
+| M-B06 | Admin â€“ Movie CRUD | Chá»‰ role admin. |
+| M-B07 | Upload â€“ Presigned URL | Táº¡o presigned PUT URL cho S3/MinIO. |
+| M-B08 | Upload â€“ Complete callback | Trigger encode job khi client bĂ¡o upload xong. |
+| M-B09 | Stream URL | Tráº£ m3u8 URL (cĂ³ thá»ƒ signed / ticket). |
 
 ### Pipeline (HLS Encode)
 
-| ID | Tính năng | Mô tả ngắn |
+| ID | TĂ­nh nÄƒng | MĂ´ táº£ ngáº¯n |
 |----|-----------|------------|
-| M-P01 | Job Queue | BullMQ / Redis nhận job encode. |
-| M-P02 | FFmpeg Encode | MP4 → HLS master playlist + variants 360p, 720p. |
-| M-P03 | Output Storage | Lưu segments + m3u8 lên MinIO / S3. |
-| M-P04 | Callback API | Cập nhật encode_status + playback_url về DB. |
+| M-P01 | Job Queue | BullMQ / Redis nháº­n job encode. |
+| M-P02 | FFmpeg Encode | MP4 â†’ HLS master playlist + variants 360p, 720p. |
+| M-P03 | Output Storage | LÆ°u segments + m3u8 lĂªn MinIO / S3. |
+| M-P04 | Callback API | Cáº­p nháº­t encode_status + playback_url vá» DB. |
 
 ---
 
-## 3.2 SHOULD (nên có, nếu kịp)
+## 3.2 SHOULD (nĂªn cĂ³, náº¿u ká»‹p)
 
-| ID | Phần | Tính năng |
+| ID | Pháº§n | TĂ­nh nÄƒng |
 |----|------|-----------|
 | S-01 | Mobile | Subtitles (VTT) toggle on/off. |
 | S-02 | Mobile | Quality selector (360/720 switcher). |
 | S-03 | Mobile | Pull-to-refresh Home. |
 | S-04 | Admin | Subtitle upload (VTT). |
-| S-05 | API | Stream ticket / signed URL TTL (bảo vệ nhẹ). |
-| S-06 | Pipeline | Thêm variant 480p. |
+| S-05 | API | Stream ticket / signed URL TTL (báº£o vá»‡ nháº¹). |
+| S-06 | Pipeline | ThĂªm variant 480p. |
 
 ## 3.3 COULD (nice-to-have, bonus)
 
-| ID | Phần | Tính năng |
+| ID | Pháº§n | TĂ­nh nÄƒng |
 |----|------|-----------|
 | C-01 | Mobile | Multiple profiles per account. |
-| C-02 | Mobile | Simple recommendation ("Vì bạn đã xem X"). |
+| C-02 | Mobile | Simple recommendation ("VĂ¬ báº¡n Ä‘Ă£ xem X"). |
 | C-03 | Mobile | Rate movie (like/dislike). |
 | C-04 | Admin | Dashboard analytics (views, top 10). |
 | C-05 | Admin | Reorder home rails. |
-| C-06 | Pipeline | Thumbnail auto-generate từ video. |
-| C-07 | API | Push notification khi phim mới publish. |
+| C-06 | Pipeline | Thumbnail auto-generate tá»« video. |
+| C-07 | API | Push notification khi phim má»›i publish. |
 
-## 3.4 WON'T (không làm trong MVP)
+## 3.4 WON'T (khĂ´ng lĂ m trong MVP)
 
-| Tính năng | Lý do |
+| TĂ­nh nÄƒng | LĂ½ do |
 |-----------|-------|
-| DRM thương mại (Widevine L1/L3, FairPlay) | Phức tạp license server, chi phí. |
-| Live streaming | Out of scope – chỉ VOD. |
-| Offline download | Cần DRM + cache phức tạp. |
-| Multi-tenant | Chỉ 1 tenant cho đồ án. |
-| Social login (Google, Facebook) | Có thể thêm sau, không ưu tiên MVP. |
-| Payment / Subscription | Không cần cho demo. |
+| DRM thÆ°Æ¡ng máº¡i (Widevine L1/L3, FairPlay) | Phá»©c táº¡p license server, chi phĂ­. |
+| Live streaming | Out of scope â€“ chá»‰ VOD. |
+| Offline download | Cáº§n DRM + cache phá»©c táº¡p. |
+| Multi-tenant | Chá»‰ 1 tenant cho Ä‘á»“ Ă¡n. |
+| Social login (Google, Facebook) | CĂ³ thá»ƒ thĂªm sau, khĂ´ng Æ°u tiĂªn MVP. |
+| Payment / Subscription | KhĂ´ng cáº§n cho demo. |
 
 ---
 
-# 4. Luồng trải nghiệm (UX Flows)
+# 4. Luá»“ng tráº£i nghiá»‡m (UX Flows)
 
-## 4.1 Viewer flow – Browse & Play (bắt buộc)
-
-```
-┌─────────┐      ┌──────────┐      ┌─────────────┐      ┌────────┐      ┌───────────────────┐
-│  Login  │ ───► │   Home   │ ───► │ Movie Detail│ ───► │ Player │ ───► │ Exit / Pause      │
-└─────────┘      └──────────┘      └─────────────┘      └────────┘      └───────────────────┘
-                                                                                  │
-                                                                                  ▼
-                                                          ┌───────────────────────────────────┐
-                                                          │ Home → Continue Watching → Resume │
-                                                          └───────────────────────────────────┘
-```
-
-**Chi tiết:**
-1. Viewer mở app → Splash → nếu chưa login chuyển Login / Register.
-2. Đăng nhập thành công → Home (hero + rails).
-3. Chọn poster → Movie Detail (thông tin chi tiết).
-4. Nhấn **Play** → Player (HLS stream).
-5. Xem 30 giây → Thoát (progress 30s saved).
-6. Mở app lại → Home → rail "Continue Watching" → chọn phim → Resume từ ~30s.
-
-## 4.2 Viewer flow – Search & My List
+## 4.1 Viewer flow â€“ Browse & Play (báº¯t buá»™c)
 
 ```
-┌────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
-│  Home  │ ───► │   Search    │ ───► │ Movie Detail│ ───► │ Add List │
-└────────┘      └─────────────┘      └─────────────┘      └──────────┘
-                                                                 │
-                                                                 ▼
-                              ┌─────────────────────────────────────────────┐
-                              │ My List screen → Select movie → Play       │
-                              └─────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Login  â”‚ â”€â”€â”€â–º â”‚   Home   â”‚ â”€â”€â”€â–º â”‚ Movie Detailâ”‚ â”€â”€â”€â–º â”‚ Player â”‚ â”€â”€â”€â–º â”‚ Exit / Pause      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                                                                  â”‚
+                                                                                  â–¼
+                                                          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                                                          â”‚ Home â†’ Continue Watching â†’ Resume â”‚
+                                                          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-**Chi tiết:**
-1. Từ Home, nhấn icon Search (hoặc tab).
-2. Nhập keyword → kết quả danh sách.
-3. Chọn 1 phim → Detail → nhấn **Add to My List** (icon bookmark/heart).
-4. Vào screen My List → danh sách đã lưu → nhấn Play.
+**Chi tiáº¿t:**
+1. Viewer má»Ÿ app â†’ Splash â†’ náº¿u chÆ°a login chuyá»ƒn Login / Register.
+2. ÄÄƒng nháº­p thĂ nh cĂ´ng â†’ Home (hero + rails).
+3. Chá»n poster â†’ Movie Detail (thĂ´ng tin chi tiáº¿t).
+4. Nháº¥n **Play** â†’ Player (HLS stream).
+5. Xem 30 giĂ¢y â†’ ThoĂ¡t (progress 30s saved).
+6. Má»Ÿ app láº¡i â†’ Home â†’ rail "Continue Watching" â†’ chá»n phim â†’ Resume tá»« ~30s.
 
-## 4.3 Admin flow – Upload & Encode
+## 4.2 Viewer flow â€“ Search & My List
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐     ┌─────────────┐
-│ Admin Login │ ──► │ Create Movie │ ──► │ Upload MP4    │ ──► │ Processing   │ ──► │ Ready       │
-└─────────────┘     └──────────────┘     └───────────────┘     └──────────────┘     └─────────────┘
-                                                                                            │
-                                                                                            ▼
-                                                                      ┌───────────────────────────────┐
-                                                                      │ Publish → Viewer sees on Home │
-                                                                      └───────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Home  â”‚ â”€â”€â”€â–º â”‚   Search    â”‚ â”€â”€â”€â–º â”‚ Movie Detailâ”‚ â”€â”€â”€â–º â”‚ Add List â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                                                 â”‚
+                                                                 â–¼
+                              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                              â”‚ My List screen â†’ Select movie â†’ Play       â”‚
+                              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-**Chi tiết:**
+**Chi tiáº¿t:**
+1. Tá»« Home, nháº¥n icon Search (hoáº·c tab).
+2. Nháº­p keyword â†’ káº¿t quáº£ danh sĂ¡ch.
+3. Chá»n 1 phim â†’ Detail â†’ nháº¥n **Add to My List** (icon bookmark/heart).
+4. VĂ o screen My List â†’ danh sĂ¡ch Ä‘Ă£ lÆ°u â†’ nháº¥n Play.
+
+## 4.3 Admin flow â€“ Upload & Encode
+
+```
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Admin Login â”‚ â”€â”€â–º â”‚ Create Movie â”‚ â”€â”€â–º â”‚ Upload MP4    â”‚ â”€â”€â–º â”‚ Processing   â”‚ â”€â”€â–º â”‚ Ready       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                                                                            â”‚
+                                                                                            â–¼
+                                                                      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                                                                      â”‚ Publish â†’ Viewer sees on Home â”‚
+                                                                      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+**Chi tiáº¿t:**
 1. Admin login CMS (role check).
-2. Nhấn **Create Movie** → điền title, description, genres → Save (draft).
-3. Vào trang edit → Upload Thumbnail + Upload MP4.
-4. Sau upload MP4, API trigger encode job → status = `processing`.
-5. Worker encode xong → callback → status = `ready`.
-6. Admin nhấn **Publish** → `movie_status = published`.
-7. Viewer mở app → Phim hiển thị trên Home (vì published + ready).
+2. Nháº¥n **Create Movie** â†’ Ä‘iá»n title, description, genres â†’ Save (draft).
+3. VĂ o trang edit â†’ Upload Thumbnail + Upload MP4.
+4. Sau upload MP4, API trigger encode job â†’ status = `processing`.
+5. Worker encode xong â†’ callback â†’ status = `ready`.
+6. Admin nháº¥n **Publish** â†’ `movie_status = published`.
+7. Viewer má»Ÿ app â†’ Phim hiá»ƒn thá»‹ trĂªn Home (vĂ¬ published + ready).
 
 ---
 
-# 5. Danh sách màn hình & yêu cầu UI
+# 5. Danh sĂ¡ch mĂ n hĂ¬nh & yĂªu cáº§u UI
 
 ## 5.1 Mobile screens
 
-| # | Screen | Mô tả | UI Highlights |
+| # | Screen | MĂ´ táº£ | UI Highlights |
 |---|--------|-------|---------------|
 | 1 | Splash | Logo + loading animation (optional). | Dark background, logo center. |
-| 2 | Login / Register | Form email, password; toggle login ↔ register. | Dark theme, Netflix-style red accent, input validation. |
-| 3 | Home | Hero banner (carousel/auto-slide), rails (Continue Watching, Trending, Genre X…). | Poster 2:3 hoặc 16:9, horizontal scroll, skeleton loading. |
-| 4 | Search | Search bar, real-time hoặc debounce, grid/list kết quả. | Keyboard auto-focus, empty state "Không tìm thấy". |
+| 2 | Login / Register | Form email, password; toggle login â†” register. | Dark theme, Netflix-style red accent, input validation. |
+| 3 | Home | Hero banner (carousel/auto-slide), rails (Continue Watching, Trending, Genre Xâ€¦). | Poster 2:3 hoáº·c 16:9, horizontal scroll, skeleton loading. |
+| 4 | Search | Search bar, real-time hoáº·c debounce, grid/list káº¿t quáº£. | Keyboard auto-focus, empty state "KhĂ´ng tĂ¬m tháº¥y". |
 | 5 | Movie Detail | Backdrop image, poster, title, meta (year, duration, genres), synopsis, buttons (Play, My List, Share). | Gradient overlay, parallax scroll (optional). |
 | 6 | Player | Full-screen, controls: play/pause, seek bar, time, quality (optional), back. | Auto-hide controls sau 3s, orientation landscape. |
-| 7 | My List | List / grid các phim đã bookmark. | Remove button, empty state. |
+| 7 | My List | List / grid cĂ¡c phim Ä‘Ă£ bookmark. | Remove button, empty state. |
 | 8 | Settings / Profile | Logout, version, (optional) profile switch. | Simple list. |
 
-**Yêu cầu chung:**
-- **Dark theme**: background `#0d0d0d` hoặc tương đương; text trắng/xám.
-- **Poster rails**: horizontal `FlatList` hoặc `ScrollView`, poster rounded corners.
-- **Skeleton loading**: placeholder shimmer khi tải dữ liệu.
-- **Responsive**: hoạt động cả Android & iOS (Expo managed workflow).
+**YĂªu cáº§u chung:**
+- **Dark theme**: background `#0d0d0d` hoáº·c tÆ°Æ¡ng Ä‘Æ°Æ¡ng; text tráº¯ng/xĂ¡m.
+- **Poster rails**: horizontal `FlatList` hoáº·c `ScrollView`, poster rounded corners.
+- **Skeleton loading**: placeholder shimmer khi táº£i dá»¯ liá»‡u.
+- **Responsive**: hoáº¡t Ä‘á»™ng cáº£ Android & iOS (Expo managed workflow).
 
 ## 5.2 Admin screens
 
-| # | Screen | Mô tả |
+| # | Screen | MĂ´ táº£ |
 |---|--------|-------|
-| 1 | Login | Form username/password, redirect nếu đã có session. |
-| 2 | Movie List | Table: thumbnail nhỏ, title, status (draft/published), encode_status badge, actions (edit, delete). Pagination. |
-| 3 | Movie Create / Edit | Form fields: title, description, genres (multi-select), status select. Sau save chuyển qua tab Upload. |
-| 4 | Upload & Status | Dropzone thumbnail, dropzone video; progress bar; badge encode_status realtime. Nút Publish/Unpublish. |
-| 5 | Dashboard (optional) | Cards: tổng phim, tổng views, top 5 phim. Chart đơn giản (optional). |
+| 1 | Login | Form username/password, redirect náº¿u Ä‘Ă£ cĂ³ session. |
+| 2 | Movie List | Table: thumbnail nhá», title, status (draft/published), encode_status badge, actions (edit, delete). Pagination. |
+| 3 | Movie Create / Edit | Form fields: title, description, genres (multi-select), status select. Sau save chuyá»ƒn qua tab Upload. |
+| 4 | Upload & Status | Dropzone thumbnail, dropzone video; progress bar; badge encode_status realtime. NĂºt Publish/Unpublish. |
+| 5 | Dashboard (optional) | Cards: tá»•ng phim, tá»•ng views, top 5 phim. Chart Ä‘Æ¡n giáº£n (optional). |
 
-**Yêu cầu chung:**
-- **Framework**: Next.js (App Router) + shadcn/ui hoặc Ant Design.
-- **Dark theme** preferred (hoặc tuỳ chọn).
-- **Responsive** ít nhất tablet + desktop.
+**YĂªu cáº§u chung:**
+- **Framework**: Next.js (App Router) + shadcn/ui hoáº·c Ant Design.
+- **Dark theme** preferred (hoáº·c tuá»³ chá»n).
+- **Responsive** Ă­t nháº¥t tablet + desktop.
 
 ---
 
-# 6. Dữ liệu & quy tắc nghiệp vụ
+# 6. Dá»¯ liá»‡u & quy táº¯c nghiá»‡p vá»¥
 
-## 6.1 Entities & fields (mức PRD)
+## 6.1 Entities & fields (má»©c PRD)
 
-> Chi tiết schema xem `DATABASE_SCHEMA.md`. Dưới đây là tổng quan.
+> Chi tiáº¿t schema xem `DATABASE_SCHEMA.md`. DÆ°á»›i Ä‘Ă¢y lĂ  tá»•ng quan.
 
 ### User
 | Field | Type | Note |
@@ -345,7 +345,7 @@
 | description | text | |
 | poster_url | string | URL thumbnail |
 | backdrop_url | string | optional hero image |
-| duration_seconds | int | tổng thời lượng video |
+| duration_seconds | int | tá»•ng thá»i lÆ°á»£ng video |
 | release_year | int | optional |
 | movie_status | enum | `draft` / `published` |
 | encode_status | enum | `pending` / `processing` / `ready` / `failed` |
@@ -380,9 +380,9 @@
 | id | UUID | |
 | user_id | UUID FK | |
 | movie_id | UUID FK | |
-| progress_seconds | int | vị trí đã xem |
-| duration_seconds | int | tổng thời lượng (denormalize) |
-| completed | boolean | đã xem xong? |
+| progress_seconds | int | vá»‹ trĂ­ Ä‘Ă£ xem |
+| duration_seconds | int | tá»•ng thá»i lÆ°á»£ng (denormalize) |
+| completed | boolean | Ä‘Ă£ xem xong? |
 | updated_at | timestamp | |
 
 ### Upload (optional tracking)
@@ -411,243 +411,243 @@
 
 | # | Rule |
 |---|------|
-| BR-01 | **Viewer chỉ thấy phim** khi `movie_status = 'published'` **AND** `encode_status = 'ready'`. |
-| BR-02 | **Continue Watching** hiển thị phim có `progress_seconds > 0` **AND** `completed = false`. |
-| BR-03 | **Hoàn thành (completed)** khi `progress_seconds >= 0.9 * duration_seconds` (90%). |
-| BR-04 | **Cập nhật progress**: client gửi progress mỗi **5 giây** hoặc khi **pause / exit**. |
-| BR-05 | **Favorites không trùng**: mỗi user + movie chỉ có 1 record; thêm lại thì ignore hoặc error. |
-| BR-06 | **Xóa phim (admin)**: soft delete hoặc không cho xóa nếu đang published (tuỳ impl). |
-| BR-07 | **Upload presigned URL** chỉ cấp khi user có role admin và movie thuộc quyền. |
-| BR-08 | **Encode job** chỉ trigger khi upload video hoàn thành (client gọi `POST /movies/:id/upload-complete`; alias deprecated: `/upload/complete/:movieId`). |
+| BR-01 | **Viewer chá»‰ tháº¥y phim** khi `movie_status = 'published'` **AND** `encode_status = 'ready'`. |
+| BR-02 | **Continue Watching** hiá»ƒn thá»‹ phim cĂ³ `progress_seconds > 0` **AND** `completed = false`. |
+| BR-03 | **HoĂ n thĂ nh (completed)** khi `progress_seconds >= 0.9 * duration_seconds` (90%). |
+| BR-04 | **Cáº­p nháº­t progress**: client gá»­i progress má»—i **5 giĂ¢y** hoáº·c khi **pause / exit**. |
+| BR-05 | **Favorites khĂ´ng trĂ¹ng**: má»—i user + movie chá»‰ cĂ³ 1 record; thĂªm láº¡i thĂ¬ ignore hoáº·c error. |
+| BR-06 | **XĂ³a phim (admin)**: soft delete hoáº·c khĂ´ng cho xĂ³a náº¿u Ä‘ang published (tuá»³ impl). |
+| BR-07 | **Upload presigned URL** chá»‰ cáº¥p khi user cĂ³ role admin vĂ  movie thuá»™c quyá»n. |
+| BR-08 | **Encode job** chá»‰ trigger khi upload video hoĂ n thĂ nh (client gá»i `POST /movies/:id/upload-complete`; alias deprecated: `/upload/complete/:movieId`). |
 
 ---
 
-# 7. Yêu cầu phi chức năng (NFR)
+# 7. YĂªu cáº§u phi chá»©c nÄƒng (NFR)
 
-## 7.1 Hiệu năng
+## 7.1 Hiá»‡u nÄƒng
 
-| Metric | Mục tiêu | Ghi chú |
+| Metric | Má»¥c tiĂªu | Ghi chĂº |
 |--------|----------|---------|
-| Home load time | ≤ 2 s (warm cache) | Sử dụng React Query / SWR cache. |
-| API response (list) | ≤ 500 ms p95 | Pagination, index DB. |
-| Time-to-first-frame (TTFF) | ≤ 3 s WiFi | Player buffer settings. |
-| Adaptive streaming | Buffer ≥ 10 s trước khi play | Pre-buffer segment. |
+| Home load time | â‰¤ 2 s (warm cache) | Sá»­ dá»¥ng React Query / SWR cache. |
+| API response (list) | â‰¤ 500 ms p95 | Pagination, index DB. |
+| Time-to-first-frame (TTFF) | â‰¤ 3 s WiFi | Player buffer settings. |
+| Adaptive streaming | Buffer â‰¥ 10 s trÆ°á»›c khi play | Pre-buffer segment. |
 
 **Caching:**
-- Mobile: cache danh sách movies, genres (TTL 5 phút).
-- API: response cache (Redis hoặc in-memory) cho public endpoints.
+- Mobile: cache danh sĂ¡ch movies, genres (TTL 5 phĂºt).
+- API: response cache (Redis hoáº·c in-memory) cho public endpoints.
 
-## 7.2 Tin cậy & lỗi
+## 7.2 Tin cáº­y & lá»—i
 
-- **Không crash khi mất mạng**: detect network offline, hiển thị banner "Không có kết nối".
-- **Retry hợp lý**: API call retry 2–3 lần với exponential backoff (react-query built-in).
-- **Graceful degradation**: nếu hero API fail, vẫn render rails; nếu rail fail, hiển thị error inline.
-- **Encode fail**: job retry 1 lần; nếu vẫn fail, status = `failed`, admin có thể re-trigger.
+- **KhĂ´ng crash khi máº¥t máº¡ng**: detect network offline, hiá»ƒn thá»‹ banner "KhĂ´ng cĂ³ káº¿t ná»‘i".
+- **Retry há»£p lĂ½**: API call retry 2â€“3 láº§n vá»›i exponential backoff (react-query built-in).
+- **Graceful degradation**: náº¿u hero API fail, váº«n render rails; náº¿u rail fail, hiá»ƒn thá»‹ error inline.
+- **Encode fail**: job retry 1 láº§n; náº¿u váº«n fail, status = `failed`, admin cĂ³ thá»ƒ re-trigger.
 
-## 7.3 Bảo mật (mức đồ án)
+## 7.3 Báº£o máº­t (má»©c Ä‘á»“ Ă¡n)
 
-| Hạng mục | Cách xử lý |
+| Háº¡ng má»¥c | CĂ¡ch xá»­ lĂ½ |
 |----------|------------|
-| Authentication | JWT access token (15–60 phút) + refresh token (7 ngày). Lưu secure storage trên mobile. |
-| Authorization | Middleware check role: `admin` mới gọi được CMS endpoints. |
-| Password | Hash bcrypt, không lưu plain text. |
+| Authentication | JWT access token (15â€“60 phĂºt) + refresh token (7 ngĂ y). LÆ°u secure storage trĂªn mobile. |
+| Authorization | Middleware check role: `admin` má»›i gá»i Ä‘Æ°á»£c CMS endpoints. |
+| Password | Hash bcrypt, khĂ´ng lÆ°u plain text. |
 | Upload presigned | Validate `Content-Type` (video/mp4, image/*), max size (e.g., 2 GB video, 5 MB thumbnail). |
-| Stream "bảo vệ nhẹ" | Chỉ user login mới gọi được `/stream/:movieId`; trả về signed URL với TTL 1–2 giờ hoặc stream ticket. |
-| CORS | Chỉ cho phép origin CMS domain. |
-| Rate limit | Cơ bản 100 req/min per IP (optional). |
+| Stream "báº£o vá»‡ nháº¹" | Chá»‰ user login má»›i gá»i Ä‘Æ°á»£c `/stream/:movieId`; tráº£ vá» signed URL vá»›i TTL 1â€“2 giá» hoáº·c stream ticket. |
+| CORS | Chá»‰ cho phĂ©p origin CMS domain. |
+| Rate limit | CÆ¡ báº£n 100 req/min per IP (optional). |
 
-## 7.4 Logging / Observability (mức đồ án)
+## 7.4 Logging / Observability (má»©c Ä‘á»“ Ă¡n)
 
-| Loại | Nội dung log |
+| Loáº¡i | Ná»™i dung log |
 |------|--------------|
 | API error | requestId, userId, path, status, error message. |
-| Encode job | jobId, movieId, start time, end time, duration, status, error (nếu có). |
+| Encode job | jobId, movieId, start time, end time, duration, status, error (náº¿u cĂ³). |
 | Auth events | login success/fail, refresh, logout. |
 | Playback (optional) | play/pause/seek event (analytics purpose). |
 
-Công cụ gợi ý: `pino` logger, Logto/Seq/CloudWatch (deploy), hoặc đơn giản console JSON log.
+CĂ´ng cá»¥ gá»£i Ă½: `pino` logger, Logto/Seq/CloudWatch (deploy), hoáº·c Ä‘Æ¡n giáº£n console JSON log.
 
 ---
 
 # 8. Acceptance Criteria (Definition of Done)
 
-## 8.1 Viewer – Auth
+## 8.1 Viewer â€“ Auth
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-AUTH-01 | Đăng ký với email hợp lệ + password ≥ 6 ký tự thành công; lưu JWT. |
-| AC-AUTH-02 | Đăng nhập sai password → hiển thị lỗi, không crash. |
-| AC-AUTH-03 | Token hết hạn → tự refresh; nếu refresh fail → logout về Login screen. |
+| AC-AUTH-01 | ÄÄƒng kĂ½ vá»›i email há»£p lá»‡ + password â‰¥ 6 kĂ½ tá»± thĂ nh cĂ´ng; lÆ°u JWT. |
+| AC-AUTH-02 | ÄÄƒng nháº­p sai password â†’ hiá»ƒn thá»‹ lá»—i, khĂ´ng crash. |
+| AC-AUTH-03 | Token háº¿t háº¡n â†’ tá»± refresh; náº¿u refresh fail â†’ logout vá» Login screen. |
 
-## 8.2 Viewer – Home & Browse
+## 8.2 Viewer â€“ Home & Browse
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-HOME-01 | Home hiển thị hero banner lấy từ featured movie. |
-| AC-HOME-02 | Có tối thiểu 3 rails (Continue Watching nếu có, Trending / Genre X / Genre Y). |
-| AC-HOME-03 | Nhấn poster → chuyển Detail screen, dữ liệu đúng. |
+| AC-HOME-01 | Home hiá»ƒn thá»‹ hero banner láº¥y tá»« featured movie. |
+| AC-HOME-02 | CĂ³ tá»‘i thiá»ƒu 3 rails (Continue Watching náº¿u cĂ³, Trending / Genre X / Genre Y). |
+| AC-HOME-03 | Nháº¥n poster â†’ chuyá»ƒn Detail screen, dá»¯ liá»‡u Ä‘Ăºng. |
 
-## 8.3 Viewer – Search
+## 8.3 Viewer â€“ Search
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-SEARCH-01 | Nhập keyword → kết quả hiển thị trong 1 s (hoặc loading state). |
-| AC-SEARCH-02 | Kết quả = 0 → hiển thị "Không tìm thấy phim nào". |
+| AC-SEARCH-01 | Nháº­p keyword â†’ káº¿t quáº£ hiá»ƒn thá»‹ trong 1 s (hoáº·c loading state). |
+| AC-SEARCH-02 | Káº¿t quáº£ = 0 â†’ hiá»ƒn thá»‹ "KhĂ´ng tĂ¬m tháº¥y phim nĂ o". |
 
-## 8.4 Viewer – Detail & Play
+## 8.4 Viewer â€“ Detail & Play
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-DETAIL-01 | Hiển thị poster, title, synopsis, genres, duration, Play button. |
-| AC-DETAIL-02 | Nhấn Play → Player mở, stream bắt đầu trong ≤ 3 s (WiFi). |
-| AC-PLAY-01 | Play/pause/seek hoạt động chính xác. |
-| AC-PLAY-02 | Xem 30 s → thoát → mở lại → resume gần đúng vị trí (sai lệch ≤ 5 s). |
+| AC-DETAIL-01 | Hiá»ƒn thá»‹ poster, title, synopsis, genres, duration, Play button. |
+| AC-DETAIL-02 | Nháº¥n Play â†’ Player má»Ÿ, stream báº¯t Ä‘áº§u trong â‰¤ 3 s (WiFi). |
+| AC-PLAY-01 | Play/pause/seek hoáº¡t Ä‘á»™ng chĂ­nh xĂ¡c. |
+| AC-PLAY-02 | Xem 30 s â†’ thoĂ¡t â†’ má»Ÿ láº¡i â†’ resume gáº§n Ä‘Ăºng vá»‹ trĂ­ (sai lá»‡ch â‰¤ 5 s). |
 
-## 8.5 Viewer – Continue Watching & My List
+## 8.5 Viewer â€“ Continue Watching & My List
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-CW-01 | Phim xem dở (progress > 0 & chưa complete) xuất hiện trong rail "Continue Watching". |
-| AC-CW-02 | Phim xem xong (≥ 90 %) không xuất hiện ở Continue Watching. |
-| AC-LIST-01 | Add movie vào My List → danh sách My List có phim đó. |
-| AC-LIST-02 | Remove movie khỏi My List → biến mất khỏi danh sách, không lỗi. |
-| AC-LIST-03 | Add trùng movie → không duplicate, có thể toast "Đã có trong danh sách". |
+| AC-CW-01 | Phim xem dá»Ÿ (progress > 0 & chÆ°a complete) xuáº¥t hiá»‡n trong rail "Continue Watching". |
+| AC-CW-02 | Phim xem xong (â‰¥ 90 %) khĂ´ng xuáº¥t hiá»‡n á»Ÿ Continue Watching. |
+| AC-LIST-01 | Add movie vĂ o My List â†’ danh sĂ¡ch My List cĂ³ phim Ä‘Ă³. |
+| AC-LIST-02 | Remove movie khá»i My List â†’ biáº¿n máº¥t khá»i danh sĂ¡ch, khĂ´ng lá»—i. |
+| AC-LIST-03 | Add trĂ¹ng movie â†’ khĂ´ng duplicate, cĂ³ thá»ƒ toast "ÄĂ£ cĂ³ trong danh sĂ¡ch". |
 
-## 8.6 Viewer – Error / Loading
+## 8.6 Viewer â€“ Error / Loading
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-ERR-01 | Mất mạng khi load Home → hiển thị error state + Retry button. |
-| AC-ERR-02 | Playback lỗi (404 m3u8) → hiển thị lỗi, không crash. |
+| AC-ERR-01 | Máº¥t máº¡ng khi load Home â†’ hiá»ƒn thá»‹ error state + Retry button. |
+| AC-ERR-02 | Playback lá»—i (404 m3u8) â†’ hiá»ƒn thá»‹ lá»—i, khĂ´ng crash. |
 
-## 8.7 Admin – Movie Management
+## 8.7 Admin â€“ Movie Management
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-ADMIN-01 | Login với role viewer → redirect hoặc 403. |
-| AC-ADMIN-02 | Tạo movie draft thành công, xuất hiện trong list. |
-| AC-ADMIN-03 | Edit movie → save → dữ liệu update đúng. |
-| AC-ADMIN-04 | Delete movie → xoá / ẩn khỏi list (tuỳ soft delete). |
+| AC-ADMIN-01 | Login vá»›i role viewer â†’ redirect hoáº·c 403. |
+| AC-ADMIN-02 | Táº¡o movie draft thĂ nh cĂ´ng, xuáº¥t hiá»‡n trong list. |
+| AC-ADMIN-03 | Edit movie â†’ save â†’ dá»¯ liá»‡u update Ä‘Ăºng. |
+| AC-ADMIN-04 | Delete movie â†’ xoĂ¡ / áº©n khá»i list (tuá»³ soft delete). |
 
-## 8.8 Admin – Upload & Encode
+## 8.8 Admin â€“ Upload & Encode
 
-| AC | Tiêu chí |
+| AC | TiĂªu chĂ­ |
 |----|----------|
-| AC-UPLOAD-01 | Upload video → progress bar hiển thị → hoàn thành → encode_status = `pending` rồi `processing`. |
-| AC-UPLOAD-02 | Encode xong → encode_status = `ready`, playback_url có giá trị. |
-| AC-UPLOAD-03 | Encode fail → encode_status = `failed`, hiển thị message. |
-| AC-PUB-01 | Publish movie (draft + ready) → viewer thấy trên Home. |
-| AC-PUB-02 | Unpublish → viewer không thấy nữa (filter lại). |
+| AC-UPLOAD-01 | Upload video â†’ progress bar hiá»ƒn thá»‹ â†’ hoĂ n thĂ nh â†’ encode_status = `pending` rá»“i `processing`. |
+| AC-UPLOAD-02 | Encode xong â†’ encode_status = `ready`, playback_url cĂ³ giĂ¡ trá»‹. |
+| AC-UPLOAD-03 | Encode fail â†’ encode_status = `failed`, hiá»ƒn thá»‹ message. |
+| AC-PUB-01 | Publish movie (draft + ready) â†’ viewer tháº¥y trĂªn Home. |
+| AC-PUB-02 | Unpublish â†’ viewer khĂ´ng tháº¥y ná»¯a (filter láº¡i). |
 
 ---
 
-# 9. Kế hoạch 8 tuần (Milestones)
+# 9. Káº¿ hoáº¡ch 8 tuáº§n (Milestones)
 
-| Tuần | Mục tiêu | Deliverables | Checkpoint |
+| Tuáº§n | Má»¥c tiĂªu | Deliverables | Checkpoint |
 |------|----------|--------------|------------|
-| **1** | Khởi tạo repo, thiết kế DB, setup CI | Monorepo (pnpm + Turborepo), Prisma schema, migration chạy. ERD hoàn chỉnh. | DB migrate thành công, seed data. |
-| **2** | API core + Admin UI skeleton | Auth endpoints, Movie CRUD API, Admin login + list page. | Postman test API, Admin list hiển thị dữ liệu seed. |
-| **3** | Upload flow + Encode worker skeleton | Presigned URL API, MinIO setup, Worker consume job (chưa encode thật). | Upload file thành công lên MinIO, job log nhận. |
-| **4** | FFmpeg encode + HLS output | Worker encode MP4 → HLS (360p, 720p), lưu output, callback status. | Encode 1 file demo, copy m3u8 link mở được trên browser. |
-| **5** | Mobile app – Auth + Home + Search | Expo setup, Login/Register, Home (hero + rails), Search. | App chạy Expo Go, login, thấy danh sách rails, search hoạt động. |
-| **6** | Mobile – Detail + Player + Resume | Detail screen, HLS player (expo-av hoặc react-native-video), progress save & resume. | Play video, thoát, resume đúng vị trí. |
-| **7** | My List + Polish UI/UX + Bug fix | Favorites, Continue Watching rail sắp xếp lại, skeleton loaders, error states. | Flow hoàn chỉnh end-to-end: upload → encode → publish → viewer play + resume. |
-| **8** | Ổn định, deploy, docs, demo | Deploy (Railway / Render / VPS), README, ARCHITECTURE.md, video demo, báo cáo. | Demo 5 phút thành công, báo cáo nộp. |
+| **1** | Khá»Ÿi táº¡o repo, thiáº¿t káº¿ DB, setup CI | Monorepo (pnpm + Turborepo), Prisma schema, migration cháº¡y. ERD hoĂ n chá»‰nh. | DB migrate thĂ nh cĂ´ng, seed data. |
+| **2** | API core + Admin UI skeleton | Auth endpoints, Movie CRUD API, Admin login + list page. | Postman test API, Admin list hiá»ƒn thá»‹ dá»¯ liá»‡u seed. |
+| **3** | Upload flow + Encode worker skeleton | Presigned URL API, MinIO setup, Worker consume job (chÆ°a encode tháº­t). | Upload file thĂ nh cĂ´ng lĂªn MinIO, job log nháº­n. |
+| **4** | FFmpeg encode + HLS output | Worker encode MP4 â†’ HLS (360p, 720p), lÆ°u output, callback status. | Encode 1 file demo, copy m3u8 link má»Ÿ Ä‘Æ°á»£c trĂªn browser. |
+| **5** | Mobile app â€“ Auth + Home + Search | Expo setup, Login/Register, Home (hero + rails), Search. | App cháº¡y Expo Go, login, tháº¥y danh sĂ¡ch rails, search hoáº¡t Ä‘á»™ng. |
+| **6** | Mobile â€“ Detail + Player + Resume | Detail screen, HLS player (expo-av hoáº·c react-native-video), progress save & resume. | Play video, thoĂ¡t, resume Ä‘Ăºng vá»‹ trĂ­. |
+| **7** | My List + Polish UI/UX + Bug fix | Favorites, Continue Watching rail sáº¯p xáº¿p láº¡i, skeleton loaders, error states. | Flow hoĂ n chá»‰nh end-to-end: upload â†’ encode â†’ publish â†’ viewer play + resume. |
+| **8** | á»”n Ä‘á»‹nh, deploy, docs, demo | Deploy (Railway / Render / VPS), README, ARCHITECTURE.md, video demo, bĂ¡o cĂ¡o. | Demo 5 phĂºt thĂ nh cĂ´ng, bĂ¡o cĂ¡o ná»™p. |
 
 ---
 
-# 10. Kịch bản demo cuối kỳ (3–5 phút)
+# 10. Ká»‹ch báº£n demo cuá»‘i ká»³ (3â€“5 phĂºt)
 
-> Mục tiêu: Chứng minh luồng **upload → encode → publish → viewer play → resume**.
+> Má»¥c tiĂªu: Chá»©ng minh luá»“ng **upload â†’ encode â†’ publish â†’ viewer play â†’ resume**.
 
-### Phần 1: Admin tạo & upload (1.5 phút)
+### Pháº§n 1: Admin táº¡o & upload (1.5 phĂºt)
 
-1. Mở browser → CMS login (admin@netflop.local).
-2. Nhấn **Create Movie** → điền title "Demo Video", description, chọn genres.
-3. Save → chuyển tab Upload.
-4. Chọn file `demo_video.mp4` (30 giây), upload → progress bar → xong.
-5. Màn hình hiển thị `encode_status = processing` (hoặc chờ vài giây thấy chuyển `ready`).
-6. Nhấn **Publish**.
+1. Má»Ÿ browser â†’ CMS login (admin@NETFLAT.local).
+2. Nháº¥n **Create Movie** â†’ Ä‘iá»n title "Demo Video", description, chá»n genres.
+3. Save â†’ chuyá»ƒn tab Upload.
+4. Chá»n file `demo_video.mp4` (30 giĂ¢y), upload â†’ progress bar â†’ xong.
+5. MĂ n hĂ¬nh hiá»ƒn thá»‹ `encode_status = processing` (hoáº·c chá» vĂ i giĂ¢y tháº¥y chuyá»ƒn `ready`).
+6. Nháº¥n **Publish**.
 
-### Phần 2: Viewer xem & resume (2 phút)
+### Pháº§n 2: Viewer xem & resume (2 phĂºt)
 
-1. Mở app Expo Go trên điện thoại (hoặc simulator).
-2. Login (`viewer@netflop.local`).
-3. Home → thấy "Demo Video" xuất hiện ở rail Trending (hoặc hero).
-4. Nhấn → Detail → nhấn **Play**.
-5. Xem ~15 giây → nhấn **Back**.
-6. Về Home → rail **Continue Watching** xuất hiện "Demo Video".
-7. Nhấn lại → Player resume từ ~15 s.
+1. Má»Ÿ app Expo Go trĂªn Ä‘iá»‡n thoáº¡i (hoáº·c simulator).
+2. Login (`viewer@NETFLAT.local`).
+3. Home â†’ tháº¥y "Demo Video" xuáº¥t hiá»‡n á»Ÿ rail Trending (hoáº·c hero).
+4. Nháº¥n â†’ Detail â†’ nháº¥n **Play**.
+5. Xem ~15 giĂ¢y â†’ nháº¥n **Back**.
+6. Vá» Home â†’ rail **Continue Watching** xuáº¥t hiá»‡n "Demo Video".
+7. Nháº¥n láº¡i â†’ Player resume tá»« ~15 s.
 
-### Phần 3: Bonus (nếu còn thời gian)
+### Pháº§n 3: Bonus (náº¿u cĂ²n thá»i gian)
 
-- Search "Demo" → kết quả hiển thị.
-- Add to My List → vào My List xác nhận.
-- Hiển thị subtitles (nếu có).
+- Search "Demo" â†’ káº¿t quáº£ hiá»ƒn thá»‹.
+- Add to My List â†’ vĂ o My List xĂ¡c nháº­n.
+- Hiá»ƒn thá»‹ subtitles (náº¿u cĂ³).
 
 ---
 
-# 11. Tiêu chí chấm điểm (Scoring Rubric)
+# 11. TiĂªu chĂ­ cháº¥m Ä‘iá»ƒm (Scoring Rubric)
 
-## Rubric chính – Tổng 100 điểm
+## Rubric chĂ­nh â€“ Tá»•ng 100 Ä‘iá»ƒm
 
-| Hạng mục | Điểm | Tiêu chí chi tiết |
+| Háº¡ng má»¥c | Äiá»ƒm | TiĂªu chĂ­ chi tiáº¿t |
 |----------|------|-------------------|
-| **UX/UI "Netflix vibe"** | 20 | Dark theme, poster rails, skeleton loaders, hero banner, chuyển cảnh mượt mà, error/empty states đẹp. |
-| **Tính năng cốt lõi MVP** | 30 | Login, Home, Search, Detail, Play, Resume, Continue Watching, My List hoạt động đầy đủ theo AC. |
-| **Streaming HLS + Encode Pipeline** | 25 | Encode MP4 → HLS multi-bitrate thành công, playback mượt, buffer hợp lý, quality switch (nếu có). |
-| **Backend API + DB + Phân quyền** | 15 | RESTful chuẩn, JWT auth, RBAC admin/viewer, migration, seed data, logging cơ bản. |
-| **Chất lượng triển khai** | 10 | Error handling, logging, docs (README, ARCHITECTURE), deploy (local hoặc cloud), code sạch. |
-| **Tổng** | **100** | |
+| **UX/UI "Netflix vibe"** | 20 | Dark theme, poster rails, skeleton loaders, hero banner, chuyá»ƒn cáº£nh mÆ°á»£t mĂ , error/empty states Ä‘áº¹p. |
+| **TĂ­nh nÄƒng cá»‘t lĂµi MVP** | 30 | Login, Home, Search, Detail, Play, Resume, Continue Watching, My List hoáº¡t Ä‘á»™ng Ä‘áº§y Ä‘á»§ theo AC. |
+| **Streaming HLS + Encode Pipeline** | 25 | Encode MP4 â†’ HLS multi-bitrate thĂ nh cĂ´ng, playback mÆ°á»£t, buffer há»£p lĂ½, quality switch (náº¿u cĂ³). |
+| **Backend API + DB + PhĂ¢n quyá»n** | 15 | RESTful chuáº©n, JWT auth, RBAC admin/viewer, migration, seed data, logging cÆ¡ báº£n. |
+| **Cháº¥t lÆ°á»£ng triá»ƒn khai** | 10 | Error handling, logging, docs (README, ARCHITECTURE), deploy (local hoáº·c cloud), code sáº¡ch. |
+| **Tá»•ng** | **100** | |
 
-## Bonus – Tối đa +10 điểm
+## Bonus â€“ Tá»‘i Ä‘a +10 Ä‘iá»ƒm
 
-| Bonus | Điểm | Điều kiện |
+| Bonus | Äiá»ƒm | Äiá»u kiá»‡n |
 |-------|------|-----------|
-| Subtitles (VTT) | +2 | Upload VTT, hiển thị toggle on/off trong player. |
-| Multiple profiles | +2 | Switch profile, history/favorites tách biệt. |
-| Simple recommendation | +2 | Rail "Vì bạn đã xem X" dựa trên genre. |
+| Subtitles (VTT) | +2 | Upload VTT, hiá»ƒn thá»‹ toggle on/off trong player. |
+| Multiple profiles | +2 | Switch profile, history/favorites tĂ¡ch biá»‡t. |
+| Simple recommendation | +2 | Rail "VĂ¬ báº¡n Ä‘Ă£ xem X" dá»±a trĂªn genre. |
 | Analytics dashboard | +2 | Admin xem views, top 10 movies. |
-| CI/CD pipeline | +2 | GitHub Actions build + test + deploy tự động. |
-| **Tổng bonus** | **+10 max** | |
+| CI/CD pipeline | +2 | GitHub Actions build + test + deploy tá»± Ä‘á»™ng. |
+| **Tá»•ng bonus** | **+10 max** | |
 
 ---
 
-# 12. Rủi ro & phương án giảm thiểu
+# 12. Rá»§i ro & phÆ°Æ¡ng Ă¡n giáº£m thiá»ƒu
 
-| # | Rủi ro | Khả năng | Ảnh hưởng | Phương án giảm thiểu |
+| # | Rá»§i ro | Kháº£ nÄƒng | áº¢nh hÆ°á»Ÿng | PhÆ°Æ¡ng Ă¡n giáº£m thiá»ƒu |
 |---|--------|----------|-----------|----------------------|
-| R-01 | **FFmpeg encode lỗi / lâu** | Trung bình | Cao – không có video để play | Sử dụng preset `fast` hoặc `veryfast`, giảm bitrate. Test video ngắn 30 s. Thêm retry job 1 lần. |
-| R-02 | **HLS playback khác nhau iOS/Android** | Trung bình | Trung bình | Dùng thư viện cross-platform (`expo-av` hoặc `react-native-video`). Test cả 2 platform sớm. |
-| R-03 | **Networking Expo – localhost vs IP LAN** | Cao (dev) | Thấp | Dùng `EXPO_PUBLIC_API_URL` env, chạy API trên IP LAN hoặc tunnel (ngrok). |
-| R-04 | **Storage permissions (Android)** | Thấp | Thấp | Streaming không cần quyền storage; nếu download thì xin permission. |
-| R-05 | **Presigned URL hết hạn giữa upload** | Thấp | Trung bình | TTL presigned = 15–30 phút đủ cho file ≤ 2 GB. Retry presigned nếu fail. |
-| R-06 | **Team nhỏ (1–3 người), deadline gấp** | Cao | Cao | Tuân thủ MoSCoW; cut SHOULD/COULD nếu thiếu thời gian. Daily sync 15 phút. |
-| R-07 | **MinIO / Redis crash local** | Thấp | Trung bình | Docker compose restart policy; dev test docker-compose up trước. |
+| R-01 | **FFmpeg encode lá»—i / lĂ¢u** | Trung bĂ¬nh | Cao â€“ khĂ´ng cĂ³ video Ä‘á»ƒ play | Sá»­ dá»¥ng preset `fast` hoáº·c `veryfast`, giáº£m bitrate. Test video ngáº¯n 30 s. ThĂªm retry job 1 láº§n. |
+| R-02 | **HLS playback khĂ¡c nhau iOS/Android** | Trung bĂ¬nh | Trung bĂ¬nh | DĂ¹ng thÆ° viá»‡n cross-platform (`expo-av` hoáº·c `react-native-video`). Test cáº£ 2 platform sá»›m. |
+| R-03 | **Networking Expo â€“ localhost vs IP LAN** | Cao (dev) | Tháº¥p | DĂ¹ng `EXPO_PUBLIC_API_URL` env, cháº¡y API trĂªn IP LAN hoáº·c tunnel (ngrok). |
+| R-04 | **Storage permissions (Android)** | Tháº¥p | Tháº¥p | Streaming khĂ´ng cáº§n quyá»n storage; náº¿u download thĂ¬ xin permission. |
+| R-05 | **Presigned URL háº¿t háº¡n giá»¯a upload** | Tháº¥p | Trung bĂ¬nh | TTL presigned = 15â€“30 phĂºt Ä‘á»§ cho file â‰¤ 2 GB. Retry presigned náº¿u fail. |
+| R-06 | **Team nhá» (1â€“3 ngÆ°á»i), deadline gáº¥p** | Cao | Cao | TuĂ¢n thá»§ MoSCoW; cut SHOULD/COULD náº¿u thiáº¿u thá»i gian. Daily sync 15 phĂºt. |
+| R-07 | **MinIO / Redis crash local** | Tháº¥p | Trung bĂ¬nh | Docker compose restart policy; dev test docker-compose up trÆ°á»›c. |
 
 ---
 
-# 13. Tóm tắt & next steps
+# 13. TĂ³m táº¯t & next steps
 
-## Tóm tắt
+## TĂ³m táº¯t
 
-**netflop** là ứng dụng xem video tự sản xuất với trải nghiệm "Netflix vibe" dành cho demo đồ án tốt nghiệp.  
-MVP bao gồm:
+**NETFLAT** lĂ  á»©ng dá»¥ng xem video tá»± sáº£n xuáº¥t vá»›i tráº£i nghiá»‡m "Netflix vibe" dĂ nh cho demo Ä‘á»“ Ă¡n tá»‘t nghiá»‡p.  
+MVP bao gá»“m:
 - **Mobile app** (Expo React Native): login, home rails, search, detail, HLS player, resume, continue watching, my list.
-- **Admin CMS** (Next.js): movie CRUD, upload, theo dõi encode, publish.
+- **Admin CMS** (Next.js): movie CRUD, upload, theo dĂµi encode, publish.
 - **Backend API** (NestJS + Prisma + PostgreSQL): RESTful, JWT, RBAC.
-- **Encode pipeline** (BullMQ + FFmpeg): MP4 → HLS 360p/720p, lưu MinIO.
+- **Encode pipeline** (BullMQ + FFmpeg): MP4 â†’ HLS 360p/720p, lÆ°u MinIO.
 
-Thời gian triển khai 8 tuần với checkpoint rõ ràng. Scoring rubric 100 điểm + 10 bonus đảm bảo đánh giá khách quan.
+Thá»i gian triá»ƒn khai 8 tuáº§n vá»›i checkpoint rĂµ rĂ ng. Scoring rubric 100 Ä‘iá»ƒm + 10 bonus Ä‘áº£m báº£o Ä‘Ă¡nh giĂ¡ khĂ¡ch quan.
 
 ## Next steps
 
-1. **Tạo `ARCHITECTURE.md`**: sơ đồ hệ thống, tech stack chi tiết, luồng encode.
-2. **Tạo `DATABASE_SCHEMA.md`**: ERD, Prisma schema.
-3. **Tạo `OPENAPI.yaml`**: spec API endpoints.
-4. **Khởi tạo monorepo**: `pnpm init`, Turborepo config, workspace packages.
-5. **Thiết lập CI**: lint + typecheck + test (GitHub Actions).
+1. **Táº¡o `ARCHITECTURE.md`**: sÆ¡ Ä‘á»“ há»‡ thá»‘ng, tech stack chi tiáº¿t, luá»“ng encode.
+2. **Táº¡o `DATABASE_SCHEMA.md`**: ERD, Prisma schema.
+3. **Táº¡o `OPENAPI.yaml`**: spec API endpoints.
+4. **Khá»Ÿi táº¡o monorepo**: `pnpm init`, Turborepo config, workspace packages.
+5. **Thiáº¿t láº­p CI**: lint + typecheck + test (GitHub Actions).
 
 ---
 
-> **Ghi chú:** Tài liệu này là phiên bản 1.0, có thể cập nhật khi có feedback từ giảng viên hoặc thay đổi scope.
+> **Ghi chĂº:** TĂ i liá»‡u nĂ y lĂ  phiĂªn báº£n 1.0, cĂ³ thá»ƒ cáº­p nháº­t khi cĂ³ feedback tá»« giáº£ng viĂªn hoáº·c thay Ä‘á»•i scope.

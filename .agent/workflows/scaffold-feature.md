@@ -1,25 +1,25 @@
----
+﻿---
 name: workflow-scaffold-feature
-description: Scaffold a new Netflop feature (NestJS + Prisma + OpenAPI + shared types).
+description: Scaffold a new NETFLAT feature (NestJS + Prisma + OpenAPI + shared types).
 trigger: manual
 ---
 
 ## ---
-description: Scaffold a new netflop feature (NestJS module + Prisma + OpenAPI + shared types)
+description: Scaffold a new NETFLAT feature (NestJS module + Prisma + OpenAPI + shared types)
 ## ---
 
-# /scaffold-feature â€” Netflop
+# /scaffold-feature Ă¢â‚¬â€ NETFLAT
 
 ## Preconditions
-- Repo Ä‘Ă£ scaffold theo Prompt 3 (monorepo pnpm+turbo), API lĂ  NestJS+Prisma.
-- CĂ³ sáºµn: PRD.md, ARCHITECTURE.md, DATABASE_SCHEMA.md, OPENAPI.yaml.
-- Agent pháº£i tuĂ¢n theo workspace rules netflop.
+- Repo Ă„â€˜Ä‚Â£ scaffold theo Prompt 3 (monorepo pnpm+turbo), API lÄ‚Â  NestJS+Prisma.
+- CÄ‚Â³ sĂ¡ÂºÂµn: PRD.md, ARCHITECTURE.md, DATABASE_SCHEMA.md, OPENAPI.yaml.
+- Agent phĂ¡ÂºÂ£i tuÄ‚Â¢n theo workspace rules NETFLAT.
 
 ## Inputs (read from the user's message)
-- featureName: vĂ­ dá»¥ "favorites", "watch-history", "genres", "upload", "auth", "recommendations"
-- entityName (optional): tĂªn entity chĂ­nh (Movie, Genre, Favorite...)
+- featureName: vÄ‚Â­ dĂ¡Â»Â¥ "favorites", "watch-history", "genres", "upload", "auth", "recommendations"
+- entityName (optional): tÄ‚Âªn entity chÄ‚Â­nh (Movie, Genre, Favorite...)
 - adminOnly (optional): true/false
-If user did NOT provide featureName, ASK ONCE: â€œBáº¡n muá»‘n scaffold feature nĂ o? (vĂ­ dá»¥: favorites / history / upload)â€.
+If user did NOT provide featureName, ASK ONCE: Ă¢â‚¬Å“BĂ¡ÂºÂ¡n muĂ¡Â»â€˜n scaffold feature nÄ‚Â o? (vÄ‚Â­ dĂ¡Â»Â¥: favorites / history / upload)Ă¢â‚¬Â.
 
 ## 0) Plan (short)
 1. Identify required endpoints + DB changes for this feature (from PRD/OpenAPI/DB schema).
@@ -49,7 +49,7 @@ Create files (names adjust to your repo convention):
   - `create-*.dto.ts` (if POST)
   - `update-*.dto.ts` (if PUT/PATCH)
   - `query-*.dto.ts` (if list/search)
-- Add validation decorators (class-validator) or zod â€” use the projectâ€™s existing choice.
+- Add validation decorators (class-validator) or zod Ă¢â‚¬â€ use the projectĂ¢â‚¬â„¢s existing choice.
 - Add guards if adminOnly=true (RBAC/roles guard).
 
 Also:
@@ -92,7 +92,7 @@ pnpm db:seed
 ## 5) Update OPENAPI.yaml
 - Add new paths under relevant tag.
 - Add/extend schemas for request/response.
-- Add examples (1â€“2 per endpoint).
+- Add examples (1Ă¢â‚¬â€œ2 per endpoint).
 - Ensure security (BearerAuth) is set correctly.
 
 ## ---
@@ -106,7 +106,7 @@ pnpm db:seed
 ## ---
 
 ## 7) Add minimal tests (choose the simplest that exists in repo)
-- If repo has e2e test setup: add 1â€“2 e2e tests for happy path.
+- If repo has e2e test setup: add 1Ă¢â‚¬â€œ2 e2e tests for happy path.
 - Otherwise add unit tests for service (mock Prisma).
 
 ## ---

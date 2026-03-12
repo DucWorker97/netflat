@@ -1,10 +1,10 @@
-# Netflop Observability
+# NETFLAT Observability
 
-This directory contains Grafana dashboards and configuration for monitoring the Netflop pipeline.
+This directory contains Grafana dashboards and configuration for monitoring the NETFLAT pipeline.
 
 ## Dashboards
 
-### Pipeline Trace (`netflop-pipeline.json`)
+### Pipeline Trace (`NETFLAT-pipeline.json`)
 Correlate API and Worker logs using `requestId`.
 
 **Requirements:**
@@ -26,5 +26,5 @@ Correlate API and Worker logs using `requestId`.
 ## Importing
 1. Login to Grafana
 2. Dashboards > New > Import
-3. Upload `dashboards/netflop-pipeline.json`
+3. Upload `dashboards/NETFLAT-pipeline.json`
 4. Select your Loki datasource

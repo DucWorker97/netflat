@@ -1,4 +1,4 @@
-# Netflop — Technical Handoff Document
+﻿# NETFLAT â€” Technical Handoff Document
 
 > **Generated:** 2026-03-10 23:00 (Asia/Ho_Chi_Minh)
 > **Prepared by:** Antigravity (Google DeepMind)
@@ -31,14 +31,14 @@
 
 ## 1. Project Overview
 
-**Netflop** is a Netflix mini-clone graduation project. It is a full-stack video streaming platform with:
+**NETFLAT** is a Netflix mini-clone graduation project. It is a full-stack video streaming platform with:
 
-- **Viewer web app** (Next.js) — browse, search, play HLS videos
-- **Viewer mobile app** (Expo React Native) — same capabilities on Android/iOS
-- **Admin CMS** (Next.js) — movie CRUD, video upload, encode monitoring
-- **Backend API** (NestJS) — REST API with JWT auth, Prisma ORM, BullMQ
-- **HLS Worker** (Node.js) — FFmpeg-based video encoding pipeline
-- **AI Curator** (Python/FastAPI) — recommendation engine with ML + Gemma LLM
+- **Viewer web app** (Next.js) â€” browse, search, play HLS videos
+- **Viewer mobile app** (Expo React Native) â€” same capabilities on Android/iOS
+- **Admin CMS** (Next.js) â€” movie CRUD, video upload, encode monitoring
+- **Backend API** (NestJS) â€” REST API with JWT auth, Prisma ORM, BullMQ
+- **HLS Worker** (Node.js) â€” FFmpeg-based video encoding pipeline
+- **AI Curator** (Python/FastAPI) â€” recommendation engine with ML + Gemma LLM
 
 ### Source of Truth (Priority Order)
 
@@ -51,31 +51,31 @@ docs/PRD.md > docs/ARCHITECTURE.md > OPENAPI.yaml > Code
 ## 2. Repository Structure
 
 ```
-netflop/                          # pnpm + Turborepo monorepo
-├── apps/
-│   ├── api/                      # NestJS backend (port 3000)
-│   │   ├── prisma/               # Schema + 9 migrations
-│   │   └── src/                  # 25 NestJS modules
-│   ├── admin/                    # Next.js admin CMS (port 3001)
-│   ├── web/                      # Next.js viewer web (port 3002)
-│   ├── mobile/                   # Expo React Native (Metro 8081)
-│   ├── worker/                   # FFmpeg HLS encoder (BullMQ consumer)
-│   └── ai-curator/               # Python FastAPI + ML (port 8000)
-├── packages/                     # Shared packages (if any)
-├── scripts/
-│   ├── dev-runtime.js            # Managed dev launcher (Windows)
-│   ├── use-env.js                # .env profile switcher
-│   ├── ci/                       # verify.sh, smoke.sh, video-pipeline-smoke.sh
-│   ├── check-mojibake.js         # Encoding issue detector
-│   └── fix-mojibake.js           # Encoding issue fixer
-├── docs/                         # 28 documentation files
-├── deploy/                       # Staging docker-compose
-├── ops/                          # Operational configs
-├── docker-compose.yml            # Local dev infrastructure
-├── turbo.json                    # Turborepo pipeline config
-├── OPENAPI.yaml                  # API contract (48KB)
-├── feature_status.md             # Feature implementation matrix
-└── .env.example                  # Environment template
+NETFLAT/                          # pnpm + Turborepo monorepo
+â”œâ”€â”€ apps/
+â”‚   â”œâ”€â”€ api/                      # NestJS backend (port 3000)
+â”‚   â”‚   â”œâ”€â”€ prisma/               # Schema + 9 migrations
+â”‚   â”‚   â””â”€â”€ src/                  # 25 NestJS modules
+â”‚   â”œâ”€â”€ admin/                    # Next.js admin CMS (port 3001)
+â”‚   â”œâ”€â”€ web/                      # Next.js viewer web (port 3002)
+â”‚   â”œâ”€â”€ mobile/                   # Expo React Native (Metro 8081)
+â”‚   â”œâ”€â”€ worker/                   # FFmpeg HLS encoder (BullMQ consumer)
+â”‚   â””â”€â”€ ai-curator/               # Python FastAPI + ML (port 8000)
+â”œâ”€â”€ packages/                     # Shared packages (if any)
+â”œâ”€â”€ scripts/
+â”‚   â”œâ”€â”€ dev-runtime.js            # Managed dev launcher (Windows)
+â”‚   â”œâ”€â”€ use-env.js                # .env profile switcher
+â”‚   â”œâ”€â”€ ci/                       # verify.sh, smoke.sh, video-pipeline-smoke.sh
+â”‚   â”œâ”€â”€ check-mojibake.js         # Encoding issue detector
+â”‚   â””â”€â”€ fix-mojibake.js           # Encoding issue fixer
+â”œâ”€â”€ docs/                         # 28 documentation files
+â”œâ”€â”€ deploy/                       # Staging docker-compose
+â”œâ”€â”€ ops/                          # Operational configs
+â”œâ”€â”€ docker-compose.yml            # Local dev infrastructure
+â”œâ”€â”€ turbo.json                    # Turborepo pipeline config
+â”œâ”€â”€ OPENAPI.yaml                  # API contract (48KB)
+â”œâ”€â”€ feature_status.md             # Feature implementation matrix
+â””â”€â”€ .env.example                  # Environment template
 ```
 
 ---
@@ -84,14 +84,14 @@ netflop/                          # pnpm + Turborepo monorepo
 
 | Layer | Technology | Version/Notes |
 |-------|-----------|---------------|
-| **Monorepo** | pnpm + Turborepo | pnpm 9.15.0, Node ≥18 |
+| **Monorepo** | pnpm + Turborepo | pnpm 9.15.0, Node â‰¥18 |
 | **API** | NestJS + Prisma | TypeScript, PostgreSQL |
 | **Queue** | BullMQ + Redis | Job processing for encode pipeline |
-| **Storage** | MinIO (S3-compatible) | Local dev; production → AWS S3 |
+| **Storage** | MinIO (S3-compatible) | Local dev; production â†’ AWS S3 |
 | **Web** | Next.js | React 19 |
 | **Admin** | Next.js | React 19, i18n (vi/en) |
 | **Mobile** | Expo React Native | expo-video for HLS playback |
-| **Worker** | Node.js + FFmpeg | MP4 → HLS (360p + 720p) |
+| **Worker** | Node.js + FFmpeg | MP4 â†’ HLS (360p + 720p) |
 | **AI** | Python FastAPI | scikit-learn + Google Gemma LLM |
 | **Analytics** | ClickHouse | Big data analytics (OLAP) |
 | **Auth** | JWT (access + refresh) | bcrypt, rate limiting, lockout |
@@ -105,19 +105,19 @@ netflop/                          # pnpm + Turborepo monorepo
 
 ```
 Mobile/Web Client
-    ↓ (JWT Bearer token)
+    â†“ (JWT Bearer token)
 NestJS API (port 3000)
-    ├── /api/* (global prefix)
-    ├── /health (excluded from prefix)
-    ├── Prisma → PostgreSQL (port 5432)
-    ├── BullMQ → Redis (port 6379)
-    └── S3 Client → MinIO (port 9000)
+    â”œâ”€â”€ /api/* (global prefix)
+    â”œâ”€â”€ /health (excluded from prefix)
+    â”œâ”€â”€ Prisma â†’ PostgreSQL (port 5432)
+    â”œâ”€â”€ BullMQ â†’ Redis (port 6379)
+    â””â”€â”€ S3 Client â†’ MinIO (port 9000)
 
 Worker (BullMQ consumer)
-    ├── Polls Redis for encode jobs
-    ├── FFmpeg: MP4 → HLS (master.m3u8 + variants)
-    ├── Uploads segments to MinIO
-    └── Callbacks API to update movie status
+    â”œâ”€â”€ Polls Redis for encode jobs
+    â”œâ”€â”€ FFmpeg: MP4 â†’ HLS (master.m3u8 + variants)
+    â”œâ”€â”€ Uploads segments to MinIO
+    â””â”€â”€ Callbacks API to update movie status
 ```
 
 ### 4.2 Port Map
@@ -140,16 +140,16 @@ Worker (BullMQ consumer)
 
 ```typescript
 app.setGlobalPrefix('api', { exclude: ['health'] });
-// → All controllers routes are under /api/*
-// → /health is the only exception
+// â†’ All controllers routes are under /api/*
+// â†’ /health is the only exception
 ```
 
 Key middleware chain:
-1. `helmet()` — security headers
-2. `RequestIdMiddleware` — X-Request-Id correlation
-3. `HttpExceptionFilter` — standardized error responses
-4. `ValidationPipe` — whitelist + transform + forbidNonWhitelisted
-5. `ThrottlerGuard` — global rate limiting (APP_GUARD)
+1. `helmet()` â€” security headers
+2. `RequestIdMiddleware` â€” X-Request-Id correlation
+3. `HttpExceptionFilter` â€” standardized error responses
+4. `ValidationPipe` â€” whitelist + transform + forbidNonWhitelisted
+5. `ThrottlerGuard` â€” global rate limiting (APP_GUARD)
 
 ---
 
@@ -178,26 +178,26 @@ Key middleware chain:
 
 | Model | Table | Key Fields | Relations |
 |-------|-------|------------|-----------|
-| **User** | `users` | email, passwordHash, role, `isActive`†, `disabledAt`†, `disabledReason`† | → Profile[], Favorite[], WatchHistory[], Rating[], LoginAttempt[], RefreshToken[], PasswordResetToken[], Notification[], Subscription?, PaymentMethod[] |
-| **Profile** | `profiles` | name, avatarUrl, isKids, pinEnabled, maxRating | → User, Favorite[], WatchHistory[], Rating[] |
-| **Movie** | `movies` | title, description, posterUrl, backdropUrl, durationSeconds, movieStatus, encodeStatus, playbackUrl, originalKey, tmdbId, popularity | → Genre[], Actor[], Favorite[], WatchHistory[], Upload[], EncodeJob[], Rating[] |
-| **Genre** | `genres` | name, slug | → Movie[] (M:N via MovieGenre) |
-| **Actor** | `actors` | name, avatarUrl | → Movie[] (M:N via MovieActor) |
+| **User** | `users` | email, passwordHash, role, `isActive`â€ , `disabledAt`â€ , `disabledReason`â€  | â†’ Profile[], Favorite[], WatchHistory[], Rating[], LoginAttempt[], RefreshToken[], PasswordResetToken[], Notification[], Subscription?, PaymentMethod[] |
+| **Profile** | `profiles` | name, avatarUrl, isKids, pinEnabled, maxRating | â†’ User, Favorite[], WatchHistory[], Rating[] |
+| **Movie** | `movies` | title, description, posterUrl, backdropUrl, durationSeconds, movieStatus, encodeStatus, playbackUrl, originalKey, tmdbId, popularity | â†’ Genre[], Actor[], Favorite[], WatchHistory[], Upload[], EncodeJob[], Rating[] |
+| **Genre** | `genres` | name, slug | â†’ Movie[] (M:N via MovieGenre) |
+| **Actor** | `actors` | name, avatarUrl | â†’ Movie[] (M:N via MovieActor) |
 | **Favorite** | `favorites` | userId, profileId?, movieId | Unique: [profileId, movieId] |
 | **WatchHistory** | `watch_history` | userId, profileId?, movieId, progressSeconds, durationSeconds, completed | Unique: [profileId, movieId] |
 | **Rating** | `ratings` | userId, profileId?, movieId, rating (1-5), comment? | Unique: [profileId, movieId] |
-| **Upload** | `uploads` | movieId, objectKey (unique), fileType, uploadStatus, sizeBytes | → Movie |
-| **EncodeJob** | `encode_jobs` | movieId, inputKey (unique), outputPrefix, status, attempts, errorMessage | → Movie |
-| **RefreshToken** | `refresh_tokens` | userId, token (unique hash), expiresAt, revoked | → User |
-| **PasswordResetToken** | `password_reset_tokens` | userId, tokenHash (unique), expiresAt, usedAt | → User |
-| **LoginAttempt** | `login_attempts` | userId?, email, ipAddress, userAgent, succeeded | → User? |
+| **Upload** | `uploads` | movieId, objectKey (unique), fileType, uploadStatus, sizeBytes | â†’ Movie |
+| **EncodeJob** | `encode_jobs` | movieId, inputKey (unique), outputPrefix, status, attempts, errorMessage | â†’ Movie |
+| **RefreshToken** | `refresh_tokens` | userId, token (unique hash), expiresAt, revoked | â†’ User |
+| **PasswordResetToken** | `password_reset_tokens` | userId, tokenHash (unique), expiresAt, usedAt | â†’ User |
+| **LoginAttempt** | `login_attempts` | userId?, email, ipAddress, userAgent, succeeded | â†’ User? |
 | **PlayEvent** | `play_events` | userId, profileId?, movieId | Analytics tracking |
 | **RailConfig** | `rail_configs` | name, type, genreId?, position, isActive | Homepage rail configuration |
-| **Subscription** | `subscriptions` | userId (unique), plan, status, startDate, endDate | → User, Payment[] |
-| **Payment** | `payments` | subscriptionId, amount, currency, status, provider | → Subscription |
-| **Notification** | `notifications` | userId? (null=global), title, message, type, isRead, movieId? | → User?, Movie? |
+| **Subscription** | `subscriptions` | userId (unique), plan, status, startDate, endDate | â†’ User, Payment[] |
+| **Payment** | `payments` | subscriptionId, amount, currency, status, provider | â†’ Subscription |
+| **Notification** | `notifications` | userId? (null=global), title, message, type, isRead, movieId? | â†’ User?, Movie? |
 
-> † Fields marked with † are **newly added** (2026-03-10) and require `prisma migrate dev` — see Section 14.
+> â€  Fields marked with â€  are **newly added** (2026-03-10) and require `prisma migrate dev` â€” see Section 14.
 
 ---
 
@@ -240,89 +240,89 @@ All 25 modules registered in `apps/api/src/app.module.ts`:
 ### 7.1 Auth Flow
 
 ```
-POST /api/auth/register  →  Create user + return JWT pair
-POST /api/auth/login     →  Validate credentials + return JWT pair
-POST /api/auth/refresh   →  Rotate tokens using refresh token
-POST /api/auth/logout    →  Revoke refresh token
-POST /api/auth/forgot-password  →  Generate reset token (+ send email if MAIL_ENABLED)
-POST /api/auth/reset-password   →  Validate token + update password + revoke all tokens
-GET  /api/auth/me        →  Return current user
+POST /api/auth/register  â†’  Create user + return JWT pair
+POST /api/auth/login     â†’  Validate credentials + return JWT pair
+POST /api/auth/refresh   â†’  Rotate tokens using refresh token
+POST /api/auth/logout    â†’  Revoke refresh token
+POST /api/auth/forgot-password  â†’  Generate reset token (+ send email if MAIL_ENABLED)
+POST /api/auth/reset-password   â†’  Validate token + update password + revoke all tokens
+GET  /api/auth/me        â†’  Return current user
 ```
 
 ### 7.2 Security Layers
 
 | Layer | Implementation | Status |
 |-------|---------------|--------|
-| **Password hashing** | bcrypt (10 rounds) | ✅ Active |
-| **JWT tokens** | Access (15m) + Refresh (7d) | ✅ Active |
-| **Rate limiting** | @nestjs/throttler (3-tier: 1s/10s/60s) | ✅ Active |
-| **Endpoint throttle** | Login: 10/60s, Register: 5/60s, ForgotPassword: 5/15m | ✅ Active |
-| **Login lockout** | 5 failed attempts → 15min lockout | ✅ Active |
-| **Login attempt tracking** | `login_attempts` table with IP/UA | ✅ Active |
-| **Password policy** | Min length + complexity regex | ✅ Active |
-| **Email normalization** | Lowercase + trim before lookup/store | ✅ Active |
-| **CAPTCHA guard** | reCAPTCHA v2/v3, Cloudflare Turnstile | ✅ Built, **opt-in** (`CAPTCHA_ENABLED=false`) |
-| **Account disable** | `isActive` + `disabledAt` + `disabledReason` on User | ✅ Built, **pending migration** |
-| **Mail service** | Nodemailer SMTP for password reset emails | ✅ Built, **opt-in** (`MAIL_ENABLED=false`) |
-| **Admin user disable** | `PATCH /api/users/:id/disable`, `PATCH /api/users/:id/enable` | ✅ Built, **pending migration** |
-| **Helmet** | Security headers | ✅ Active |
-| **CORS** | Configurable origins via env | ✅ Active |
-| **Input validation** | class-validator + whitelist + forbidNonWhitelisted | ✅ Active |
-| **Request ID** | X-Request-Id middleware for log correlation | ✅ Active |
+| **Password hashing** | bcrypt (10 rounds) | âœ… Active |
+| **JWT tokens** | Access (15m) + Refresh (7d) | âœ… Active |
+| **Rate limiting** | @nestjs/throttler (3-tier: 1s/10s/60s) | âœ… Active |
+| **Endpoint throttle** | Login: 10/60s, Register: 5/60s, ForgotPassword: 5/15m | âœ… Active |
+| **Login lockout** | 5 failed attempts â†’ 15min lockout | âœ… Active |
+| **Login attempt tracking** | `login_attempts` table with IP/UA | âœ… Active |
+| **Password policy** | Min length + complexity regex | âœ… Active |
+| **Email normalization** | Lowercase + trim before lookup/store | âœ… Active |
+| **CAPTCHA guard** | reCAPTCHA v2/v3, Cloudflare Turnstile | âœ… Built, **opt-in** (`CAPTCHA_ENABLED=false`) |
+| **Account disable** | `isActive` + `disabledAt` + `disabledReason` on User | âœ… Built, **pending migration** |
+| **Mail service** | Nodemailer SMTP for password reset emails | âœ… Built, **opt-in** (`MAIL_ENABLED=false`) |
+| **Admin user disable** | `PATCH /api/users/:id/disable`, `PATCH /api/users/:id/enable` | âœ… Built, **pending migration** |
+| **Helmet** | Security headers | âœ… Active |
+| **CORS** | Configurable origins via env | âœ… Active |
+| **Input validation** | class-validator + whitelist + forbidNonWhitelisted | âœ… Active |
+| **Request ID** | X-Request-Id middleware for log correlation | âœ… Active |
 
 ### 7.3 Security Config (`apps/api/src/config/security.config.ts`)
 
 Central typed config with env var parsing:
-- `security.cors` — origins, credentials
-- `security.auth.jwt` — access/refresh TTL
-- `security.auth.loginProtection` — max attempts, lockout duration
-- `security.auth.passwordReset` — TTL, debug mode, base URL
-- `security.captcha` — enabled, provider, siteKey, secretKey, minimumScore
-- `security.mail` — enabled, provider, host, port, credentials
+- `security.cors` â€” origins, credentials
+- `security.auth.jwt` â€” access/refresh TTL
+- `security.auth.loginProtection` â€” max attempts, lockout duration
+- `security.auth.passwordReset` â€” TTL, debug mode, base URL
+- `security.captcha` â€” enabled, provider, siteKey, secretKey, minimumScore
+- `security.mail` â€” enabled, provider, host, port, credentials
 
 ---
 
 ## 8. Video Pipeline
 
-### 8.1 Upload → Encode → Playback
+### 8.1 Upload â†’ Encode â†’ Playback
 
 ```
 Admin CMS                API                     Worker              MinIO
-   │                      │                        │                   │
-   ├─ POST /upload/init ─→│                        │                   │
-   │←─ presigned URL ─────│                        │                   │
-   ├─ PUT (binary) ──────────────────────────────────────────────────→ │
-   ├─ POST /upload/complete →│                     │                   │
-   │                      ├─ Enqueue BullMQ job ──→│                   │
-   │                      │                        ├─ Download MP4 ←── │
-   │                      │                        ├─ FFmpeg encode    │
-   │                      │                        ├─ Upload HLS ────→ │
-   │                      │←─ Callback: status ────│                   │
-   │                      │   update movie record  │                   │
-   │                      │                        │                   │
-Viewer                    │                        │                   │
-   ├─ GET /movies/:id/stream →│                    │                   │
-   │←─ playbackUrl (signed) ──│                    │                   │
-   ├─ GET master.m3u8 ──────────────────────────────────────────────→ │
-   ├─ GET variant/*.ts ──────────────────────────────────────────────→ │
+   â”‚                      â”‚                        â”‚                   â”‚
+   â”œâ”€ POST /upload/init â”€â†’â”‚                        â”‚                   â”‚
+   â”‚â†â”€ presigned URL â”€â”€â”€â”€â”€â”‚                        â”‚                   â”‚
+   â”œâ”€ PUT (binary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â†’ â”‚
+   â”œâ”€ POST /upload/complete â†’â”‚                     â”‚                   â”‚
+   â”‚                      â”œâ”€ Enqueue BullMQ job â”€â”€â†’â”‚                   â”‚
+   â”‚                      â”‚                        â”œâ”€ Download MP4 â†â”€â”€ â”‚
+   â”‚                      â”‚                        â”œâ”€ FFmpeg encode    â”‚
+   â”‚                      â”‚                        â”œâ”€ Upload HLS â”€â”€â”€â”€â†’ â”‚
+   â”‚                      â”‚â†â”€ Callback: status â”€â”€â”€â”€â”‚                   â”‚
+   â”‚                      â”‚   update movie record  â”‚                   â”‚
+   â”‚                      â”‚                        â”‚                   â”‚
+Viewer                    â”‚                        â”‚                   â”‚
+   â”œâ”€ GET /movies/:id/stream â†’â”‚                    â”‚                   â”‚
+   â”‚â†â”€ playbackUrl (signed) â”€â”€â”‚                    â”‚                   â”‚
+   â”œâ”€ GET master.m3u8 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â†’ â”‚
+   â”œâ”€ GET variant/*.ts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â†’ â”‚
 ```
 
 ### 8.2 HLS Output Structure
 
 ```
 hls/{movieId}/
-├── master.m3u8          # Multi-variant playlist
-├── v360p/
-│   ├── playlist.m3u8    # 360p variant
-│   └── segment_*.ts
-└── v720p/
-    ├── playlist.m3u8    # 720p variant
-    └── segment_*.ts
+â”œâ”€â”€ master.m3u8          # Multi-variant playlist
+â”œâ”€â”€ v360p/
+â”‚   â”œâ”€â”€ playlist.m3u8    # 360p variant
+â”‚   â””â”€â”€ segment_*.ts
+â””â”€â”€ v720p/
+    â”œâ”€â”€ playlist.m3u8    # 720p variant
+    â””â”€â”€ segment_*.ts
 ```
 
 ### 8.3 MinIO Bucket Policy
 
-- Bucket: `netflop-media`
+- Bucket: `NETFLAT-media`
 - Public read on: `hls/`, `posters/`, `thumbnails/`, `subtitles/`
 - Private: `originals/` (uploaded MP4s)
 
@@ -330,7 +330,7 @@ hls/{movieId}/
 
 ## 9. Environment Configuration
 
-### 9.1 Root `.env` — Single source for all apps
+### 9.1 Root `.env` â€” Single source for all apps
 
 See `.env.example` for all variables. Key groups:
 
@@ -363,14 +363,14 @@ Switch with: `pnpm dev:web` / `pnpm dev:mobile:emu` / `pnpm dev:lan`
 
 ## 10. Infrastructure (Docker)
 
-### `docker-compose.yml` — 5 services
+### `docker-compose.yml` â€” 5 services
 
 | Service | Image | Port | Volume |
 |---------|-------|------|--------|
 | `postgres` | postgres:15-alpine | 5432 | `postgres-data` |
-| `redis` | redis:7-alpine | 6379 | — |
+| `redis` | redis:7-alpine | 6379 | â€” |
 | `minio` | minio/minio:latest | 9000, 9001 | `minio-data` |
-| `minio-init` | minio/mc:latest | — | Initializes bucket + public policies |
+| `minio-init` | minio/mc:latest | â€” | Initializes bucket + public policies |
 | `clickhouse` | clickhouse/clickhouse-server:24-alpine | 8123, 9009 | `clickhouse-data` |
 | `ai-curator` | Built from `apps/ai-curator/Dockerfile` | 8000 | `ai-models` |
 
@@ -390,11 +390,11 @@ pnpm db:studio         # Open Prisma Studio GUI
 
 ## 11. Feature Status Matrix
 
-### ✅ MVP Complete
+### âœ… MVP Complete
 
 - Auth (register/login/refresh/logout/forgot/reset password)
 - Movie CRUD (admin), list/search/detail (viewer)
-- Video upload → HLS encode → playback
+- Video upload â†’ HLS encode â†’ playback
 - Watch history with resume
 - Favorites (my list)
 - Genre rails on home
@@ -403,7 +403,7 @@ pnpm db:studio         # Open Prisma Studio GUI
 - Admin CMS (full movie management)
 - Notifications (database-backed, in-app)
 
-### ⚠️ Partial
+### â ï¸ Partial
 
 | Feature | Status |
 |---------|--------|
@@ -414,7 +414,7 @@ pnpm db:studio         # Open Prisma Studio GUI
 | Quality selector | HLS variants exist, UI partial |
 | Subtitles | Not implemented (S-01) |
 
-### ❌ Not Implemented
+### âŒ Not Implemented
 
 - Subtitle upload/display
 - 480p HLS variant
@@ -446,42 +446,42 @@ All currently **disabled** (`false`):
 
 ## 13. Recent Changes (Session 2026-03-10)
 
-### By Codex (GPT-5) — Earlier Session
+### By Codex (GPT-5) â€” Earlier Session
 
 - Route prefix fix (global `/api` prefix)
 - Auth security hardening (login tracking, lockout, password policy)
-- Mock → real API migration (major areas)
+- Mock â†’ real API migration (major areas)
 - Build/typecheck blockers fixed
 - Mobile TS debt cleanup
 - Dev runtime manager created
 
-### By Antigravity (DeepMind) — This Session
+### By Antigravity (DeepMind) â€” This Session
 
 | # | Item | Files Changed |
 |---|------|---------------|
-| 1 | **Dev runtime stability** | `scripts/dev-runtime.js` — graceful shutdown, auto-restart, health monitor, `--no-monitor` flag |
-| 2 | **Android artifacts cleanup** | `.gitignore` — added `apps/mobile/android/{.gradle,build,app/build}/` |
-| 3 | **Mock → real API** | 6 pages migrated: `top10`, `coming-soon`, `browse` (web), `downloads` (mobile), `BulkActions`, `subtitles` (admin) |
-| 4 | **Web lint enforcement** | `apps/web/next.config.js` — removed `eslint.ignoreDuringBuilds: true` |
-| 5 | **AI curator typecheck** | `apps/ai-curator/turbo.json` (new), `apps/ai-curator/package.json` — typecheck → no-op in turbo |
+| 1 | **Dev runtime stability** | `scripts/dev-runtime.js` â€” graceful shutdown, auto-restart, health monitor, `--no-monitor` flag |
+| 2 | **Android artifacts cleanup** | `.gitignore` â€” added `apps/mobile/android/{.gradle,build,app/build}/` |
+| 3 | **Mock â†’ real API** | 6 pages migrated: `top10`, `coming-soon`, `browse` (web), `downloads` (mobile), `BulkActions`, `subtitles` (admin) |
+| 4 | **Web lint enforcement** | `apps/web/next.config.js` â€” removed `eslint.ignoreDuringBuilds: true` |
+| 5 | **AI curator typecheck** | `apps/ai-curator/turbo.json` (new), `apps/ai-curator/package.json` â€” typecheck â†’ no-op in turbo |
 | 6 | **Security hardening** | 4 new files + 7 modified files (see below) |
 
 #### Security Hardening Details (Item 6)
 
 **New files:**
-- `apps/api/src/auth/captcha.service.ts` — CAPTCHA verification (reCAPTCHA/Turnstile)
-- `apps/api/src/auth/guards/captcha.guard.ts` — NestJS guard for endpoints
-- `apps/api/src/mail/mail.service.ts` — Nodemailer SMTP transport
-- `apps/api/src/mail/mail.module.ts` — Global mail module
+- `apps/api/src/auth/captcha.service.ts` â€” CAPTCHA verification (reCAPTCHA/Turnstile)
+- `apps/api/src/auth/guards/captcha.guard.ts` â€” NestJS guard for endpoints
+- `apps/api/src/mail/mail.service.ts` â€” Nodemailer SMTP transport
+- `apps/api/src/mail/mail.module.ts` â€” Global mail module
 
 **Modified files:**
-- `apps/api/prisma/schema.prisma` — `isActive`, `disabledAt`, `disabledReason` on User
-- `apps/api/src/auth/auth.module.ts` — wired CaptchaService + MailModule
-- `apps/api/src/auth/auth.controller.ts` — `@UseGuards(CaptchaGuard)` on register/login
-- `apps/api/src/auth/auth.service.ts` — isActive check in login, mail in forgotPassword
-- `apps/api/src/users/users.controller.ts` — PATCH `:id/disable` and `:id/enable`
-- `apps/api/src/users/users.service.ts` — `disableUser()` + `enableUser()` methods
-- `.env.example` — added CAPTCHA_* and MAIL_* variables
+- `apps/api/prisma/schema.prisma` â€” `isActive`, `disabledAt`, `disabledReason` on User
+- `apps/api/src/auth/auth.module.ts` â€” wired CaptchaService + MailModule
+- `apps/api/src/auth/auth.controller.ts` â€” `@UseGuards(CaptchaGuard)` on register/login
+- `apps/api/src/auth/auth.service.ts` â€” isActive check in login, mail in forgotPassword
+- `apps/api/src/users/users.controller.ts` â€” PATCH `:id/disable` and `:id/enable`
+- `apps/api/src/users/users.service.ts` â€” `disableUser()` + `enableUser()` methods
+- `.env.example` â€” added CAPTCHA_* and MAIL_* variables
 
 ---
 
@@ -533,8 +533,8 @@ curl http://localhost:3000/health
 # Full quality gates
 pnpm lint                          # ESLint all packages
 pnpm typecheck                     # TypeScript all packages
-pnpm --filter @netflop/web build   # Web production build (now enforces lint)
-pnpm --filter @netflop/admin build # Admin production build
+pnpm --filter @NETFLAT/web build   # Web production build (now enforces lint)
+pnpm --filter @NETFLAT/admin build # Admin production build
 
 # Smoke tests
 pnpm smoke                         # Basic smoke test
@@ -582,7 +582,7 @@ docker ps                          # Verify containers running
 |-----|-----------|-------------|---------|
 | Web | `apps/web/src/lib/api.ts` | `apps/web/src/lib/auth-context.tsx` | `apps/web/src/lib/queries.ts` |
 | Admin | `apps/admin/src/lib/api.ts` | `apps/admin/src/lib/auth-context.tsx` | `apps/admin/src/lib/queries.ts` |
-| Mobile | `apps/mobile/src/lib/api.ts` | — | `apps/mobile/src/hooks/queries.ts` |
+| Mobile | `apps/mobile/src/lib/api.ts` | â€” | `apps/mobile/src/hooks/queries.ts` |
 
 ### Key Documentation
 
@@ -604,10 +604,10 @@ docker ps                          # Verify containers running
 
 ### Immediate (Before Starting Work)
 
-1. **Apply pending migration** — Run `prisma migrate dev --name add_account_disable_fields`
-2. **Regenerate Prisma client** — Run `pnpm db:generate`
-3. **Verify typecheck** — Run `pnpm typecheck`
-4. **Check port availability** — Run `pnpm dev:runtime:doctor`
+1. **Apply pending migration** â€” Run `prisma migrate dev --name add_account_disable_fields`
+2. **Regenerate Prisma client** â€” Run `pnpm db:generate`
+3. **Verify typecheck** â€” Run `pnpm typecheck`
+4. **Check port availability** â€” Run `pnpm dev:runtime:doctor`
 
 ### Short-Term Priorities
 
@@ -617,7 +617,7 @@ docker ps                          # Verify containers running
 | 2 | Enable and test web feature flags one by one | Low | Medium |
 | 3 | Add subtitle support (VTT upload + player integration) | Medium | High |
 | 4 | Add 480p HLS variant in worker encode | Low | Medium |
-| 5 | Build admin analytics dashboard (ClickHouse → charts) | Medium | Medium |
+| 5 | Build admin analytics dashboard (ClickHouse â†’ charts) | Medium | Medium |
 | 6 | Remove or isolate billing module (out of scope) | Low | Low |
 | 7 | Add missing unit/integration tests for security module | High | High |
 
@@ -633,11 +633,11 @@ docker ps                          # Verify containers running
 
 ## Appendix: Workspace Rules
 
-The project follows strict workspace rules defined in `.agent/rules/netflop.md`:
+The project follows strict workspace rules defined in `.agent/rules/NETFLAT.md`:
 
 - **Priority order:** PRD > Architecture > OpenAPI > Code
 - **Fixed stack:** No technology changes without explicit request
-- **Delivery rhythm:** Plan → Implement → Verify → Summarize
+- **Delivery rhythm:** Plan â†’ Implement â†’ Verify â†’ Summarize
 - **Pipeline invariants:** Presigned upload + HLS playback must be kept in sync
 - **Contract sync:** Update docs first, then code, then smoke tests
 - **.env secrets:** Never committed; update `.env.example` when adding env vars

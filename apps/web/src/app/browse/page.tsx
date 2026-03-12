@@ -91,7 +91,7 @@ export default function BrowsePage() {
         <div className={styles.container}>
             {/* Navbar */}
             <nav className={styles.navbar}>
-                <Link href="/" className={styles.logo}>NETFLOP</Link>
+                <Link href="/" className={styles.logo}>NETFLAT</Link>
                 <Link href="/" className={styles.backLink}>← Home</Link>
             </nav>
 

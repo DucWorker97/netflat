@@ -71,13 +71,14 @@ export class UsersService {
             select: {
                 id: true,
                 email: true,
+                displayName: true,
+                avatarUrl: true,
                 role: true,
                 isActive: true,
                 createdAt: true,
                 _count: {
                     select: {
                         favorites: true,
-                        watchHistory: true,
                         ratings: true,
                     }
                 }
@@ -94,14 +95,41 @@ export class UsersService {
         return {
             id: user.id,
             email: user.email,
+            displayName: user.displayName,
+            avatarUrl: user.avatarUrl,
             role: user.role,
             isActive: user.isActive,
             createdAt: user.createdAt.toISOString(),
             stats: {
                 favorites: user._count.favorites,
-                watchHistory: user._count.watchHistory,
                 ratings: user._count.ratings,
             }
+        };
+    }
+
+    async updateProfile(userId: string, data: { displayName?: string; avatarUrl?: string }) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException({
+                code: 'USER_NOT_FOUND',
+                message: 'User not found',
+            });
+        }
+
+        const updated = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                displayName: data.displayName !== undefined ? data.displayName : undefined,
+                avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : undefined,
+            },
+        });
+
+        return {
+            id: updated.id,
+            email: updated.email,
+            displayName: updated.displayName,
+            avatarUrl: updated.avatarUrl,
+            role: updated.role,
         };
     }
 

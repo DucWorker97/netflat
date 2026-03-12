@@ -1,6 +1,6 @@
-# Observability Guide
+﻿# Observability Guide
 
-**Logging, Monitoring, and Debugging for netflop**
+**Logging, Monitoring, and Debugging for NETFLAT**
 
 ---
 
@@ -23,7 +23,7 @@ curl -i http://localhost:3000/health
 
 ### Propagation
 
-The `requestId` flows from API → Worker:
+The `requestId` flows from API â†’ Worker:
 1. API receives request with `x-request-id` header (or generates one)
 2. When enqueuing encode job, `requestId` is included in job data
 3. Worker logs include `requestId` for correlation
@@ -102,10 +102,10 @@ Sensitive data is **never logged**:
 ```typescript
 import { maskPresignedUrl } from '../common/utils/logging';
 
-// ❌ WRONG - exposes signature
+// âŒ WRONG - exposes signature
 console.log(`Upload URL: ${presignedUrl}`);
 
-// ✅ CORRECT - masks query string
+// âœ… CORRECT - masks query string
 console.log(`Upload URL: ${maskPresignedUrl(presignedUrl)}`);
 // Output: "Upload URL: https://minio:9000/bucket/key?[MASKED]"
 ```
@@ -175,7 +175,7 @@ Response:
     "timestamp": "2026-01-01T12:00:00.000Z",
     "database": { "status": "connected" },
     "redis": { "status": "connected" },
-    "storage": { "status": "connected", "bucket": "netflop-media" }
+    "storage": { "status": "connected", "bucket": "NETFLAT-media" }
   }
 }
 ```
@@ -226,10 +226,10 @@ Using minio-init container (minio/mc image):
 
 ```bash
 # Check bucket exists
-docker exec netflop-minio-init mc ls local/netflop-media
+docker exec NETFLAT-minio-init mc ls local/NETFLAT-media
 
 # Check anonymous policy
-docker exec netflop-minio-init mc anonymous get local/netflop-media/hls
+docker exec NETFLAT-minio-init mc anonymous get local/NETFLAT-media/hls
 
 # Expected output: "download" for hls prefix
 ```
@@ -238,11 +238,11 @@ docker exec netflop-minio-init mc anonymous get local/netflop-media/hls
 
 ```bash
 # Test master playlist
-curl -i "http://localhost:9000/netflop-media/hls/<movieId>/master.m3u8"
+curl -i "http://localhost:9000/NETFLAT-media/hls/<movieId>/master.m3u8"
 # Expect: HTTP 200
 
 # Test segment
-curl -I "http://localhost:9000/netflop-media/hls/<movieId>/v0/seg_000.ts"
+curl -I "http://localhost:9000/NETFLAT-media/hls/<movieId>/v0/seg_000.ts"
 # Expect: HTTP 200
 ```
 
@@ -255,10 +255,10 @@ docker compose -f deploy/docker-compose.staging.yml up -d minio-init
 # Or manually
 docker run --rm --network host minio/mc:latest \
   sh -c "mc alias set local http://localhost:9000 minioadmin minioadmin && \
-         mc anonymous set download local/netflop-media/hls && \
-         mc anonymous set download local/netflop-media/posters && \
-         mc anonymous set download local/netflop-media/thumbnails && \
-         mc anonymous set download local/netflop-media/subtitles"
+         mc anonymous set download local/NETFLAT-media/hls && \
+         mc anonymous set download local/NETFLAT-media/posters && \
+         mc anonymous set download local/NETFLAT-media/thumbnails && \
+         mc anonymous set download local/NETFLAT-media/subtitles"
 ```
 
 ---
@@ -308,7 +308,7 @@ Or failure:
 ### Step 5: Verify HLS files
 
 ```bash
-curl -I http://localhost:9000/netflop-media/hls/<movieId>/master.m3u8
+curl -I http://localhost:9000/NETFLAT-media/hls/<movieId>/master.m3u8
 ```
 
 ---

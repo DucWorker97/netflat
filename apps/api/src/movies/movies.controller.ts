@@ -112,25 +112,19 @@ export class MoviesController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('admin')
     async uploadComplete(
-        @Req() req: Request,
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: UploadCompleteDto,
     ) {
-        const requestId = req.requestId || 'unknown';
-
         const result = await this.uploadService.uploadComplete({
             movieId: id,
             objectKey: dto.objectKey,
             fileType: dto.fileType,
-            requestId,
         });
 
         this.logger.log(
             JSON.stringify({
                 type: 'upload_complete',
-                requestId,
                 movieId: id,
-                jobId: 'jobId' in result ? result.jobId : undefined,
             })
         );
 

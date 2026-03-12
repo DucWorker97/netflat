@@ -40,6 +40,9 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
+# Install FFmpeg for HLS encoding
+RUN apk add --no-cache ffmpeg
+
 # Install pnpm for production deps
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 

@@ -42,8 +42,4 @@ export class CreateMovieDto {
     @IsOptional()
     @IsString()
     trailerUrl?: string;
-
-    @IsOptional()
-    @IsString()
-    subtitleUrl?: string;
 }

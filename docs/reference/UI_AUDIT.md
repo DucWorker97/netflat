@@ -1,6 +1,6 @@
-# 🎨 UI/UX Audit Report - Netflop Web
+﻿# đŸ¨ UI/UX Audit Report - NETFLAT Web
 
-> **Auditor:** Netflop AI Agent
+> **Auditor:** NETFLAT AI Agent
 > **Date:** 2026-01-09
 > **Scope:** Web Application (`apps/web`)
 
@@ -25,13 +25,13 @@
 ### Component Inventory (Current State)
 | Component | Location | Status | Issue | Evidence |
 |-----------|----------|--------|-------|----------|
-| `Navbar` | `page.tsx` | ⚠️ Duplicate | Defined inline in `page.tsx` AND `favorites/page.tsx` | `app/page.tsx:L11`, `favorites/page.tsx:L9` |
-| `MovieCard` | `page.tsx` | ⚠️ Inline | Redefined in `page.tsx`, `favorites/page.tsx`, `genre/[id]/page.tsx` | `app/page.tsx:L68`, `favorites/page.tsx:L32` |
-| `HeroBanner` | `page.tsx` | ⚠️ Inline | Hardcoded logic in Home page. | `app/page.tsx:L130` |
-| `VideoPlayer` | `movies/[id]/VideoPlayer.tsx` | ✅ Component | Good separation. | `movies/[id]/VideoPlayer.tsx` |
-| `Stars` | `components/stars.tsx` | ✅ Shared | Reusable. | `components/stars.tsx` |
-| `ForYouRail` | `components/ForYouRail.tsx` | ✅ Shared | Reusable. | `components/ForYouRail.tsx` |
-| `Footer` | - | ❌ Missing | Not found in entire codebase. | - |
+| `Navbar` | `page.tsx` | â ï¸ Duplicate | Defined inline in `page.tsx` AND `favorites/page.tsx` | `app/page.tsx:L11`, `favorites/page.tsx:L9` |
+| `MovieCard` | `page.tsx` | â ï¸ Inline | Redefined in `page.tsx`, `favorites/page.tsx`, `genre/[id]/page.tsx` | `app/page.tsx:L68`, `favorites/page.tsx:L32` |
+| `HeroBanner` | `page.tsx` | â ï¸ Inline | Hardcoded logic in Home page. | `app/page.tsx:L130` |
+| `VideoPlayer` | `movies/[id]/VideoPlayer.tsx` | âœ… Component | Good separation. | `movies/[id]/VideoPlayer.tsx` |
+| `Stars` | `components/stars.tsx` | âœ… Shared | Reusable. | `components/stars.tsx` |
+| `ForYouRail` | `components/ForYouRail.tsx` | âœ… Shared | Reusable. | `components/ForYouRail.tsx` |
+| `Footer` | - | âŒ Missing | Not found in entire codebase. | - |
 
 ## 3. UI Audit Checklist (Static Analysis)
 

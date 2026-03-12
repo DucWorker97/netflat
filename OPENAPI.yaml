@@ -1,10 +1,10 @@
-# netflop API Specification
+# netflat API Specification
 # OpenAPI 3.1.0
 
 openapi: 3.1.0
 
 info:
-  title: netflop API
+  title: netflat API
   description: |
     REST API cho ứng dụng xem video tự sản xuất theo trải nghiệm Netflix.
     
@@ -25,13 +25,13 @@ info:
     ```
   version: 1.0.0
   contact:
-    name: netflop Team
-    email: dev@netflop.local
+    name: netflat Team
+    email: dev@netflat.local
 
 servers:
   - url: http://localhost:3000/api
     description: Local development
-  - url: https://api.netflop.example.com/api
+  - url: https://api.netflat.example.com/api
     description: Staging (placeholder)
 
 tags:
@@ -44,11 +44,17 @@ tags:
   - name: Favorites
     description: User favorites / My List
   - name: History
-    description: Watch history and progress
+    description: Watch history and continue watching
+  - name: Ratings
+    description: Movie ratings and reviews
+  - name: Actors
+    description: Actor suggestions
   - name: Upload
     description: File upload (admin only)
   - name: Admin
     description: Admin movie management
+  - name: Health
+    description: Health check
 
 components:
   securitySchemes:
@@ -448,57 +454,6 @@ components:
           $ref: '#/components/schemas/PaginationMeta'
 
     # ─────────────────────────────────────────────────────────────
-    # Watch History
-    # ─────────────────────────────────────────────────────────────
-    
-    WatchHistory:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        movieId:
-          type: string
-          format: uuid
-        movie:
-          $ref: '#/components/schemas/MovieListItem'
-        progressSeconds:
-          type: integer
-          example: 1234
-        durationSeconds:
-          type: integer
-          example: 7200
-        completed:
-          type: boolean
-          example: false
-        updatedAt:
-          type: string
-          format: date-time
-
-    WatchHistoryListResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/WatchHistory'
-
-    UpdateProgressRequest:
-      type: object
-      required:
-        - progressSeconds
-        - durationSeconds
-      properties:
-        progressSeconds:
-          type: integer
-          minimum: 0
-          example: 1234
-        durationSeconds:
-          type: integer
-          minimum: 1
-          example: 7200
-
-    # ─────────────────────────────────────────────────────────────
     # Upload
     # ─────────────────────────────────────────────────────────────
     
@@ -580,6 +535,53 @@ components:
               type: string
               description: Poster URL when fileType=thumbnail
               nullable: true
+
+    WatchHistoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        movieId:
+          type: string
+          format: uuid
+        progressSeconds:
+          type: integer
+        durationSeconds:
+          type: integer
+        completed:
+          type: boolean
+        lastWatchedAt:
+          type: string
+          format: date-time
+        movie:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            title: { type: string }
+            posterUrl: { type: string, nullable: true }
+
+    MovieReview:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
 
 # ─────────────────────────────────────────────────────────────
 # Paths
@@ -1120,54 +1122,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /movies/{id}/progress:
-    get:
-      tags: [History]
-      summary: Get watch progress
-      description: Get user's watch progress for a specific movie
-      operationId: getProgress
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Watch progress
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgressResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: No progress found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      progressSeconds:
-                        type: integer
-                        example: 0
-                      durationSeconds:
-                        type: integer
-                        example: 0
-                      completed:
-                        type: boolean
-                        example: false
-
   /movies/{id}/publish:
     patch:
       tags: [Admin]
@@ -1428,91 +1382,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   # ─────────────────────────────────────────────────────────────
-  # Watch History
-  # ─────────────────────────────────────────────────────────────
-  
-  /history:
-    get:
-      tags: [History]
-      summary: List watch history
-      description: Get user's watch history (all movies with progress)
-      operationId: listHistory
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: continueWatching
-          in: query
-          description: Only return in-progress movies
-          schema:
-            type: boolean
-            default: false
-      responses:
-        '200':
-          description: Watch history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WatchHistoryListResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /history/{movieId}:
-    post:
-      tags: [History]
-      summary: Update watch progress
-      description: |
-        Save or update watch progress for a movie.
-        Should be called every 5 seconds or on pause/exit.
-      operationId: updateProgress
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: movieId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateProgressRequest'
-            example:
-              progressSeconds: 1234
-              durationSeconds: 7200
-      responses:
-        '200':
-          description: Progress saved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProgressResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Movie not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # ─────────────────────────────────────────────────────────────
   # Upload
   # ─────────────────────────────────────────────────────────────
   
@@ -1584,3 +1453,220 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────────
+  # History
+  # ─────────────────────────────────────────────────────────
+  /history:
+    get:
+      tags: [History]
+      summary: List watch history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated watch history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WatchHistoryItem'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /history/continue-watching:
+    get:
+      tags: [History]
+      summary: Get continue watching items (incomplete, recent)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: List of in-progress movies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WatchHistoryItem'
+
+  /history/{movieId}:
+    post:
+      tags: [History]
+      summary: Upsert watch progress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [progressSeconds]
+              properties:
+                progressSeconds:
+                  type: integer
+                  minimum: 0
+                durationSeconds:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: Progress saved
+    delete:
+      tags: [History]
+      summary: Remove history entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: History entry removed
+
+  # ─────────────────────────────────────────────────────────
+  # Ratings
+  # ─────────────────────────────────────────────────────────
+  /ratings/{movieId}:
+    post:
+      tags: [Ratings]
+      summary: Rate a movie (1-5 stars)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Rating created/updated
+
+  /ratings/{movieId}/stats:
+    get:
+      tags: [Ratings]
+      summary: Get average rating stats for a movie
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Rating statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      avgRating: { type: number, nullable: true }
+                      ratingsCount: { type: integer }
+
+  /ratings/{movieId}/user:
+    get:
+      tags: [Ratings]
+      summary: Get current user's rating for a movie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: User rating or null
+
+  /ratings/{movieId}/list:
+    get:
+      tags: [Ratings]
+      summary: List reviews for a movie
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MovieReview'
+
+  # ─────────────────────────────────────────────────────────
+  # Actors
+  # ─────────────────────────────────────────────────────────
+  /actors/suggest:
+    get:
+      tags: [Actors]
+      summary: Autocomplete actor names
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Matching actor names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { type: string }
+
+# Note: /health endpoint is at root (http://localhost:3000/health), not under /api prefix.

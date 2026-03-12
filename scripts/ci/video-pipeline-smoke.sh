@@ -14,13 +14,13 @@ trap cleanup EXIT
 # Configuration
 # ------------------------------------------------------------------------------
 API_URL="${API_URL:-http://localhost:3000}"
-ADMIN_EMAIL="${ADMIN_EMAIL:-admin@netflop.local}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@NETFLAT.local}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123}"
 ENCODE_TIMEOUT="${ENCODE_TIMEOUT:-900}"
 ARTIFACTS_DIR="artifacts"
 
 SAMPLES_DIR="samples"
-TEST_VIDEO="netflop-smoke.mp4"
+TEST_VIDEO="NETFLAT-smoke.mp4"
 
 # Generate Request ID for end-to-end correlation
 REQUEST_ID=$(node -e 'console.log(crypto.randomUUID())' 2>/dev/null || echo "smoke-$(date +%s)")

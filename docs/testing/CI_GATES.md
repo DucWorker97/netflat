@@ -1,16 +1,16 @@
-# CI Gates Documentation
+﻿# CI Gates Documentation
 
 ## Overview
 
-This document describes the CI/CD gates for the Netflop project. These gates ensure code quality and system health before merging changes.
+This document describes the CI/CD gates for the NETFLAT project. These gates ensure code quality and system health before merging changes.
 
 ## Gates Summary
 
 | Gate | Type | Trigger | Timeout | Required |
 |------|------|---------|---------|----------|
-| **verify** | Quality | PR, Push main | 15 min | ✅ P0 |
-| **smoke** | Health | PR, Push main | 10 min | ✅ P0 |
-| **smoke:video** | E2E | Nightly, Manual | 30 min | ❌ Optional |
+| **verify** | Quality | PR, Push main | 15 min | âœ… P0 |
+| **smoke** | Health | PR, Push main | 10 min | âœ… P0 |
+| **smoke:video** | E2E | Nightly, Manual | 30 min | âŒ Optional |
 
 ---
 
@@ -20,13 +20,13 @@ This document describes the CI/CD gates for the Netflop project. These gates ens
 Ensures code quality by running lint, typecheck, and build checks.
 
 ### Pass Criteria
-- ✅ `pnpm lint` exits with code 0
-- ✅ `pnpm typecheck` exits with code 0
-- ✅ `pnpm build` exits with code 0
+- âœ… `pnpm lint` exits with code 0
+- âœ… `pnpm typecheck` exits with code 0
+- âœ… `pnpm build` exits with code 0
 
 ### Fail Criteria
-- ❌ Any of the above commands exits with non-zero code
-- ❌ Script outputs which command failed
+- âŒ Any of the above commands exits with non-zero code
+- âŒ Script outputs which command failed
 
 ### Run Locally
 ```bash
@@ -49,14 +49,14 @@ pnpm -w verify
 Verifies infrastructure health and API availability.
 
 ### Pass Criteria
-- ✅ Docker services healthy: `postgres`, `redis`, `minio`
-- ✅ API health endpoint returns HTTP 200: `GET /health`
-- ✅ All checks complete within timeout (default: 120s)
+- âœ… Docker services healthy: `postgres`, `redis`, `minio`
+- âœ… API health endpoint returns HTTP 200: `GET /health`
+- âœ… All checks complete within timeout (default: 120s)
 
 ### Fail Criteria
-- ❌ Any Docker service not healthy within timeout
-- ❌ API health check fails or times out
-- ❌ Script outputs failing service and logs
+- âŒ Any Docker service not healthy within timeout
+- âŒ API health check fails or times out
+- âŒ Script outputs failing service and logs
 
 ### Run Locally
 ```bash
@@ -90,26 +90,26 @@ SMOKE_TIMEOUT=90 ./scripts/ci/smoke.sh
 End-to-end test of the video upload and encoding pipeline.
 
 ### Pass Criteria
-- ✅ Can authenticate as admin
-- ✅ Can create a new movie
-- ✅ Can get presigned upload URL
-- ✅ Can upload video to storage
-- ✅ Can trigger encoding
-- ✅ Encoding completes with status "ready"
-- ✅ HLS playlist is accessible
+- âœ… Can authenticate as admin
+- âœ… Can create a new movie
+- âœ… Can get presigned upload URL
+- âœ… Can upload video to storage
+- âœ… Can trigger encoding
+- âœ… Encoding completes with status "ready"
+- âœ… HLS playlist is accessible
 
 ### Fail Criteria
-- ❌ Any API call fails
-- ❌ Encoding doesn't reach "ready" within timeout
-- ❌ Encoding fails with error
-- ❌ HLS playlist not accessible
+- âŒ Any API call fails
+- âŒ Encoding doesn't reach "ready" within timeout
+- âŒ Encoding fails with error
+- âŒ HLS playlist not accessible
 
 ### Run Locally
 ```bash
 # Ensure full stack is running (API + Worker)
 pnpm infra:up
-pnpm --filter @netflop/api dev &
-pnpm --filter @netflop/worker dev &
+pnpm --filter @NETFLAT/api dev &
+pnpm --filter @NETFLAT/worker dev &
 
 # Run the smoke test
 pnpm -w smoke:video
@@ -122,7 +122,7 @@ pnpm -w smoke:video
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `API_URL` | http://localhost:3000 | API base URL |
-| `ADMIN_EMAIL` | admin@netflop.local | Admin email |
+| `ADMIN_EMAIL` | admin@NETFLAT.local | Admin email |
 | `ADMIN_PASSWORD` | admin123 | Admin password |
 | `ENCODE_TIMEOUT` | 300 | Encoding timeout (seconds) |
 
@@ -142,37 +142,37 @@ pnpm -w smoke:video
 ### PR / Push to main (`.github/workflows/ci.yml`)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    CI Pipeline                          │
-├─────────────────────────────────────────────────────────┤
-│  ┌──────────┐     ┌──────────┐     ┌──────────────┐    │
-│  │  verify  │ ──► │  smoke   │ ──► │ ci-complete  │    │
-│  │  (P0)    │     │  (P0)    │     │   (summary)  │    │
-│  └──────────┘     └──────────┘     └──────────────┘    │
-│                                                         │
-│  • Runs on every PR                                     │
-│  • Runs on push to main                                 │
-│  • Uses pnpm cache                                      │
-│  • Concurrent runs cancelled                            │
-└─────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    CI Pipeline                          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚  verify  â”‚ â”€â”€â–º â”‚  smoke   â”‚ â”€â”€â–º â”‚ ci-complete  â”‚    â”‚
+â”‚  â”‚  (P0)    â”‚     â”‚  (P0)    â”‚     â”‚   (summary)  â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚                                                         â”‚
+â”‚  â€¢ Runs on every PR                                     â”‚
+â”‚  â€¢ Runs on push to main                                 â”‚
+â”‚  â€¢ Uses pnpm cache                                      â”‚
+â”‚  â€¢ Concurrent runs cancelled                            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Nightly Video Smoke (`.github/workflows/nightly-video-smoke.yml`)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              Nightly Video Smoke Pipeline               │
-├─────────────────────────────────────────────────────────┤
-│  ┌────────────────────┐     ┌──────────────────────┐   │
-│  │  video-pipeline-   │ ──► │  upload-artifacts    │   │
-│  │      smoke         │     │  (logs/reports)      │   │
-│  └────────────────────┘     └──────────────────────┘   │
-│                                                         │
-│  • Runs daily at 02:00 UTC                              │
-│  • Manual trigger: "Nightly Video Smoke"                │
-│  • Uploads execution logs and JSON report               │
-│  • Cleans up Docker environment automatically           │
-└─────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚              Nightly Video Smoke Pipeline               â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
+â”‚  â”‚  video-pipeline-   â”‚ â”€â”€â–º â”‚  upload-artifacts    â”‚   â”‚
+â”‚  â”‚      smoke         â”‚     â”‚  (logs/reports)      â”‚   â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
+â”‚                                                         â”‚
+â”‚  â€¢ Runs daily at 02:00 UTC                              â”‚
+â”‚  â€¢ Manual trigger: "Nightly Video Smoke"                â”‚
+â”‚  â€¢ Uploads execution logs and JSON report               â”‚
+â”‚  â€¢ Cleans up Docker environment automatically           â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---

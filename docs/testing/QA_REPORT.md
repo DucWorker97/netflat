@@ -1,4 +1,4 @@
-# QA Functional Report - Netflop Web
+﻿# QA Functional Report - NETFLAT Web
 
 ## Executive Summary
 - **Date**: 2026-01-09
@@ -16,7 +16,7 @@
 | **D. Search** | **NOT TESTED** | Displays "No movies found" when API down. |
 | **E. Detail** | **PARTIAL PASS** | Works **after login**. Shows "Movie not found" for guests (BUG-001). |
 | **F. Player** | **PASS** | Video player visible and functional on detail page. |
-| **G. Auth** | **PASS** | Login with `viewer@netflop.local / viewer123` successful. |
+| **G. Auth** | **PASS** | Login with `viewer@NETFLAT.local / viewer123` successful. |
 | **H. Favorites/History** | **NOT TESTED** | Blocked by auth session + API connectivity. |
 
 ## 2. Bug Backlog

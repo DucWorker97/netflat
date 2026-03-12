@@ -39,7 +39,7 @@ export function useVideoUpload(): UseVideoUploadResult {
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Authentication required');
 
-            const presignRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/movies/upload-request`, {
+            const presignRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/movies/upload-request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

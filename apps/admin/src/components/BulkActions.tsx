@@ -10,7 +10,7 @@ interface Movie {
     encodeStatus: 'pending' | 'processing' | 'ready' | 'failed';
 }
 
-type BulkAction = 'publish' | 'unpublish' | 'delete' | 'reencode';
+type BulkAction = 'publish' | 'unpublish' | 'delete';
 
 interface BulkActionsProps {
     movies: Movie[];
@@ -60,7 +60,6 @@ export function BulkActions({ movies, onAction }: BulkActionsProps) {
             case 'publish': return 'Publish';
             case 'unpublish': return 'Unpublish';
             case 'delete': return 'Delete';
-            case 'reencode': return 'Re-encode';
         }
     };
 
@@ -98,12 +97,6 @@ export function BulkActions({ movies, onAction }: BulkActionsProps) {
                             onClick={() => handleAction('unpublish')}
                         >
                             ⏸️ Unpublish
-                        </button>
-                        <button
-                            className={`${styles.actionBtn} ${styles.reencode}`}
-                            onClick={() => handleAction('reencode')}
-                        >
-                            🔄 Re-encode
                         </button>
                         <button
                             className={`${styles.actionBtn} ${styles.delete}`}

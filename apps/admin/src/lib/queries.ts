@@ -19,15 +19,10 @@ interface Movie {
     movieStatus: 'draft' | 'published';
     encodeStatus: 'pending' | 'processing' | 'ready' | 'failed';
     genres: Genre[];
-    actors: { id: string; name: string; avatarUrl: string | null }[];
+    actors: string[];
     createdAt: string;
     updatedAt: string;
     videoUrl?: string | null;
-    subtitleUrl?: string | null;
-    subtitles?: {
-        language: string;
-        url: string;
-    }[];
 }
 
 interface PaginationMeta {
@@ -261,291 +256,21 @@ export function useUploadComplete() {
     });
 }
 
-// Subtitle Upload
-export function useSubtitlePresignedUrl() {
-    return useMutation({
-        mutationFn: async (params: { movieId: string; fileName: string }) => {
-            const searchParams = new URLSearchParams();
-            searchParams.set('movieId', params.movieId);
-            searchParams.set('fileName', params.fileName);
-
-            const res = await api.get<{ data: PresignedUrlResponse }>(
-                `/api/upload/subtitle-presigned-url?${searchParams.toString()}`
-            );
-            return res.data;
-        },
-    });
-}
-
-export function useSubtitleComplete() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: async (params: { movieId: string; objectKey: string }) => {
-            const res = await api.post<{ data: { movieId: string; subtitleUrl: string } }>(
-                `/api/upload/subtitle-complete/${params.movieId}`,
-                { objectKey: params.objectKey }
-            );
-            return res.data;
-        },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['movie', variables.movieId] });
-        },
-    });
-}
-
-// View Stats (Dashboard)
-interface ViewStats {
-    totalViews: number;
-    viewsToday: number;
-}
-
-interface TopMovie {
-    movieId: string;
-    viewCount: number;
-    movie: { id: string; title: string; posterUrl: string | null } | null;
-}
-
-export function useViewStats() {
+export function useActorSuggest(q: string) {
     return useQuery({
-        queryKey: ['viewStats'],
+        queryKey: ['actors', 'suggest', q],
         queryFn: async () => {
-            const res = await api.get<{ data: ViewStats }>('/api/events/stats');
+            const res = await api.get<{ data: string[] }>(`/api/actors/suggest?q=${encodeURIComponent(q)}`);
             return res.data;
         },
-    });
-}
-
-export function useTopMovies(limit = 10) {
-    return useQuery({
-        queryKey: ['topMovies', limit],
-        queryFn: async () => {
-            const res = await api.get<{ data: TopMovie[] }>(`/api/events/top-movies?limit=${limit}`);
-            return res.data;
-        },
-    });
-}
-
-// Rails
-interface RailConfig {
-    id: string;
-    name: string;
-    type: string;
-    genreId: string | null;
-    position: number;
-    isActive: boolean;
-    genre: { id: string; name: string; slug: string } | null;
-}
-
-export function useRails() {
-    return useQuery({
-        queryKey: ['rails'],
-        queryFn: async () => {
-            const res = await api.get<{ data: RailConfig[] }>('/api/rails/admin');
-            return res.data;
-        },
-    });
-}
-
-export function useCreateRail() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (input: { name: string; type: string; genreId?: string }) => {
-            const res = await api.post<{ data: RailConfig }>('/api/rails', input);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rails'] });
-        },
-    });
-}
-
-export function useUpdateRail() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, input }: { id: string; input: Partial<RailConfig> }) => {
-            const res = await api.put<{ data: RailConfig }>(`/api/rails/${id}`, input);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rails'] });
-        },
-    });
-}
-
-export function useReorderRails() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (railIds: string[]) => {
-            const res = await api.patch<{ data: RailConfig[] }>('/api/rails/reorder', { railIds });
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rails'] });
-        },
-    });
-}
-
-export function useDeleteRail() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            await api.delete(`/api/rails/${id}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rails'] });
-        },
-    });
-}
-
-export function useSeedRails() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async () => {
-            const res = await api.post<{ data: { message: string } }>('/api/rails/seed');
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rails'] });
-        },
-    });
-}
-
-interface Actor {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-    movieCount: number;
-}
-
-interface DashboardStats {
-    totalUsers: number;
-    totalMovies: number;
-    totalRevenue: number;
-    viewsLast7Days: Array<{
-        date: string;
-        views: number;
-    }>;
-    topMovies: Array<{
-        id: string;
-        title: string;
-        views: number;
-        posterUrl: string | null;
-    }>;
-}
-
-interface AdminSubscription {
-    id: string;
-    email: string;
-    name: string;
-    plan: 'FREE' | 'BASIC' | 'PREMIUM';
-    status: 'ACTIVE' | 'CANCELED' | 'PAST_DUE';
-    startDate: string;
-    endDate: string | null;
-    totalPaid: number;
-}
-
-interface SubscriptionOverview {
-    subscribers: AdminSubscription[];
-    stats: {
-        totalRevenue: number;
-        monthlyRevenue: number;
-        activeSubscribers: number;
-        churnRate: number;
-        byPlan: {
-            FREE: number;
-            BASIC: number;
-            PREMIUM: number;
-        };
-    };
-}
-
-export function useActors() {
-    return useQuery({
-        queryKey: ['actors'],
-        queryFn: async () => {
-            const res = await api.get<{ data: Actor[] }>('/api/actors');
-            return res.data;
-        },
-    });
-}
-
-export function useCreateActor() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (input: { name: string; avatarUrl?: string }) => {
-            const res = await api.post<{ data: Actor }>('/api/actors', input);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['actors'] });
-        },
-    });
-}
-
-export function useUpdateActor() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ id, input }: { id: string; input: { name?: string; avatarUrl?: string } }) => {
-            const res = await api.put<{ data: Actor }>(`/api/actors/${id}`, input);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['actors'] });
-        },
-    });
-}
-
-export function useDeleteActor() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (id: string) => {
-            await api.delete(`/api/actors/${id}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['actors'] });
-        },
-    });
-}
-
-export function useDashboardAnalytics() {
-    return useQuery({
-        queryKey: ['dashboardAnalytics'],
-        queryFn: async () => {
-            const [stats, movies] = await Promise.all([
-                api.get<DashboardStats>('/api/analytics/dashboard-stats'),
-                api.get<{ data: Movie[]; meta: PaginationMeta }>('/api/movies?limit=500'),
-            ]);
-
-            return {
-                stats,
-                movies: movies.data,
-            };
-        },
-    });
-}
-
-export function useSubscriptionsOverview() {
-    return useQuery({
-        queryKey: ['subscriptionsOverview'],
-        queryFn: async () => {
-            const res = await api.get<{ data: SubscriptionOverview }>('/api/admin/subscriptions');
-            return res.data;
-        },
+        enabled: q.length > 0,
     });
 }
 
 export type {
-    Actor,
-    AdminSubscription,
-    DashboardStats,
     Genre,
     Movie,
     PaginationMeta,
     CreateMovieInput,
     UpdateMovieInput,
-    ViewStats,
-    TopMovie,
-    RailConfig,
-    SubscriptionOverview,
 };

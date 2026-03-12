@@ -162,3 +162,13 @@
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+.forgotLink {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.forgotLink:hover {
+    text-decoration: underline;
+}

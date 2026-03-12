@@ -1,77 +1,77 @@
-# Documentation Index
+﻿# Documentation Index
 
-> **Netflop** — Netflix Mini cho Video Tự Sản Xuất  
-> 📚 Organized documentation by topic
+> **NETFLAT** â€” Netflix Mini cho Video Tá»± Sáº£n Xuáº¥t  
+> đŸ“ Organized documentation by topic
 
 ---
 
-## 🚀 Start Here
+## đŸ€ Start Here
 
-| Bạn là... | Đọc file | Mục đích |
+| Báº¡n lĂ ... | Äá»c file | Má»¥c Ä‘Ă­ch |
 |-----------|----------|----------|
-| **Mới vào team** | [README.md](../README.md) | Setup local, chạy `pnpm dev` |
+| **Má»›i vĂ o team** | [README.md](../README.md) | Setup local, cháº¡y `pnpm dev` |
 | **PM / Reviewer** | [reference/PRD.md](reference/PRD.md) | Scope, features, acceptance |
 | **Developer** | [architecture/OVERVIEW.md](architecture/OVERVIEW.md) | System design, tech stack |
 | **Tester** | [features/STATUS.md](features/STATUS.md) | Feature checklist |
 
 ---
 
-## 📁 Documentation Structure
+## đŸ“ Documentation Structure
 
 ```
 docs/
-├── INDEX.md                          # 👈 You are here
-│
-├── architecture/                     # System design
-│   ├── OVERVIEW.md                   # C4 architecture, NestJS modules, data flow
-│   ├── DATABASE.md                   # ERD, Prisma schema, enums, models
-│   ├── VIDEO_PIPELINE.md             # FFmpeg HLS encoding pipeline
-│   ├── UPLOAD_AND_PLAYBACK_FLOW.md   # End-to-end upload → playback
-│   └── PIPELINE_IDEMPOTENCY.md       # Encode idempotency audit
-│
-├── features/                         # Feature tracking
-│   ├── STATUS.md                     # Implementation matrix (MVP/SHOULD/COULD)
-│   ├── KNOWN_GAPS.md                 # Missing features, TODOs
-│   └── AUDIT_MISMATCH.md             # PRD vs Code discrepancies
-│
-├── testing/                          # QA & CI
-│   ├── CI_GATES.md                   # CI quality gates definition
-│   ├── QA_TEST_PLAN.md               # Functional test plan by module
-│   ├── QA_REGRESSION.md              # Regression checklist
-│   ├── QA_REPORT.md                  # Latest test report
-│   ├── DIAGNOSTIC_REPORT.md          # Playback/upload troubleshooting
-│   └── PATCH_PLAN.md                 # Quick-fix plans
-│
-├── deployment/                       # Infrastructure
-│   ├── DOCKER.md                     # Local Docker (Postgres, Redis, MinIO)
-│   └── STAGING.md                    # Staging deployment guide
-│
-├── security/                         # Security
-│   └── BOLA_AUDIT.md                 # OWASP API security audit
-│
-├── observability/                    # Logging & monitoring
-│   └── MONITORING.md                 # Request ID, JSON logs, Grafana
-│
-├── ai-service/                       # AI Curator
-│   └── README.md                     # Python FastAPI recommendation engine
-│
-├── mobile/                           # Mobile app
-│   └── README.md                     # Expo React Native app docs
-│
-├── design/                           # UI/UX design
-│   ├── UI_REFERENCE.md               # Admin upload UI reference (Lovable)
-│   └── LOVABLE_CONTEXT.md            # Context for AI redesign
-│
-└── reference/                        # Source of truth & handoffs
-    ├── PRD.md                        # Product Requirements Document
-    ├── HANDOFF.md                    # Latest technical handoff
-    ├── HANDOFF_CODEX.md              # Previous handoff (Codex)
-    └── UI_AUDIT.md                   # Web app UI/UX audit
+â”œâ”€â”€ INDEX.md                          # đŸ‘ˆ You are here
+â”‚
+â”œâ”€â”€ architecture/                     # System design
+â”‚   â”œâ”€â”€ OVERVIEW.md                   # C4 architecture, NestJS modules, data flow
+â”‚   â”œâ”€â”€ DATABASE.md                   # ERD, Prisma schema, enums, models
+â”‚   â”œâ”€â”€ VIDEO_PIPELINE.md             # FFmpeg HLS encoding pipeline
+â”‚   â”œâ”€â”€ UPLOAD_AND_PLAYBACK_FLOW.md   # End-to-end upload â†’ playback
+â”‚   â””â”€â”€ PIPELINE_IDEMPOTENCY.md       # Encode idempotency audit
+â”‚
+â”œâ”€â”€ features/                         # Feature tracking
+â”‚   â”œâ”€â”€ STATUS.md                     # Implementation matrix (MVP/SHOULD/COULD)
+â”‚   â”œâ”€â”€ KNOWN_GAPS.md                 # Missing features, TODOs
+â”‚   â””â”€â”€ AUDIT_MISMATCH.md             # PRD vs Code discrepancies
+â”‚
+â”œâ”€â”€ testing/                          # QA & CI
+â”‚   â”œâ”€â”€ CI_GATES.md                   # CI quality gates definition
+â”‚   â”œâ”€â”€ QA_TEST_PLAN.md               # Functional test plan by module
+â”‚   â”œâ”€â”€ QA_REGRESSION.md              # Regression checklist
+â”‚   â”œâ”€â”€ QA_REPORT.md                  # Latest test report
+â”‚   â”œâ”€â”€ DIAGNOSTIC_REPORT.md          # Playback/upload troubleshooting
+â”‚   â””â”€â”€ PATCH_PLAN.md                 # Quick-fix plans
+â”‚
+â”œâ”€â”€ deployment/                       # Infrastructure
+â”‚   â”œâ”€â”€ DOCKER.md                     # Local Docker (Postgres, Redis, MinIO)
+â”‚   â””â”€â”€ STAGING.md                    # Staging deployment guide
+â”‚
+â”œâ”€â”€ security/                         # Security
+â”‚   â””â”€â”€ BOLA_AUDIT.md                 # OWASP API security audit
+â”‚
+â”œâ”€â”€ observability/                    # Logging & monitoring
+â”‚   â””â”€â”€ MONITORING.md                 # Request ID, JSON logs, Grafana
+â”‚
+â”œâ”€â”€ ai-service/                       # AI Curator
+â”‚   â””â”€â”€ README.md                     # Python FastAPI recommendation engine
+â”‚
+â”œâ”€â”€ mobile/                           # Mobile app
+â”‚   â””â”€â”€ README.md                     # Expo React Native app docs
+â”‚
+â”œâ”€â”€ design/                           # UI/UX design
+â”‚   â”œâ”€â”€ UI_REFERENCE.md               # Admin upload UI reference (Lovable)
+â”‚   â””â”€â”€ LOVABLE_CONTEXT.md            # Context for AI redesign
+â”‚
+â””â”€â”€ reference/                        # Source of truth & handoffs
+    â”œâ”€â”€ PRD.md                        # Product Requirements Document
+    â”œâ”€â”€ HANDOFF.md                    # Latest technical handoff
+    â”œâ”€â”€ HANDOFF_CODEX.md              # Previous handoff (Codex)
+    â””â”€â”€ UI_AUDIT.md                   # Web app UI/UX audit
 ```
 
 ---
 
-## 🔗 Quick Links by Topic
+## đŸ”— Quick Links by Topic
 
 ### Authentication & Security
 - PRD: [reference/PRD.md](reference/PRD.md)
@@ -107,7 +107,7 @@ docs/
 
 ---
 
-## 📖 Document Types (Diátaxis Framework)
+## đŸ“– Document Types (DiĂ¡taxis Framework)
 
 | Type | Documents | When to Use |
 |------|-----------|-------------|
@@ -119,36 +119,36 @@ docs/
 
 ---
 
-## 🏗️ Architecture Overview
+## đŸ—ï¸ Architecture Overview
 
 ```
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│   Mobile    │  │    Web      │  │   Admin     │
-│ (Expo RN)   │  │  (Next.js)  │  │  (Next.js)  │
-└──────┬──────┘  └──────┬──────┘  └──────┬──────┘
-       │                │                │
-       └────────────────┼────────────────┘
-                        │
-                        ▼
-              ┌─────────────────┐
-              │   API (NestJS)   │
-              ├─────────────────┤
-              │  PostgreSQL     │
-              │  Redis (Queue)  │
-              │  MinIO (S3)     │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │  Worker (FFmpeg) │
-              └─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   Mobile    â”‚  â”‚    Web      â”‚  â”‚   Admin     â”‚
+â”‚ (Expo RN)   â”‚  â”‚  (Next.js)  â”‚  â”‚  (Next.js)  â”‚
+â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
+       â”‚                â”‚                â”‚
+       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â”‚
+                        â–¼
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â”‚   API (NestJS)   â”‚
+              â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+              â”‚  PostgreSQL     â”‚
+              â”‚  Redis (Queue)  â”‚
+              â”‚  MinIO (S3)     â”‚
+              â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                       â”‚
+                       â–¼
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â”‚  Worker (FFmpeg) â”‚
+              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
-## 📋 Source of Truth Hierarchy
+## đŸ“‹ Source of Truth Hierarchy
 
-> Khi có mâu thuẫn, ưu tiên theo thứ tự:
+> Khi cĂ³ mĂ¢u thuáº«n, Æ°u tiĂªn theo thá»© tá»±:
 
 1. **PRD.md** - Scope, features, acceptance criteria
 2. **ARCHITECTURE.md** - System design, components
@@ -157,7 +157,7 @@ docs/
 
 ---
 
-## 🔄 CI/CD Workflows
+## đŸ”„ CI/CD Workflows
 
 | Command | Description | Gate |
 |---------|-------------|------|
@@ -169,31 +169,31 @@ See [CI_GATES.md](./CI_GATES.md) for details.
 
 ---
 
-## ❓ FAQ
+## â“ FAQ
 
-**Q: Tôi cần thêm endpoint mới, bắt đầu từ đâu?**
-1. Cập nhật `OPENAPI.yaml` (design first)
+**Q: TĂ´i cáº§n thĂªm endpoint má»›i, báº¯t Ä‘áº§u tá»« Ä‘Ă¢u?**
+1. Cáº­p nháº­t `OPENAPI.yaml` (design first)
 2. Implement trong `apps/api/src/`
-3. Cập nhật `feature_status.md`
+3. Cáº­p nháº­t `feature_status.md`
 
-**Q: Làm sao biết tính năng nào đã implement?**
+**Q: LĂ m sao biáº¿t tĂ­nh nÄƒng nĂ o Ä‘Ă£ implement?**
 - Xem [feature_status.md](../feature_status.md)
 
-**Q: Tìm thấy bug/mismatch giữa docs và code?**
-- Thêm vào [AUDIT_MISMATCH.md](./AUDIT_MISMATCH.md)
-- Tạo issue/PR để fix
+**Q: TĂ¬m tháº¥y bug/mismatch giá»¯a docs vĂ  code?**
+- ThĂªm vĂ o [AUDIT_MISMATCH.md](./AUDIT_MISMATCH.md)
+- Táº¡o issue/PR Ä‘á»ƒ fix
 
-**Q: Muốn chạy demo nhanh?**
+**Q: Muá»‘n cháº¡y demo nhanh?**
 1. `pnpm infra:up`
 2. `pnpm db:migrate:deploy && pnpm db:seed`
 3. `pnpm dev`
-4. Mở Admin: http://localhost:3001 (admin@netflop.local / admin123)
+4. Má»Ÿ Admin: http://localhost:3001 (admin@NETFLAT.local / admin123)
 
 ---
 
-## 📝 Contributing to Docs
+## đŸ“ Contributing to Docs
 
-1. Giữ docs **ngắn gọn** và **chính xác**
-2. Mỗi thay đổi API phải cập nhật `OPENAPI.yaml`
-3. Mỗi thay đổi feature phải cập nhật `feature_status.md`
-4. Dùng Mermaid cho diagrams trong markdown
+1. Giá»¯ docs **ngáº¯n gá»n** vĂ  **chĂ­nh xĂ¡c**
+2. Má»—i thay Ä‘á»•i API pháº£i cáº­p nháº­t `OPENAPI.yaml`
+3. Má»—i thay Ä‘á»•i feature pháº£i cáº­p nháº­t `feature_status.md`
+4. DĂ¹ng Mermaid cho diagrams trong markdown

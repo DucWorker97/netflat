@@ -1,15 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useMovies, useGenres, useViewStats, useTopMovies } from '@/lib/queries';
+import { useMovies, useGenres } from '@/lib/queries';
 import { useLocalePath } from '@/lib/use-locale-path';
 
 export default function DashboardPage() {
     const { localePath } = useLocalePath();
     const { data: moviesData, isLoading: moviesLoading } = useMovies({ limit: 100 });
     const { data: genres, isLoading: genresLoading } = useGenres();
-    const { data: viewStats } = useViewStats();
-    const { data: topMovies } = useTopMovies(10);
 
     const movies = moviesData?.data || [];
     const stats = {
@@ -52,8 +50,8 @@ export default function DashboardPage() {
             }}>
                 <StatCard title="Total Movies" value={stats.total} icon="🎬" />
                 <StatCard title="Published" value={stats.published} icon="✅" color="#22c55e" />
-                <StatCard title="Total Views" value={viewStats?.totalViews || 0} icon="👁️" color="#3b82f6" />
-                <StatCard title="Views Today" value={viewStats?.viewsToday || 0} icon="📈" color="#8b5cf6" />
+                <StatCard title="Drafts" value={stats.draft} icon="📝" color="#f59e0b" />
+                <StatCard title="Total Genres" value={genres?.length || 0} icon="🏷️" color="#8b5cf6" />
             </div>
 
             {/* Encode Status */}
@@ -88,78 +86,6 @@ export default function DashboardPage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
-                {/* Top 10 Movies */}
-                <div>
-                    <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>🔥 Top 10 Movies by Views</h2>
-                    <div style={{
-                        background: 'var(--bg-card)',
-                        borderRadius: 8,
-                        overflow: 'hidden'
-                    }}>
-                        {topMovies && topMovies.length > 0 ? (
-                            topMovies.map((item, index) => (
-                                <Link
-                                    key={item.movieId}
-                                    href={localePath(`/movies/${item.movieId}`)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '1rem',
-                                        padding: '0.75rem 1rem',
-                                        borderBottom: '1px solid var(--border)',
-                                        textDecoration: 'none',
-                                        color: 'inherit'
-                                    }}
-                                >
-                                    <span style={{
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '50%',
-                                        background: index < 3 ? 'var(--accent)' : 'var(--bg-secondary)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        {index + 1}
-                                    </span>
-                                    <div style={{
-                                        width: 40,
-                                        height: 60,
-                                        borderRadius: 4,
-                                        background: item.movie?.posterUrl
-                                            ? `url(${item.movie.posterUrl}) center/cover`
-                                            : 'var(--bg-secondary)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '1rem'
-                                    }}>
-                                        {!item.movie?.posterUrl && '🎬'}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 500 }}>{item.movie?.title || 'Unknown'}</div>
-                                    </div>
-                                    <div style={{
-                                        fontSize: '0.875rem',
-                                        color: 'var(--text-secondary)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.25rem'
-                                    }}>
-                                        👁️ {item.viewCount}
-                                    </div>
-                                </Link>
-                            ))
-                        ) : (
-                            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                No view data yet. Play some movies to see statistics!
-                            </div>
-                        )}
-                    </div>
-                </div>
-
                 {/* Recent Movies */}
                 <div>
                     <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Recently Updated</h2>

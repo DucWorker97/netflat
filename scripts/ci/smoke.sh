@@ -82,7 +82,7 @@ check_service_health() {
         while [[ $timeout_remaining -gt 0 ]]; do
             # Get container health status
             local health
-            health=$(docker inspect --format='{{.State.Health.Status}}' "netflop-$service" 2>/dev/null || echo "not_found")
+            health=$(docker inspect --format='{{.State.Health.Status}}' "NETFLAT-$service" 2>/dev/null || echo "not_found")
             
             case "$health" in
                 "healthy")
@@ -99,7 +99,7 @@ check_service_health() {
                     ;;
                 "unhealthy")
                     log_error "$service is unhealthy"
-                    docker logs "netflop-$service" --tail 50 2>&1 || true
+                    docker logs "NETFLAT-$service" --tail 50 2>&1 || true
                     fail "Service $service failed health check"
                     ;;
             esac
@@ -112,7 +112,7 @@ check_service_health() {
         if [[ $timeout_remaining -le 0 ]]; then
             log_error "$service did not become healthy within ${SMOKE_TIMEOUT}s"
             docker compose ps
-            docker logs "netflop-$service" --tail 100 2>&1 || true
+            docker logs "NETFLAT-$service" --tail 100 2>&1 || true
             fail "Timeout waiting for $service"
         fi
     done

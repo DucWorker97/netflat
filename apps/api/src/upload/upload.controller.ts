@@ -51,67 +51,14 @@ export class UploadController {
 
     @Post('complete/:movieId')
     async uploadComplete(
-        @Req() req: Request,
         @Param('movieId', ParseUUIDPipe) movieId: string,
         @Body() dto: UploadCompleteDto,
     ) {
-        const requestId = req.requestId || 'unknown';
-
         const result = await this.uploadService.uploadComplete({
             movieId,
             objectKey: dto.objectKey,
             fileType: dto.fileType,
-            requestId,
         });
-
-        this.logger.log(
-            JSON.stringify({
-                type: 'upload_complete',
-                requestId,
-                movieId,
-                jobId: 'jobId' in result ? result.jobId : undefined,
-                deprecated: true,
-            })
-        );
-
-        return { data: result };
-    }
-
-    @Get('subtitle-presigned-url')
-    async getSubtitlePresignedUrl(
-        @Req() req: Request,
-        @Query('movieId', ParseUUIDPipe) movieId: string,
-        @Query('fileName') fileName: string,
-    ) {
-        const originHeader = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
-        const refererHeader = Array.isArray(req.headers.referer) ? req.headers.referer[0] : req.headers.referer;
-
-        const result = await this.uploadService.getSubtitlePresignedUrl({
-            movieId,
-            fileName,
-            origin: originHeader ?? refererHeader,
-        });
-
-        return { data: result };
-    }
-
-    @Post('subtitle-complete/:movieId')
-    async subtitleComplete(
-        @Param('movieId', ParseUUIDPipe) movieId: string,
-        @Body() dto: { objectKey: string },
-    ) {
-        const result = await this.uploadService.subtitleComplete({
-            movieId,
-            objectKey: dto.objectKey,
-        });
-
-        this.logger.log(
-            JSON.stringify({
-                type: 'subtitle_upload_complete',
-                movieId,
-                subtitleUrl: result.subtitleUrl,
-            })
-        );
 
         return { data: result };
     }

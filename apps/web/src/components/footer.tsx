@@ -19,7 +19,7 @@ export function Footer() {
                 }}>
                     <div>
                         <Link href="/" className="navbar-brand" style={{ fontSize: '1.5rem', marginBottom: '1rem', display: 'block' }}>
-                            netflop
+                            netflat
                         </Link>
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '300px' }}>
                             Your premium destination for streaming entertainment. Watch anywhere, cancel anytime.
@@ -61,7 +61,7 @@ export function Footer() {
                     color: 'var(--text-secondary)',
                     fontSize: '0.875rem'
                 }}>
-                    <p>&copy; {new Date().getFullYear()} Netflop. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Netflat. All rights reserved.</p>
                 </div>
             </div>
         </footer>

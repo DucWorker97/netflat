@@ -3,7 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const API_URL = process.env.API_URL || 'http://localhost:3000';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@netflop.local';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@NETFLAT.local';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const ENCODE_TIMEOUT = parseInt(process.env.ENCODE_TIMEOUT || '900', 10) * 1000;
 const POLLING_INTERVAL = 5000;

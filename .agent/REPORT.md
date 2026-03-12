@@ -1,4 +1,4 @@
-# .agent REPORT - Phase 0
+﻿# .agent REPORT - Phase 0
 
 ## Inventory
 - rules files: 9
@@ -15,7 +15,7 @@
 - Note: `.agent/skills/vercel-react-best-practices/rules/*.md` use a custom schema (`title/impact/tags`) and intentionally omit `name/description/trigger`.
 
 ## Duplications / Overlaps (DoD / Checklists)
-- `.agent/rules/netflop.md` Minimal DoD overlaps conceptually with `.agent/workflows/verify.md` "Pre-Delivery Checklist" (two sources for quality gates).
+- `.agent/rules/NETFLAT.md` Minimal DoD overlaps conceptually with `.agent/workflows/verify.md` "Pre-Delivery Checklist" (two sources for quality gates).
 - `.agent/workflows/verify.md` UI/UX checklist overlaps with `.agent/workflows/ui-audit.md` Definition of Done UI.
 - `.agent/workflows/ui-ux-pro-max.md` "Common Rules for Professional UI" overlaps with the UI checklist in `ui-audit.md` and the UI/UX section in `verify.md`.
 - `.agent/rules/09-checklist.md` duplicates the canonical checklist pointer already embedded in `verify.md`.
@@ -27,7 +27,7 @@
 ## Recommendation Table
 | Path | Recommendation | Reason | Risk |
 | --- | --- | --- | --- |
-| `.agent/rules/netflop.md` | KEEP | Canonical workspace rule + DoD source of truth. | Low |
+| `.agent/rules/NETFLAT.md` | KEEP | Canonical workspace rule + DoD source of truth. | Low |
 | `.agent/rules/09-checklist.md` | MERGE | Convert into workflow-only checklist by merging into `workflows/verify.md`. | Low |
 | `.agent/workflows/verify.md` | EDIT | Make single canonical pre-delivery checklist; remove duplicated UI/UX list or reference `ui-audit.md`. | Low |
 | `.agent/workflows/ui-audit.md` | EDIT | Keep UI-specific DoD; reference `verify.md` for global gates. | Low |

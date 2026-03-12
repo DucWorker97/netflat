@@ -14,7 +14,7 @@ You are an expert in Nest.js with deep knowledge of enterprise-grade Node.js app
 - When to use: building/debugging NestJS modules, controllers, guards, DTO validation, or request lifecycle.
 - What it can do: architecture reviews, DI fixes, auth/guard patterns, testing strategies, config & middleware setup.
 - What it must NOT do: TypeScript-type-only issues, Prisma schema/migration work, DB query/perf tuning, or React/Next UI work.
-- Minimal verify commands: `pnpm --filter @netflop/api lint`, `pnpm --filter @netflop/api typecheck`, `pnpm --filter @netflop/api build`.
+- Minimal verify commands: `pnpm --filter @NETFLAT/api lint`, `pnpm --filter @NETFLAT/api typecheck`, `pnpm --filter @NETFLAT/api build`.
 
 ## When invoked:
 

@@ -60,19 +60,18 @@ export default function AdvancedSearchPage() {
         enabled: debouncedSearch.length > 0 || Object.values(filters).some(v => v !== '' && v !== 'relevance'),
     });
 
-    // Mock suggestions
+    // Generate suggestions from genres + search term
     useEffect(() => {
-        if (searchTerm.length > 0) {
-            const mockSuggestions = [
-                `${searchTerm} movies`,
-                `${searchTerm} series`,
-                `Best ${searchTerm}`,
-            ];
-            setSuggestions(mockSuggestions);
+        if (searchTerm.length > 0 && genres) {
+            const matchingGenres = genres
+                .filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map(g => g.name)
+                .slice(0, 3);
+            setSuggestions(matchingGenres.length > 0 ? matchingGenres : []);
         } else {
             setSuggestions([]);
         }
-    }, [searchTerm]);
+    }, [searchTerm, genres]);
 
     // Close suggestions when clicking outside
     useEffect(() => {

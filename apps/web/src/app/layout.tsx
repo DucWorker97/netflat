@@ -6,7 +6,7 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 
 export const metadata: Metadata = {
-    title: 'Netflop - Watch Movies',
+    title: 'Netflat - Watch Movies',
     description: 'Stream your favorite movies',
 };
 

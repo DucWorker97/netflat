@@ -5,7 +5,6 @@ import {
     Delete,
     Param,
     Query,
-    Headers,
     UseGuards,
     ParseUUIDPipe,
     HttpCode,
@@ -27,14 +26,13 @@ export class FavoritesController {
     @Get()
     async findAll(
         @CurrentUser() user: User,
-        @Headers('x-profile-id') profileId?: string,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
     ) {
         const pageNum = parseInt(page || '1', 10);
         const limitNum = parseInt(limit || '20', 10);
 
-        const result = await this.favoritesService.findAll(user.id, profileId, pageNum, limitNum);
+        const result = await this.favoritesService.findAll(user.id, pageNum, limitNum);
 
         return {
             data: result.data,
@@ -53,20 +51,18 @@ export class FavoritesController {
     @HttpCode(HttpStatus.CREATED)
     async add(
         @CurrentUser() user: User,
-        @Headers('x-profile-id') profileId?: string,
         @Param('movieId', ParseUUIDPipe) movieId?: string,
     ) {
-        const favorite = await this.favoritesService.add(user.id, movieId!, profileId);
+        const favorite = await this.favoritesService.add(user.id, movieId!);
         return { data: favorite };
     }
 
     @Delete(':movieId')
     async remove(
         @CurrentUser() user: User,
-        @Headers('x-profile-id') profileId?: string,
         @Param('movieId', ParseUUIDPipe) movieId?: string,
     ) {
-        const result = await this.favoritesService.remove(user.id, movieId!, profileId);
+        const result = await this.favoritesService.remove(user.id, movieId!);
         return { data: result };
     }
 }

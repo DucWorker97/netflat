@@ -7,18 +7,9 @@ import { api } from './api';
 interface User {
     id: string;
     email: string;
+    displayName: string | null;
+    avatarUrl: string | null;
     role: string;
-}
-
-interface ForgotPasswordResult {
-    message: string;
-    resetToken?: string;
-    resetUrl?: string;
-    expiresAt?: string;
-}
-
-interface PasswordActionResult {
-    message: string;
 }
 
 interface AuthContextType {
@@ -27,8 +18,6 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (email: string, password: string, redirectTo?: string) => Promise<void>;
     register: (email: string, password: string, redirectTo?: string) => Promise<void>;
-    forgotPassword: (email: string) => Promise<ForgotPasswordResult>;
-    resetPassword: (token: string, newPassword: string) => Promise<PasswordActionResult>;
     logout: () => void;
 }
 
@@ -85,19 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push(redirectTo);
     };
 
-    const forgotPassword = async (email: string) => {
-        const res = await api.post<{ data: ForgotPasswordResult }>('/api/auth/forgot-password', { email });
-        return res.data;
-    };
-
-    const resetPassword = async (token: string, newPassword: string) => {
-        const res = await api.post<{ data: PasswordActionResult }>('/api/auth/reset-password', {
-            token,
-            newPassword,
-        });
-        return res.data;
-    };
-
     const logout = () => {
         api.clearTokens();
         setUser(null);
@@ -112,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isAuthenticated: !!user,
                 login,
                 register,
-                forgotPassword,
-                resetPassword,
                 logout,
             }}
         >

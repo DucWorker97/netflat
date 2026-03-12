@@ -1,7 +1,7 @@
-# Netflop Web - QA Functional Test Plan
+﻿# NETFLAT Web - QA Functional Test Plan
 
 ## 1. Overview
-- **Product**: Netflop Web (Frontend)
+- **Product**: NETFLAT Web (Frontend)
 - **Scope**: functional E2E testing of critical user flows.
 - **Environment**: Local Development (`http://localhost:3002`)
 - **Browser**: Chrome (Primary)
@@ -12,7 +12,7 @@
 | ID | Test Case | Steps | Expected Result | Priority |
 |----|-----------|-------|=================|==========|
 | A01 | Initial Load | Open `/` | Homepage loads, Hero visible, no console errors | Critical |
-| A02 | Navigation | Click 'Netflop' logo | Redirects to `/` | Low |
+| A02 | Navigation | Click 'NETFLAT' logo | Redirects to `/` | Low |
 | A03 | 404 Page | Open random url `/xyz` | Shows 404 Empty State (or redirects Home) | Medium |
 
 ### Module B: Home / Browse
@@ -63,5 +63,5 @@
 | H02 | Remove List | Remove from `/favorites` | Card disappears | High |
 
 ## 3. Test Data (Mock/Seed)
-- **User**: `viewer@netflop.local` / `viewer123`
+- **User**: `viewer@NETFLAT.local` / `viewer123`
 - **Movies**: Relies on existing Backend Seed or Mocked `queries.ts`.

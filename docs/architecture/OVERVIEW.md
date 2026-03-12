@@ -1,17 +1,17 @@
-# ARCHITECTURE.md – netflop
+﻿# ARCHITECTURE.md â€“ NETFLAT
 
-> **Phiên bản:** 1.0  
-> **Ngày tạo:** 01-01-2026  
-> **Tác giả:** System Architect
+> **PhiĂªn báº£n:** 1.0  
+> **NgĂ y táº¡o:** 01-01-2026  
+> **TĂ¡c giáº£:** System Architect
 
 ---
 
-## Mục lục
+## Má»¥c lá»¥c
 
-1. [Tổng quan hệ thống](#1-tổng-quan-hệ-thống)
-2. [Sơ đồ kiến trúc](#2-sơ-đồ-kiến-trúc)
-3. [Luồng nghiệp vụ End-to-End](#3-luồng-nghiệp-vụ-end-to-end)
-4. [Thiết kế Streaming HLS](#4-thiết-kế-streaming-hls)
+1. [Tá»•ng quan há»‡ thá»‘ng](#1-tá»•ng-quan-há»‡-thá»‘ng)
+2. [SÆ¡ Ä‘á»“ kiáº¿n trĂºc](#2-sÆ¡-Ä‘á»“-kiáº¿n-trĂºc)
+3. [Luá»“ng nghiá»‡p vá»¥ End-to-End](#3-luá»“ng-nghiá»‡p-vá»¥-end-to-end)
+4. [Thiáº¿t káº¿ Streaming HLS](#4-thiáº¿t-káº¿-streaming-hls)
 5. [Module Breakdown (NestJS)](#5-module-breakdown-nestjs)
 6. [Queue/Worker Design (BullMQ)](#6-queueworker-design-bullmq)
 7. [Environment Variables & Local Dev Runbook](#7-environment-variables--local-dev-runbook)
@@ -19,57 +19,57 @@
 
 ---
 
-# 1. Tổng quan hệ thống
+# 1. Tá»•ng quan há»‡ thá»‘ng
 
-## 1.1 Thành phần chính
+## 1.1 ThĂ nh pháº§n chĂ­nh
 
-| Thành phần | Công nghệ | Trách nhiệm | Port (local) |
+| ThĂ nh pháº§n | CĂ´ng nghá»‡ | TrĂ¡ch nhiá»‡m | Port (local) |
 |------------|-----------|-------------|--------------|
-| **Mobile App (Viewer)** | Expo React Native | Giao diện người dùng xem phim: browse, search, play HLS, resume, favorites | Expo Go / Dev Client |
-| **Admin Web (CMS)** | Next.js 14 (App Router) | Quản trị nội dung: CRUD movies, upload video/thumbnail, theo dõi encode, publish | `3001` |
+| **Mobile App (Viewer)** | Expo React Native | Giao diá»‡n ngÆ°á»i dĂ¹ng xem phim: browse, search, play HLS, resume, favorites | Expo Go / Dev Client |
+| **Admin Web (CMS)** | Next.js 14 (App Router) | Quáº£n trá»‹ ná»™i dung: CRUD movies, upload video/thumbnail, theo dĂµi encode, publish | `3001` |
 | **API Service** | NestJS + Prisma | RESTful API: auth, movies, genres, favorites, history, upload, admin RBAC | `3000` |
-| **Encode Worker** | Node.js TS + FFmpeg | Consume job từ queue, encode MP4 → HLS multi-bitrate, upload output lên storage | N/A (background) |
-| **PostgreSQL** | PostgreSQL 15+ | Lưu trữ dữ liệu quan hệ: users, movies, genres, favorites, watch_history, encode_jobs | `5432` |
+| **Encode Worker** | Node.js TS + FFmpeg | Consume job tá»« queue, encode MP4 â†’ HLS multi-bitrate, upload output lĂªn storage | N/A (background) |
+| **PostgreSQL** | PostgreSQL 15+ | LÆ°u trá»¯ dá»¯ liá»‡u quan há»‡: users, movies, genres, favorites, watch_history, encode_jobs | `5432` |
 | **Redis** | Redis 7+ | Queue (BullMQ) + Cache (optional) | `6379` |
-| **Object Storage** | MinIO (local) / S3 / R2 | Lưu originals, posters, HLS segments | `9000` (API) / `9001` (Console) |
-| **CDN (Deploy)** | CloudFront / Cloudflare (optional) | Cache & deliver HLS segments tới viewer | N/A |
+| **Object Storage** | MinIO (local) / S3 / R2 | LÆ°u originals, posters, HLS segments | `9000` (API) / `9001` (Console) |
+| **CDN (Deploy)** | CloudFront / Cloudflare (optional) | Cache & deliver HLS segments tá»›i viewer | N/A |
 
-## 1.2 Giao tiếp giữa các thành phần
+## 1.2 Giao tiáº¿p giá»¯a cĂ¡c thĂ nh pháº§n
 
 ```
-Mobile App  ────┐
-                │──► API Service ◄──── Admin Web
-                │         │
-                │         ├──► PostgreSQL (data)
-                │         ├──► Redis (queue + cache)
-                │         └──► Object Storage (presigned URLs)
-                │
-                └──► Object Storage (stream HLS trực tiếp / qua CDN)
+Mobile App  â”€â”€â”€â”€â”
+                â”‚â”€â”€â–º API Service â—„â”€â”€â”€â”€ Admin Web
+                â”‚         â”‚
+                â”‚         â”œâ”€â”€â–º PostgreSQL (data)
+                â”‚         â”œâ”€â”€â–º Redis (queue + cache)
+                â”‚         â””â”€â”€â–º Object Storage (presigned URLs)
+                â”‚
+                â””â”€â”€â–º Object Storage (stream HLS trá»±c tiáº¿p / qua CDN)
                 
-Encode Worker ◄──── Redis (BullMQ) ◄──── API Service (enqueue)
-      │
-      ├──► Object Storage (read original, write HLS)
-      └──► API Service (callback update encode_status)
+Encode Worker â—„â”€â”€â”€â”€ Redis (BullMQ) â—„â”€â”€â”€â”€ API Service (enqueue)
+      â”‚
+      â”œâ”€â”€â–º Object Storage (read original, write HLS)
+      â””â”€â”€â–º API Service (callback update encode_status)
 ```
 
 ---
 
-# 2. Sơ đồ kiến trúc
+# 2. SÆ¡ Ä‘á»“ kiáº¿n trĂºc
 
 ## 2.1 System / Container Overview
 
 ```mermaid
 C4Context
-    title netflop - System Context Diagram
+    title NETFLAT - System Context Diagram
 
-    Person(viewer, "Viewer", "Người xem phim trên mobile")
-    Person(admin, "Admin", "Quản trị nội dung trên web")
+    Person(viewer, "Viewer", "NgÆ°á»i xem phim trĂªn mobile")
+    Person(admin, "Admin", "Quáº£n trá»‹ ná»™i dung trĂªn web")
 
-    System_Boundary(netflop, "netflop Platform") {
+    System_Boundary(NETFLAT, "NETFLAT Platform") {
         Container(mobile, "Mobile App", "Expo React Native", "Browse, search, play HLS, resume")
         Container(adminWeb, "Admin Web", "Next.js", "CRUD movies, upload, publish")
         Container(api, "API Service", "NestJS", "REST API, auth, RBAC")
-        Container(worker, "Encode Worker", "Node.js + FFmpeg", "Encode MP4 → HLS")
+        Container(worker, "Encode Worker", "Node.js + FFmpeg", "Encode MP4 â†’ HLS")
         ContainerDb(postgres, "PostgreSQL", "Database", "Users, Movies, Genres, History")
         ContainerDb(redis, "Redis", "Queue + Cache", "BullMQ jobs")
         Container(storage, "Object Storage", "MinIO / S3", "Videos, Posters, HLS")
@@ -88,7 +88,7 @@ C4Context
     Rel(mobile, storage, "Stream HLS", "HTTPS")
 ```
 
-## 2.2 Data Flow: Upload → Encode → Playback
+## 2.2 Data Flow: Upload â†’ Encode â†’ Playback
 
 ```mermaid
 flowchart TB
@@ -151,9 +151,9 @@ flowchart TB
 
 ---
 
-# 3. Luồng nghiệp vụ End-to-End
+# 3. Luá»“ng nghiá»‡p vá»¥ End-to-End
 
-## 3.1 Viewer Flow: Login → Home → Play → Resume
+## 3.1 Viewer Flow: Login â†’ Home â†’ Play â†’ Resume
 
 ```mermaid
 sequenceDiagram
@@ -209,7 +209,7 @@ sequenceDiagram
     Note over V: Player resumes from 30s
 ```
 
-## 3.2 Admin Flow: Upload → Encode → Publish
+## 3.2 Admin Flow: Upload â†’ Encode â†’ Publish
 
 ```mermaid
 sequenceDiagram
@@ -268,50 +268,50 @@ sequenceDiagram
 
 ---
 
-# 4. Thiết kế Streaming HLS
+# 4. Thiáº¿t káº¿ Streaming HLS
 
 ## 4.1 Output Format
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
-| Master Playlist | `master.m3u8` - chứa links tới variant playlists |
+| Master Playlist | `master.m3u8` - chá»©a links tá»›i variant playlists |
 | Variant 360p | `v0/prog_index.m3u8` + segments `seg_*.ts` (640x360, ~800kbps) |
 | Variant 480p | `v1/prog_index.m3u8` + segments `seg_*.ts` (854x480, ~1400kbps) |
 | Variant 720p | `v2/prog_index.m3u8` + segments `seg_*.ts` (1280x720, ~2800kbps) |
-| Segment duration | 6 giây |
+| Segment duration | 6 giĂ¢y |
 
-## 4.2 Quy ước đường dẫn Storage
+## 4.2 Quy Æ°á»›c Ä‘Æ°á»ng dáº«n Storage
 
 ```
 bucket/
-├── posters/
-│   └── {movieId}/
-│       └── poster.jpg
-├── thumbnails/
-│   └── {movieId}/
-│       └── thumb.jpg
-├── subtitles/
-│   └── {movieId}/
-│       └── track.vtt
-├── originals/
-│   └── {movieId}/
-│       └── original.mp4
-└── hls/
-    └── {movieId}/
-        ├── master.m3u8
-        ├── v0/
-        │   ├── prog_index.m3u8
-        │   ├── seg_000.ts
-        │   ├── seg_001.ts
-        │   └── ...
-        ├── v1/
-        │   ├── prog_index.m3u8
-        │   ├── seg_000.ts
-        │   └── ...
-        └── v2/
-            ├── prog_index.m3u8
-            ├── seg_000.ts
-            └── ...
+â”œâ”€â”€ posters/
+â”‚   â””â”€â”€ {movieId}/
+â”‚       â””â”€â”€ poster.jpg
+â”œâ”€â”€ thumbnails/
+â”‚   â””â”€â”€ {movieId}/
+â”‚       â””â”€â”€ thumb.jpg
+â”œâ”€â”€ subtitles/
+â”‚   â””â”€â”€ {movieId}/
+â”‚       â””â”€â”€ track.vtt
+â”œâ”€â”€ originals/
+â”‚   â””â”€â”€ {movieId}/
+â”‚       â””â”€â”€ original.mp4
+â””â”€â”€ hls/
+    â””â”€â”€ {movieId}/
+        â”œâ”€â”€ master.m3u8
+        â”œâ”€â”€ v0/
+        â”‚   â”œâ”€â”€ prog_index.m3u8
+        â”‚   â”œâ”€â”€ seg_000.ts
+        â”‚   â”œâ”€â”€ seg_001.ts
+        â”‚   â””â”€â”€ ...
+        â”œâ”€â”€ v1/
+        â”‚   â”œâ”€â”€ prog_index.m3u8
+        â”‚   â”œâ”€â”€ seg_000.ts
+        â”‚   â””â”€â”€ ...
+        â””â”€â”€ v2/
+            â”œâ”€â”€ prog_index.m3u8
+            â”œâ”€â”€ seg_000.ts
+            â””â”€â”€ ...
 ```
 
 ## 4.3 FFmpeg Command Template
@@ -330,7 +330,7 @@ ffmpeg -i input.mp4 \
   v%v/prog_index.m3u8
 ```
 
-Sau đó generate `master.m3u8`:
+Sau Ä‘Ă³ generate `master.m3u8`:
 
 ```m3u8
 #EXTM3U
@@ -343,60 +343,60 @@ v1/prog_index.m3u8
 v2/prog_index.m3u8
 ```
 
-## 4.4 Chính sách "Bảo vệ nhẹ"
+## 4.4 ChĂ­nh sĂ¡ch "Báº£o vá»‡ nháº¹"
 
-| Hạng mục | Cách xử lý |
+| Háº¡ng má»¥c | CĂ¡ch xá»­ lĂ½ |
 |----------|------------|
-| **Endpoint bảo vệ** | `GET /api/movies/:id/stream` yêu cầu Bearer token hợp lệ |
-| **Playback URL** | Public URL khi `S3_PUBLIC_BASE_URL` được set; nếu không sẽ dùng presigned URL |
-| **Segment access (dev/staging)** | `hls/`, `posters/`, `thumbnails/`, `subtitles/` được public để player load segments |
-| **Segment access (prod)** | Có thể chuyển sang signed playlist/segment hoặc proxy streaming |
-| **Alternative: Stream ticket** | API trả về 1-time ticket, client gửi kèm query param `?ticket=xxx` |
+| **Endpoint báº£o vá»‡** | `GET /api/movies/:id/stream` yĂªu cáº§u Bearer token há»£p lá»‡ |
+| **Playback URL** | Public URL khi `S3_PUBLIC_BASE_URL` Ä‘Æ°á»£c set; náº¿u khĂ´ng sáº½ dĂ¹ng presigned URL |
+| **Segment access (dev/staging)** | `hls/`, `posters/`, `thumbnails/`, `subtitles/` Ä‘Æ°á»£c public Ä‘á»ƒ player load segments |
+| **Segment access (prod)** | CĂ³ thá»ƒ chuyá»ƒn sang signed playlist/segment hoáº·c proxy streaming |
+| **Alternative: Stream ticket** | API tráº£ vá» 1-time ticket, client gá»­i kĂ¨m query param `?ticket=xxx` |
 
-> **Lưu ý:** Đây không phải DRM, nội dung vẫn có thể bị download nếu có signed URL. Chỉ đủ cho demo "bảo vệ nhẹ".
+> **LÆ°u Ă½:** ÄĂ¢y khĂ´ng pháº£i DRM, ná»™i dung váº«n cĂ³ thá»ƒ bá»‹ download náº¿u cĂ³ signed URL. Chá»‰ Ä‘á»§ cho demo "báº£o vá»‡ nháº¹".
 
 ---
 
 # 5. Module Breakdown (NestJS)
 
-## 5.1 Danh sách Modules
+## 5.1 Danh sĂ¡ch Modules
 
 ```
 src/
-├── app.module.ts
-├── common/
-│   ├── decorators/       # @CurrentUser, @Roles
-│   ├── filters/          # HttpExceptionFilter
-│   ├── guards/           # JwtAuthGuard, RolesGuard
-│   ├── interceptors/     # LoggingInterceptor, TransformInterceptor
-│   └── pipes/            # ValidationPipe config
-├── config/
-│   └── config.module.ts  # Environment validation
-├── prisma/
-│   └── prisma.module.ts  # PrismaService
-├── auth/
-│   └── auth.module.ts
-├── users/
-│   └── users.module.ts
-├── movies/
-│   └── movies.module.ts
-├── genres/
-│   └── genres.module.ts
-├── favorites/
-│   └── favorites.module.ts
-├── watch-history/
-│   └── watch-history.module.ts
-├── upload/
-│   └── upload.module.ts
-└── encode/
-    └── encode.module.ts  # BullMQ producer + internal callback
+â”œâ”€â”€ app.module.ts
+â”œâ”€â”€ common/
+â”‚   â”œâ”€â”€ decorators/       # @CurrentUser, @Roles
+â”‚   â”œâ”€â”€ filters/          # HttpExceptionFilter
+â”‚   â”œâ”€â”€ guards/           # JwtAuthGuard, RolesGuard
+â”‚   â”œâ”€â”€ interceptors/     # LoggingInterceptor, TransformInterceptor
+â”‚   â””â”€â”€ pipes/            # ValidationPipe config
+â”œâ”€â”€ config/
+â”‚   â””â”€â”€ config.module.ts  # Environment validation
+â”œâ”€â”€ prisma/
+â”‚   â””â”€â”€ prisma.module.ts  # PrismaService
+â”œâ”€â”€ auth/
+â”‚   â””â”€â”€ auth.module.ts
+â”œâ”€â”€ users/
+â”‚   â””â”€â”€ users.module.ts
+â”œâ”€â”€ movies/
+â”‚   â””â”€â”€ movies.module.ts
+â”œâ”€â”€ genres/
+â”‚   â””â”€â”€ genres.module.ts
+â”œâ”€â”€ favorites/
+â”‚   â””â”€â”€ favorites.module.ts
+â”œâ”€â”€ watch-history/
+â”‚   â””â”€â”€ watch-history.module.ts
+â”œâ”€â”€ upload/
+â”‚   â””â”€â”€ upload.module.ts
+â””â”€â”€ encode/
+    â””â”€â”€ encode.module.ts  # BullMQ producer + internal callback
 ```
 
-## 5.2 Chi tiết từng Module
+## 5.2 Chi tiáº¿t tá»«ng Module
 
 ### AuthModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me` |
 | **Services** | `AuthService`: hash password (bcrypt), generate JWT, verify refresh token |
@@ -405,15 +405,15 @@ src/
 
 ### UsersModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
-| **Controllers** | Internal use (không expose public) |
+| **Controllers** | Internal use (khĂ´ng expose public) |
 | **Services** | `UsersService`: findByEmail, findById, create |
 | **Exports** | `UsersService` cho AuthModule |
 
 ### MoviesModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `GET /api/movies` (list, search, filter), `GET /api/movies/:id`, `GET /api/movies/:id/stream`, `GET /api/movies/:id/progress` |
 | **Admin endpoints** | `POST /api/movies`, `PUT /api/movies/:id`, `DELETE /api/movies/:id`, `PATCH /api/movies/:id/publish` |
@@ -423,7 +423,7 @@ src/
 
 ### GenresModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `GET /api/genres` |
 | **Admin (optional)** | CRUD genres |
@@ -431,15 +431,15 @@ src/
 
 ### FavoritesModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `GET /api/favorites`, `POST /api/favorites/:movieId`, `DELETE /api/favorites/:movieId` |
-| **Services** | `FavoritesService`: add, remove, list (với movie details) |
+| **Services** | `FavoritesService`: add, remove, list (vá»›i movie details) |
 | **Business rule** | Unique constraint user + movie |
 
 ### WatchHistoryModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `GET /api/history`, `POST /api/history/:movieId` |
 | **Services** | `WatchHistoryService`: upsert progress, list continue watching |
@@ -448,7 +448,7 @@ src/
 
 ### UploadModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **Controllers** | `GET /api/upload/presigned-url`, `POST /api/movies/:id/upload-complete` (alias: `/api/upload/complete/:movieId`) |
 | **Services** | `UploadService`: generate presigned PUT (MinIO/S3 SDK), validate file type/size |
@@ -457,17 +457,17 @@ src/
 
 ### EncodeModule
 
-| Item | Mô tả |
+| Item | MĂ´ táº£ |
 |------|-------|
 | **BullMQ Producer** | Enqueue `ENCODE_HLS` job |
-| **Internal Controller** (optional) | `POST /internal/encode-callback` (worker gọi khi xong) |
+| **Internal Controller** (optional) | `POST /internal/encode-callback` (worker gá»i khi xong) |
 | **Services** | `EncodeService`: updateStatus |
 
 ## 5.3 DTO / Validation Strategy
 
-- Sử dụng `class-validator` + `class-transformer`
-- Global `ValidationPipe` với `whitelist: true, transform: true`
-- DTOs extend `PartialType`, `PickType` từ `@nestjs/mapped-types`
+- Sá»­ dá»¥ng `class-validator` + `class-transformer`
+- Global `ValidationPipe` vá»›i `whitelist: true, transform: true`
+- DTOs extend `PartialType`, `PickType` tá»« `@nestjs/mapped-types`
 
 ## 5.4 Error Convention
 
@@ -483,7 +483,7 @@ src/
 }
 ```
 
-| HTTP Status | Code prefix | Ví dụ |
+| HTTP Status | Code prefix | VĂ­ dá»¥ |
 |-------------|-------------|-------|
 | 400 | `VALIDATION_*` | `VALIDATION_FAILED` |
 | 401 | `AUTH_*` | `AUTH_INVALID_CREDENTIALS` |
@@ -502,7 +502,7 @@ src/
 |------|-------|
 | Queue name | `encode` |
 | Connection | Redis (same instance) |
-| Concurrency | 1–2 (tuỳ CPU/RAM máy dev) |
+| Concurrency | 1â€“2 (tuá»³ CPU/RAM mĂ¡y dev) |
 | Default job options | `attempts: 3, backoff: { type: 'exponential', delay: 5000 }` |
 
 ## 6.2 Job Type
@@ -533,40 +533,40 @@ stateDiagram-v2
     failed --> [*]
 ```
 
-| Status | DB `encode_status` | Khi nào |
+| Status | DB `encode_status` | Khi nĂ o |
 |--------|---------------------|---------|
-| `pending` | `pending` | Job vừa enqueue |
-| `processing` | `processing` | Worker bắt đầu xử lý |
-| `ready` | `ready` | Encode thành công, `playback_url` có giá trị |
-| `failed` | `failed` | Hết retry, lưu `error_message` |
+| `pending` | `pending` | Job vá»«a enqueue |
+| `processing` | `processing` | Worker báº¯t Ä‘áº§u xá»­ lĂ½ |
+| `ready` | `ready` | Encode thĂ nh cĂ´ng, `playback_url` cĂ³ giĂ¡ trá»‹ |
+| `failed` | `failed` | Háº¿t retry, lÆ°u `error_message` |
 
 ## 6.4 Retry Policy
 
 - **Attempts:** 3
 - **Backoff:** Exponential (5s, 10s, 20s)
-- **On final failure:** Update `encode_status = failed`, lưu error message
-- **Admin re-trigger:** Gọi lại `POST /api/movies/:id/upload-complete` (alias: `/api/upload/complete/:movieId`) để enqueue job mới
+- **On final failure:** Update `encode_status = failed`, lÆ°u error message
+- **Admin re-trigger:** Gá»i láº¡i `POST /api/movies/:id/upload-complete` (alias: `/api/upload/complete/:movieId`) Ä‘á»ƒ enqueue job má»›i
 
 ## 6.5 Idempotency
 
-- Worker xoá `outputPrefix` folder trước khi encode (cleanup)
-- Hoặc overwrite existing segments
-- Không tạo dữ liệu rác khi retry
+- Worker xoĂ¡ `outputPrefix` folder trÆ°á»›c khi encode (cleanup)
+- Hoáº·c overwrite existing segments
+- KhĂ´ng táº¡o dá»¯ liá»‡u rĂ¡c khi retry
 
 ## 6.6 Worker Process
 
 ```
 apps/
-└── worker/
-    ├── src/
-    │   ├── main.ts           # Worker entrypoint
-    │   ├── encode.processor.ts
-    │   ├── ffmpeg.service.ts
-    │   └── storage.service.ts
-    └── package.json
+â””â”€â”€ worker/
+    â”œâ”€â”€ src/
+    â”‚   â”œâ”€â”€ main.ts           # Worker entrypoint
+    â”‚   â”œâ”€â”€ encode.processor.ts
+    â”‚   â”œâ”€â”€ ffmpeg.service.ts
+    â”‚   â””â”€â”€ storage.service.ts
+    â””â”€â”€ package.json
 ```
 
-Worker là process riêng (không chạy trong API NestJS) để tránh block event loop.
+Worker lĂ  process riĂªng (khĂ´ng cháº¡y trong API NestJS) Ä‘á»ƒ trĂ¡nh block event loop.
 
 ---
 
@@ -577,55 +577,55 @@ Worker là process riêng (không chạy trong API NestJS) để tránh block ev
 ```bash
 # .env.example
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Database
-# ─────────────────────────────────────────────────────────────
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/netflop?schema=public"
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/NETFLAT?schema=public"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Redis
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 REDIS_URL="redis://localhost:6379"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # JWT
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 JWT_EXPIRES_IN="15m"
 JWT_REFRESH_SECRET="your-refresh-secret-key"
 JWT_REFRESH_EXPIRES_IN="7d"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Object Storage (MinIO / S3)
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 S3_ENDPOINT="http://localhost:9000"
 S3_PRESIGN_BASE_URL="http://localhost:9000"
 S3_ACCESS_KEY="minioadmin"
 S3_SECRET_KEY="minioadmin"
-S3_BUCKET="netflop"
+S3_BUCKET="NETFLAT"
 S3_REGION="us-east-1"
-S3_PUBLIC_BASE_URL="http://localhost:9000/netflop"
+S3_PUBLIC_BASE_URL="http://localhost:9000/NETFLAT"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Upload / Stream
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 UPLOAD_MAX_SIZE_MB=2048
 UPLOAD_PRESIGNED_TTL_SECONDS=1800
 STREAM_URL_TTL_SECONDS=3600
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # CORS
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CORS_ORIGINS="http://localhost:3001,exp://192.168.1.100:8081"
 
-# ─────────────────────────────────────────────────────────────
-# Worker (FFmpeg path nếu cần)
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Worker (FFmpeg path náº¿u cáº§n)
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 FFMPEG_PATH="/usr/bin/ffmpeg"
 
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # API URL (cho Worker callback)
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 API_INTERNAL_URL="http://localhost:3000"
 ```
 
@@ -636,14 +636,14 @@ API_INTERNAL_URL="http://localhost:3000"
 - Node.js >= 18
 - pnpm >= 8
 - Docker + Docker Compose
-- FFmpeg installed locally (hoặc trong Docker)
+- FFmpeg installed locally (hoáº·c trong Docker)
 
 ### Step-by-step
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/your-org/netflop.git
-cd netflop
+git clone https://github.com/your-org/NETFLAT.git
+cd NETFLAT
 
 # 2. Install dependencies
 pnpm install
@@ -657,13 +657,13 @@ cp .env.example .env
 
 # 5. Create MinIO bucket (first time)
 # Open http://localhost:9001, login minioadmin/minioadmin
-# Create bucket "netflop", set public read policy for /hls/, /posters/, /thumbnails/, /subtitles/ (optional)
+# Create bucket "NETFLAT", set public read policy for /hls/, /posters/, /thumbnails/, /subtitles/ (optional)
 
 # 6. Run Prisma migrations
-pnpm --filter @netflop/api prisma migrate dev
+pnpm --filter @NETFLAT/api prisma migrate dev
 
 # 7. Seed database
-pnpm --filter @netflop/api prisma db seed
+pnpm --filter @NETFLAT/api prisma db seed
 
 # 8. Start all services (Turborepo)
 pnpm dev
@@ -680,7 +680,7 @@ pnpm dev
 # - Open Expo Go, scan QR -> Mobile app
 
 # 10. Test upload flow
-# - Login Admin (admin@netflop.local / admin123)
+# - Login Admin (admin@NETFLAT.local / admin123)
 # - Create movie, upload short video
 # - Check worker logs for encode progress
 # - Publish, verify on mobile
@@ -696,7 +696,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: netflop
+      POSTGRES_DB: NETFLAT
     ports:
       - "5432:5432"
     volumes:
@@ -759,7 +759,7 @@ volumes:
 }
 ```
 
-## 8.2 Error Format (thống nhất)
+## 8.2 Error Format (thá»‘ng nháº¥t)
 
 ```typescript
 interface ErrorResponse {
@@ -772,12 +772,12 @@ interface ErrorResponse {
 }
 ```
 
-## 8.3 Security Checklist (mức đồ án)
+## 8.3 Security Checklist (má»©c Ä‘á»“ Ă¡n)
 
-| Hạng mục | Triển khai |
+| Háº¡ng má»¥c | Triá»ƒn khai |
 |----------|------------|
 | Password hashing | bcrypt (rounds = 10) |
-| JWT validation | RS256 hoặc HS256 với secret đủ dài |
+| JWT validation | RS256 hoáº·c HS256 vá»›i secret Ä‘á»§ dĂ i |
 | RBAC | `@Roles('admin')` decorator + `RolesGuard` |
 | Input validation | `class-validator` whitelist, max lengths |
 | Upload validation | Check Content-Type, max size |
@@ -788,14 +788,14 @@ interface ErrorResponse {
 
 ## 8.4 Performance Targets
 
-| Metric | Target | Cách đo |
+| Metric | Target | CĂ¡ch Ä‘o |
 |--------|--------|---------|
 | API cold start | < 3s | First request sau deploy |
-| API response (list) | < 500ms p95 | Với 1000 movies, indexed |
+| API response (list) | < 500ms p95 | Vá»›i 1000 movies, indexed |
 | DB connection pool | 10 connections | Prisma config |
 | Redis connection | Pool 5 | ioredis |
 | HLS TTFF | < 3s | Expo video player on WiFi |
 
 ---
 
-> **Ghi chú:** Tài liệu này là baseline architecture. Có thể điều chỉnh khi triển khai thực tế.
+> **Ghi chĂº:** TĂ i liá»‡u nĂ y lĂ  baseline architecture. CĂ³ thá»ƒ Ä‘iá»u chá»‰nh khi triá»ƒn khai thá»±c táº¿.

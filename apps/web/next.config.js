@@ -7,7 +7,7 @@ const nextConfig = {
                 protocol: 'http',
                 hostname: 'localhost',
                 port: '9000',
-                pathname: '/netflop-media/**',
+                pathname: '/netflat-media/**',
             },
         ],
     },

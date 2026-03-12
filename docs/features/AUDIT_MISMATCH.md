@@ -1,4 +1,4 @@
-# Audit Mismatch Report
+﻿# Audit Mismatch Report
 
 > **Generated:** 2026-01-15  
 > **Purpose:** Document discrepancies between PRD, Architecture, OpenAPI, and Code
@@ -20,12 +20,12 @@
 
 | Feature | Location | PRD Status | Risk |
 |---------|----------|------------|------|
-| **AI Curator** | `apps/ai-curator/` | Nice-to-have (US-N3) mentions "simple recommendations" | 🟡 Low - Separate service, can be disabled |
-| **Billing/Subscription** | `apps/api/src/billing/` | **WON'T DO** (Section 3.4) | 🔴 High - Explicitly excluded from MVP |
-| **Profiles** | `apps/api/src/profiles/` | **COULD** (US-N1 = C-01) | 🟡 Low - Optional feature |
-| **Ratings** | `apps/api/src/ratings/` | **COULD** (US-N6 = C-03) | 🟡 Low - Optional feature |
-| **Rails Config** | `apps/api/src/rails/` | Not mentioned | 🟢 Low - UI enhancement |
-| **Play Events** | Prisma `PlayEvent` model | Not mentioned (analytics?) | 🟢 Low - Observability feature |
+| **AI Curator** | `apps/ai-curator/` | Nice-to-have (US-N3) mentions "simple recommendations" | đŸŸ¡ Low - Separate service, can be disabled |
+| **Billing/Subscription** | `apps/api/src/billing/` | **WON'T DO** (Section 3.4) | đŸ”´ High - Explicitly excluded from MVP |
+| **Profiles** | `apps/api/src/profiles/` | **COULD** (US-N1 = C-01) | đŸŸ¡ Low - Optional feature |
+| **Ratings** | `apps/api/src/ratings/` | **COULD** (US-N6 = C-03) | đŸŸ¡ Low - Optional feature |
+| **Rails Config** | `apps/api/src/rails/` | Not mentioned | đŸŸ¢ Low - UI enhancement |
+| **Play Events** | Prisma `PlayEvent` model | Not mentioned (analytics?) | đŸŸ¢ Low - Observability feature |
 
 ### Action Items:
 - [ ] Decide: Keep or remove `billing` module (conflicts with PRD Section 3.4)
@@ -38,11 +38,11 @@
 
 | PRD Feature | PRD Section | Implementation Status | Gap |
 |-------------|-------------|----------------------|-----|
-| **Forgot Password** | Implied in Auth | ❌ Not found in `apps/api/src/auth/` | Missing endpoint |
-| **Email Verification** | Security best practice | ❌ Not found | Missing |
-| **Subtitles (VTT)** | S-01 (SHOULD) | ❌ No VTT endpoint in OpenAPI | Not implemented |
-| **Quality Selector** | S-02 (SHOULD) | ⚠️ HLS variants exist, UI unclear | Verify mobile UI |
-| **Stream Ticket/Signed URL** | S-05 (SHOULD) | ✅ Implemented in `/movies/{id}/stream` | OK |
+| **Forgot Password** | Implied in Auth | âŒ Not found in `apps/api/src/auth/` | Missing endpoint |
+| **Email Verification** | Security best practice | âŒ Not found | Missing |
+| **Subtitles (VTT)** | S-01 (SHOULD) | âŒ No VTT endpoint in OpenAPI | Not implemented |
+| **Quality Selector** | S-02 (SHOULD) | â ï¸ HLS variants exist, UI unclear | Verify mobile UI |
+| **Stream Ticket/Signed URL** | S-05 (SHOULD) | âœ… Implemented in `/movies/{id}/stream` | OK |
 
 ### Action Items:
 - [ ] Add to INCOMPLETE_INFO: Forgot Password, Email Verification
@@ -57,24 +57,24 @@
 
 | OpenAPI Endpoint | Code Exists | Notes |
 |-----------------|-------------|-------|
-| `POST /api/movies/{id}/upload-complete` | ✅ Yes | Canonical (alias: `/api/upload/complete/{movieId}`, deprecated) |
-| `GET /api/movies/{id}/progress` | ✅ Yes | Part of History module |
-| `GET /api/history` | ✅ Yes | `apps/api/src/history/` |
-| `POST /api/history/:movieId` | ✅ Yes | Upsert progress |
-| `GET /api/rails` | ⚠️ Exists in code | NOT in OpenAPI |
-| `GET /api/recommendations` | ⚠️ Exists in code | NOT in OpenAPI |
-| `POST /api/ratings/:movieId` | ⚠️ Exists in code | NOT in OpenAPI |
+| `POST /api/movies/{id}/upload-complete` | âœ… Yes | Canonical (alias: `/api/upload/complete/{movieId}`, deprecated) |
+| `GET /api/movies/{id}/progress` | âœ… Yes | Part of History module |
+| `GET /api/history` | âœ… Yes | `apps/api/src/history/` |
+| `POST /api/history/:movieId` | âœ… Yes | Upsert progress |
+| `GET /api/rails` | â ï¸ Exists in code | NOT in OpenAPI |
+| `GET /api/recommendations` | â ï¸ Exists in code | NOT in OpenAPI |
+| `POST /api/ratings/:movieId` | â ï¸ Exists in code | NOT in OpenAPI |
 
 ### 3.2 Schema Discrepancies
 
 | Entity | PRD/Architecture | Prisma Schema | OpenAPI | Mismatch |
 |--------|-----------------|---------------|---------|----------|
-| `Movie.movieStatus` | `draft`/`published` | ✅ Enum `MovieStatus` | ✅ Match | OK |
-| `Movie.encodeStatus` | `pending`/`processing`/`ready`/`failed` | ✅ Enum `EncodeStatus` | ✅ Match | OK |
-| `User.role` | `viewer`/`admin` | ✅ Enum `UserRole` | ✅ Match | OK |
-| `Profile` | COULD (C-01) | ✅ Exists | ❌ Not in OpenAPI | Gap |
-| `Rating` | COULD (C-03) | ✅ Exists | ❌ Not in OpenAPI | Gap |
-| `Subscription` | WON'T DO | ⚠️ Exists | ❌ Not in OpenAPI | Conflict |
+| `Movie.movieStatus` | `draft`/`published` | âœ… Enum `MovieStatus` | âœ… Match | OK |
+| `Movie.encodeStatus` | `pending`/`processing`/`ready`/`failed` | âœ… Enum `EncodeStatus` | âœ… Match | OK |
+| `User.role` | `viewer`/`admin` | âœ… Enum `UserRole` | âœ… Match | OK |
+| `Profile` | COULD (C-01) | âœ… Exists | âŒ Not in OpenAPI | Gap |
+| `Rating` | COULD (C-03) | âœ… Exists | âŒ Not in OpenAPI | Gap |
+| `Subscription` | WON'T DO | â ï¸ Exists | âŒ Not in OpenAPI | Conflict |
 
 ---
 
@@ -82,9 +82,9 @@
 
 | Document | Issue | Action |
 |----------|-------|--------|
-| **README.md** | ❌ Missing from root | Create with quickstart |
-| **feature_status.md** | ❌ Missing | Create tracking table |
-| **docs/INDEX.md** | ❌ Missing | Create navigation doc |
+| **README.md** | âŒ Missing from root | Create with quickstart |
+| **feature_status.md** | âŒ Missing | Create tracking table |
+| **docs/INDEX.md** | âŒ Missing | Create navigation doc |
 | **ARCHITECTURE.md** | Does not mention `ai-curator`, `profiles`, `ratings`, `billing` | Update |
 | **OpenAPI** | Missing endpoints for `rails`, `recommendations`, `ratings` | Add or remove from code |
 
@@ -94,9 +94,9 @@
 
 | Rule | PRD Definition | Architecture | Code Check |
 |------|----------------|--------------|------------|
-| Viewer sees movie when... | `published` AND `ready` (BR-01) | ✅ Matches | ✅ `MoviesService` filters correctly |
-| Continue Watching shows... | `progress > 0` AND `completed = false` (BR-02) | ✅ Matches | ✅ History module logic |
-| Completed when... | `progress >= 0.9 * duration` (BR-03) | ✅ Matches | ✅ Prisma `WatchHistory` |
+| Viewer sees movie when... | `published` AND `ready` (BR-01) | âœ… Matches | âœ… `MoviesService` filters correctly |
+| Continue Watching shows... | `progress > 0` AND `completed = false` (BR-02) | âœ… Matches | âœ… History module logic |
+| Completed when... | `progress >= 0.9 * duration` (BR-03) | âœ… Matches | âœ… Prisma `WatchHistory` |
 
 ---
 
@@ -114,8 +114,8 @@
 
 ## Appendix: File References
 
-- PRD: [`docs/PRD.md`](file:///c:/Users/ducwo/Downloads/Netflop/docs/PRD.md)
-- Architecture: [`docs/ARCHITECTURE.md`](file:///c:/Users/ducwo/Downloads/Netflop/docs/ARCHITECTURE.md)
-- OpenAPI: [`OPENAPI.yaml`](file:///c:/Users/ducwo/Downloads/Netflop/OPENAPI.yaml)
-- Prisma Schema: [`apps/api/prisma/schema.prisma`](file:///c:/Users/ducwo/Downloads/Netflop/apps/api/prisma/schema.prisma)
-- API Source: [`apps/api/src/`](file:///c:/Users/ducwo/Downloads/Netflop/apps/api/src/)
+- PRD: [`docs/PRD.md`](file:///c:/Users/ducwo/Downloads/NETFLAT/docs/PRD.md)
+- Architecture: [`docs/ARCHITECTURE.md`](file:///c:/Users/ducwo/Downloads/NETFLAT/docs/ARCHITECTURE.md)
+- OpenAPI: [`OPENAPI.yaml`](file:///c:/Users/ducwo/Downloads/NETFLAT/OPENAPI.yaml)
+- Prisma Schema: [`apps/api/prisma/schema.prisma`](file:///c:/Users/ducwo/Downloads/NETFLAT/apps/api/prisma/schema.prisma)
+- API Source: [`apps/api/src/`](file:///c:/Users/ducwo/Downloads/NETFLAT/apps/api/src/)

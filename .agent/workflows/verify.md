@@ -1,25 +1,25 @@
----
+﻿---
 name: workflow-verify
 description: Verify quality gates (lint, typecheck, build).
 trigger: manual
 ---
 
 
-# /verify — Quality Gate
+# /verify â€” Quality Gate
 
 Runs lint, typecheck, and build checks to ensure code quality.
 
-Canonical DoD lives in `rules/netflop.md`. This workflow is the canonical pre-delivery checklist (supersedes `rules/09-checklist.md`).
+Canonical DoD lives in `rules/NETFLAT.md`. This workflow is the canonical pre-delivery checklist (supersedes `rules/09-checklist.md`).
 
 ## Pass/Fail Criteria
 
 **PASS when:**
-- ✅ `pnpm lint` succeeds (exit 0)
-- ✅ `pnpm typecheck` succeeds (exit 0)
-- ✅ `pnpm build` succeeds (exit 0)
+- âœ… `pnpm lint` succeeds (exit 0)
+- âœ… `pnpm typecheck` succeeds (exit 0)
+- âœ… `pnpm build` succeeds (exit 0)
 
 **FAIL when:**
-- ❌ Any command fails (exit != 0)
+- âŒ Any command fails (exit != 0)
 - Script outputs which command failed
 
 ## Run Locally

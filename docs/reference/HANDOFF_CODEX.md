@@ -1,4 +1,4 @@
-﻿# Netflop Handoff For Claude Opus 4.6
+﻿# NETFLAT Handoff For Claude Opus 4.6
 
 Generated at: 2026-03-10 (Asia/Saigon)
 Prepared by: Codex (GPT-5)
@@ -8,7 +8,7 @@ This document is a full technical handoff of:
 - what was implemented,
 - what is currently working,
 - what is still unstable or incomplete,
-- and how the Netflop program is structured and expected to run.
+- and how the NETFLAT program is structured and expected to run.
 
 Use this as the starting context before making new changes.
 
@@ -52,7 +52,7 @@ Use this as the starting context before making new changes.
 - `DEV_PUBLIC_HOST` is used as host strategy (localhost vs emulator host vs LAN IP), and URL consistency across API/S3/public clients is critical.
 
 ### 3.5 Existing "single-click" style launcher
-- `netflop.bat` exists and can start/stop infra + app in a basic way.
+- `NETFLAT.bat` exists and can start/stop infra + app in a basic way.
 - It is not robust process supervision; it force-kills `node.exe` on stop.
 
 ## 4. Implemented Work
@@ -176,11 +176,11 @@ Runtime manager behavior:
 ## 5. Verification Results (executed on 2026-03-10)
 
 ### 5.1 Passed
-- `pnpm --filter @netflop/web typecheck`
-- `pnpm --filter @netflop/admin typecheck`
-- `pnpm --filter @netflop/mobile typecheck`
-- `pnpm --filter @netflop/web build`
-- `pnpm --filter @netflop/admin build`
+- `pnpm --filter @NETFLAT/web typecheck`
+- `pnpm --filter @NETFLAT/admin typecheck`
+- `pnpm --filter @NETFLAT/mobile typecheck`
+- `pnpm --filter @NETFLAT/web build`
+- `pnpm --filter @NETFLAT/admin build`
 
 ### 5.2 Failed / blocked
 - `pnpm typecheck` (root turbo) fails because `apps/ai-curator` cannot find `pyright` command in environment.

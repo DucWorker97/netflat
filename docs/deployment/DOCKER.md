@@ -1,4 +1,4 @@
-# Local Docker Infrastructure
+﻿# Local Docker Infrastructure
 
 Docker Compose manages local development services.
 
@@ -7,9 +7,9 @@ Docker Compose manages local development services.
 | Service | Image | Port | Volume |
 |---------|-------|------|--------|
 | `postgres` | postgres:15-alpine | 5432 | `postgres-data` |
-| `redis` | redis:7-alpine | 6379 | — |
+| `redis` | redis:7-alpine | 6379 | â€” |
 | `minio` | minio/minio:latest | 9000 (API), 9001 (Console) | `minio-data` |
-| `minio-init` | minio/mc:latest | — | Initializes bucket + public policies |
+| `minio-init` | minio/mc:latest | â€” | Initializes bucket + public policies |
 | `clickhouse` | clickhouse/clickhouse-server:24-alpine | 8123 (HTTP), 9009 (Native) | `clickhouse-data` |
 | `ai-curator` | Built from `apps/ai-curator/Dockerfile` | 8000 | `ai-models` |
 
@@ -43,12 +43,12 @@ pnpm db:studio         # Open Prisma Studio GUI
 
 ## MinIO Bucket Policy
 
-- Bucket: `netflop-media`
+- Bucket: `NETFLAT-media`
 - Public read: `hls/`, `posters/`, `thumbnails/`, `subtitles/`
 - Private: `originals/` (uploaded MP4s)
 
 ## Troubleshooting
 
-- `EPERM` on `prisma generate` → Stop dev server first (releases DLL lock)
-- Docker connection error → Ensure Docker Desktop is running
-- Port conflict on 9000 → ClickHouse remapped to 9009 to avoid MinIO conflict
+- `EPERM` on `prisma generate` â†’ Stop dev server first (releases DLL lock)
+- Docker connection error â†’ Ensure Docker Desktop is running
+- Port conflict on 9000 â†’ ClickHouse remapped to 9009 to avoid MinIO conflict

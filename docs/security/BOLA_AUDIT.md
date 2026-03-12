@@ -1,4 +1,4 @@
-# BOLA Security Audit Report
+﻿# BOLA Security Audit Report
 
 > **OWASP API1:2023 - Broken Object Level Authorization**  
 > **Audit Date:** 2026-01-15  
@@ -14,10 +14,10 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Risk Level | Count | Description |
 |------------|-------|-------------|
-| 🔴 **Critical** | 2 | No ownership check on user-scoped resources |
-| 🟠 **High** | 3 | Missing visibility checks on resources |
-| 🟡 **Medium** | 4 | Partial checks, needs hardening |
-| 🟢 **Low** | 8 | Properly protected with guards/ownership |
+| đŸ”´ **Critical** | 2 | No ownership check on user-scoped resources |
+| đŸŸ  **High** | 3 | Missing visibility checks on resources |
+| đŸŸ¡ **Medium** | 4 | Partial checks, needs hardening |
+| đŸŸ¢ **Low** | 8 | Properly protected with guards/ownership |
 
 ---
 
@@ -27,13 +27,13 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/movies` | GET | query params | OptionalJwtAuthGuard | Public list - should filter draft/non-ready for viewers | 🟠 |
-| `/movies/:id` | GET | `id` | JwtAuthGuard | **No visibility check** - viewers can see draft movies | 🔴 |
-| `/movies/:id` | PUT | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/movies/:id` | DELETE | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/movies/:id/publish` | PATCH | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/movies/:id/stream` | GET | `id` | JwtAuthGuard | ✅ Checks published+ready in service | 🟢 |
-| `/movies/:id/progress` | GET | `id` | JwtAuthGuard | ✅ Queries by userId+movieId | 🟢 |
+| `/movies` | GET | query params | OptionalJwtAuthGuard | Public list - should filter draft/non-ready for viewers | đŸŸ  |
+| `/movies/:id` | GET | `id` | JwtAuthGuard | **No visibility check** - viewers can see draft movies | đŸ”´ |
+| `/movies/:id` | PUT | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/movies/:id` | DELETE | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/movies/:id/publish` | PATCH | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/movies/:id/stream` | GET | `id` | JwtAuthGuard | âœ… Checks published+ready in service | đŸŸ¢ |
+| `/movies/:id/progress` | GET | `id` | JwtAuthGuard | âœ… Queries by userId+movieId | đŸŸ¢ |
 
 **Required Fixes:**
 - `GET /movies/:id`: Add visibility check - viewers can only see `published + ready`
@@ -45,9 +45,9 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/favorites` | GET | - | JwtAuthGuard | ✅ Filters by user.id | 🟢 |
-| `/favorites/:movieId` | POST | `movieId` | JwtAuthGuard | ⚠️ Checks movie exists, but uses req.user.id | 🟢 |
-| `/favorites/:movieId` | DELETE | `movieId` | JwtAuthGuard | ⚠️ Uses findFirst with userId - OK | 🟢 |
+| `/favorites` | GET | - | JwtAuthGuard | âœ… Filters by user.id | đŸŸ¢ |
+| `/favorites/:movieId` | POST | `movieId` | JwtAuthGuard | â ï¸ Checks movie exists, but uses req.user.id | đŸŸ¢ |
+| `/favorites/:movieId` | DELETE | `movieId` | JwtAuthGuard | â ï¸ Uses findFirst with userId - OK | đŸŸ¢ |
 
 **Note:** x-profile-id header could be spoofed - needs validation that profile belongs to user.
 
@@ -57,9 +57,9 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/history` | GET | - | JwtAuthGuard | ✅ Filters by user.id | 🟢 |
-| `/history/:movieId` | GET | `movieId` | JwtAuthGuard | ✅ Queries with userId | 🟢 |
-| `/history/:movieId` | POST | `movieId` | JwtAuthGuard | ✅ Creates/updates with userId | 🟢 |
+| `/history` | GET | - | JwtAuthGuard | âœ… Filters by user.id | đŸŸ¢ |
+| `/history/:movieId` | GET | `movieId` | JwtAuthGuard | âœ… Queries with userId | đŸŸ¢ |
+| `/history/:movieId` | POST | `movieId` | JwtAuthGuard | âœ… Creates/updates with userId | đŸŸ¢ |
 
 **Note:** Same x-profile-id spoofing concern as Favorites.
 
@@ -69,10 +69,10 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/upload/presigned-url` | GET | `movieId` (query) | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/movies/:id/upload-complete` (alias: `/upload/complete/:movieId`) | POST | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/upload/subtitle-presigned-url` | GET | `movieId` (query) | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/upload/subtitle-complete/:movieId` | POST | `movieId` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
+| `/upload/presigned-url` | GET | `movieId` (query) | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/movies/:id/upload-complete` (alias: `/upload/complete/:movieId`) | POST | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/upload/subtitle-presigned-url` | GET | `movieId` (query) | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/upload/subtitle-complete/:movieId` | POST | `movieId` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
 
 ---
 
@@ -80,11 +80,11 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/api/profiles` | GET | - | JwtAuthGuard | ✅ Filters by user.id | 🟢 |
-| `/api/profiles/:id` | GET | `id` | JwtAuthGuard | ⚠️ Service checks userId ownership | 🟡 |
-| `/api/profiles` | POST | - | JwtAuthGuard | ✅ Creates for current user | 🟢 |
-| `/api/profiles/:id` | PUT | `id` | JwtAuthGuard | ⚠️ Service checks userId ownership | 🟡 |
-| `/api/profiles/:id` | DELETE | `id` | JwtAuthGuard | ⚠️ Service checks userId ownership | 🟡 |
+| `/api/profiles` | GET | - | JwtAuthGuard | âœ… Filters by user.id | đŸŸ¢ |
+| `/api/profiles/:id` | GET | `id` | JwtAuthGuard | â ï¸ Service checks userId ownership | đŸŸ¡ |
+| `/api/profiles` | POST | - | JwtAuthGuard | âœ… Creates for current user | đŸŸ¢ |
+| `/api/profiles/:id` | PUT | `id` | JwtAuthGuard | â ï¸ Service checks userId ownership | đŸŸ¡ |
+| `/api/profiles/:id` | DELETE | `id` | JwtAuthGuard | â ï¸ Service checks userId ownership | đŸŸ¡ |
 
 **Required Improvements:**
 - Move ownership check from service to guard for consistency
@@ -96,10 +96,10 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/ratings/:movieId` | POST | `movieId` | JwtAuthGuard | ⚠️ No movie visibility check | 🟠 |
-| `/ratings/:movieId/user` | GET | `movieId` | JwtAuthGuard | ✅ Queries by userId | 🟢 |
-| `/ratings/:movieId/stats` | GET | `movieId` | **None** | 🔴 Public - can enumerate all movieIds | 🟠 |
-| `/ratings/:movieId` | DELETE | `movieId` | JwtAuthGuard | ✅ Deletes by userId+movieId | 🟢 |
+| `/ratings/:movieId` | POST | `movieId` | JwtAuthGuard | â ï¸ No movie visibility check | đŸŸ  |
+| `/ratings/:movieId/user` | GET | `movieId` | JwtAuthGuard | âœ… Queries by userId | đŸŸ¢ |
+| `/ratings/:movieId/stats` | GET | `movieId` | **None** | đŸ”´ Public - can enumerate all movieIds | đŸŸ  |
+| `/ratings/:movieId` | DELETE | `movieId` | JwtAuthGuard | âœ… Deletes by userId+movieId | đŸŸ¢ |
 
 **Required Fixes:**
 - `POST /ratings/:movieId`: Verify movie is published+ready before allowing rating
@@ -111,12 +111,12 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/api/rails` | GET | - | **None** | ✅ Public - returns active rails | 🟢 |
-| `/api/rails/admin` | GET | - | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/api/rails/:id` | GET | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/api/rails` | POST | - | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/api/rails/:id` | PUT | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
-| `/api/rails/:id` | DELETE | `id` | JwtAuthGuard + RolesGuard('admin') | ✅ Admin only | 🟢 |
+| `/api/rails` | GET | - | **None** | âœ… Public - returns active rails | đŸŸ¢ |
+| `/api/rails/admin` | GET | - | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/api/rails/:id` | GET | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/api/rails` | POST | - | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/api/rails/:id` | PUT | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
+| `/api/rails/:id` | DELETE | `id` | JwtAuthGuard + RolesGuard('admin') | âœ… Admin only | đŸŸ¢ |
 
 ---
 
@@ -124,10 +124,10 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/actors` | GET | - | Unknown | Needs review | 🟡 |
-| `/actors/:id` | GET | `id` | Unknown | Needs review | 🟡 |
-| `/actors/:id` | PUT | `id` | Unknown | Needs review | 🟡 |
-| `/actors/:id` | DELETE | `id` | Unknown | Needs review | 🟡 |
+| `/actors` | GET | - | Unknown | Needs review | đŸŸ¡ |
+| `/actors/:id` | GET | `id` | Unknown | Needs review | đŸŸ¡ |
+| `/actors/:id` | PUT | `id` | Unknown | Needs review | đŸŸ¡ |
+| `/actors/:id` | DELETE | `id` | Unknown | Needs review | đŸŸ¡ |
 
 ---
 
@@ -135,18 +135,18 @@ This audit identifies all endpoints that accept object IDs from client input and
 
 | Route | Method | ID Param | Current Protection | Gap | Risk |
 |-------|--------|----------|-------------------|-----|------|
-| `/genres` | GET | - | Unknown | Usually public | 🟢 |
-| `/genres/:id` | GET | `id` | Unknown | Usually public | 🟢 |
-| `/genres/:id` | PUT | `id` | Should be admin | Needs review | 🟡 |
-| `/genres/:id` | DELETE | `id` | Should be admin | Needs review | 🟡 |
+| `/genres` | GET | - | Unknown | Usually public | đŸŸ¢ |
+| `/genres/:id` | GET | `id` | Unknown | Usually public | đŸŸ¢ |
+| `/genres/:id` | PUT | `id` | Should be admin | Needs review | đŸŸ¡ |
+| `/genres/:id` | DELETE | `id` | Should be admin | Needs review | đŸŸ¡ |
 
 ---
 
 ## 2. Critical Vulnerabilities
 
-### CVE-NETFLOP-001: Movie Detail Exposes Draft Content
+### CVE-NETFLAT-001: Movie Detail Exposes Draft Content
 
-**Severity:** 🔴 Critical  
+**Severity:** đŸ”´ Critical  
 **Endpoint:** `GET /movies/:id`  
 **Issue:** Any authenticated user can view movie details by ID, including draft movies and movies with failed encoding.  
 **Attack Vector:** Attacker enumerates UUIDs to discover unpublished content.
@@ -166,9 +166,9 @@ if (
 
 ---
 
-### CVE-NETFLOP-002: Profile ID Header Spoofing
+### CVE-NETFLAT-002: Profile ID Header Spoofing
 
-**Severity:** 🟠 High  
+**Severity:** đŸŸ  High  
 **Endpoints:** All endpoints accepting `x-profile-id` header  
 **Issue:** The `x-profile-id` header is trusted without validation. User A could access User B's profile data by sending B's profileId.
 
@@ -189,7 +189,7 @@ if (!profile) throw new ForbiddenException('Invalid profile');
 |----------|--------------|--------------|------|
 | **Movie (detail)** | published + ready | All | `movieStatus='published' AND encodeStatus='ready'` |
 | **Movie (stream)** | published + ready | All | Same as detail |
-| **Movie (create/update/delete)** | ❌ | ✅ | role='admin' |
+| **Movie (create/update/delete)** | âŒ | âœ… | role='admin' |
 | **Favorites** | Own only | Own + All | `userId = req.user.id` |
 | **Watch History** | Own only | Own + All | `userId = req.user.id` |
 | **Profile** | Own only | Own + All | `profile.userId = req.user.id` |

@@ -95,16 +95,6 @@ export interface Favorite {
     createdAt: string;
 }
 
-export interface WatchHistory {
-    id: string;
-    movieId: string;
-    movie: MovieListItem;
-    progressSeconds: number;
-    durationSeconds: number;
-    completed: boolean;
-    updatedAt: string;
-}
-
 // ─────────────────────────────────────────────────────────────
 // Auth Types
 // ─────────────────────────────────────────────────────────────
@@ -133,16 +123,4 @@ export interface RegisterRequest {
 export interface StreamResponse {
     playbackUrl: string;
     expiresAt: string;
-}
-
-export interface ProgressResponse {
-    progressSeconds: number;
-    durationSeconds: number;
-    completed: boolean;
-    updatedAt: string | null;
-}
-
-export interface UpdateProgressRequest {
-    progressSeconds: number;
-    durationSeconds: number;
 }

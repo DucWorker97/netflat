@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MoviesService } from './movies.service';
 import { ConfigService } from '@nestjs/config';
-import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -28,7 +27,6 @@ describe('MoviesService HLS Key Generation', () => {
                         }),
                     },
                 },
-                { provide: AiService, useValue: {} },
                 {
                     provide: PrismaService, useValue: {
                         movie: {

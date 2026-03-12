@@ -16,16 +16,11 @@ export type PolicyType =
     | 'MovieRead'      // Viewer: published+ready, Admin: all
     | 'MovieWrite'     // Admin only
     | 'UserOwned'      // Owner or Admin
-    | 'ProfileOwned'   // Profile belongs to current user
     | 'MovieVisible';  // Movie must be published+ready for non-admins
 
 export interface PolicyOptions {
     /** Route parameter name containing the resource ID */
     param?: string;
-    /** For profile validation - header name */
-    header?: string;
-    /** Resource type for ownership checks */
-    resource?: 'favorite' | 'watchHistory' | 'rating' | 'profile';
 }
 
 export const POLICY_KEY = 'policy';
@@ -68,9 +63,7 @@ export class PolicyGuard implements CanActivate {
             case 'MovieVisible':
                 return this.checkMovieVisible(request, user, options);
             case 'UserOwned':
-                return this.checkUserOwned(request, user, options);
-            case 'ProfileOwned':
-                return this.checkProfileOwned(request, user, options);
+                return this.checkUserOwned(user);
             default:
                 return true;
         }
@@ -178,80 +171,11 @@ export class PolicyGuard implements CanActivate {
     /**
      * UserOwned: Resource must belong to current user
      */
-    private async checkUserOwned(
-        request: any,
-        user: User | undefined,
-        options: PolicyOptions,
-    ): Promise<boolean> {
+    private checkUserOwned(user: User | undefined): boolean {
         if (!user) {
             throw new ForbiddenException({
                 code: 'UNAUTHORIZED',
                 message: 'Authentication required',
-            });
-        }
-
-        // Admin can access any user's resources
-        if (user.role === 'admin') {
-            return true;
-        }
-
-        // Validate x-profile-id header if present
-        const profileId = request.headers['x-profile-id'];
-        if (profileId) {
-            const profile = await this.prisma.profile.findFirst({
-                where: { id: profileId, userId: user.id },
-            });
-
-            if (!profile) {
-                throw new ForbiddenException({
-                    code: 'INVALID_PROFILE',
-                    message: 'Profile does not belong to current user',
-                });
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * ProfileOwned: Profile must belong to current user
-     */
-    private async checkProfileOwned(
-        request: any,
-        user: User | undefined,
-        options: PolicyOptions,
-    ): Promise<boolean> {
-        if (!user) {
-            throw new ForbiddenException({
-                code: 'UNAUTHORIZED',
-                message: 'Authentication required',
-            });
-        }
-
-        // Admin can access any profile
-        if (user.role === 'admin') {
-            return true;
-        }
-
-        const profileId = request.params[options.param || 'id'];
-        if (!profileId) return true;
-
-        const profile = await this.prisma.profile.findUnique({
-            where: { id: profileId },
-            select: { id: true, userId: true },
-        });
-
-        if (!profile) {
-            throw new NotFoundException({
-                code: 'PROFILE_NOT_FOUND',
-                message: 'Profile not found',
-            });
-        }
-
-        if (profile.userId !== user.id) {
-            throw new ForbiddenException({
-                code: 'FORBIDDEN',
-                message: 'Access denied',
             });
         }
 

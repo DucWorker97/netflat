@@ -1,4 +1,4 @@
-import { IsString, Matches, MinLength } from 'class-validator';
+import { IsString, MinLength, Matches } from 'class-validator';
 import {
     MIN_PASSWORD_LENGTH,
     PASSWORD_POLICY_MESSAGE,

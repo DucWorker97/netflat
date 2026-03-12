@@ -1,34 +1,24 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
-import { useUpdateProgress } from '@/lib/queries';
-import { useAuth } from '@/lib/auth-context';
 import { SkipIntro } from '@/components/SkipIntro';
-import { SubtitlesPicker } from '@/components/SubtitlesPicker';
 import { SpeedControls } from '@/components/SpeedControls';
 import { QualitySelector, type QualityOption, type QualityValue } from '@/components/QualitySelector';
+import { useUpdateProgress } from '@/lib/queries';
 import styles from './movie.module.css';
 
 interface VideoPlayerProps {
     src: string;
     movieId: string;
     poster?: string;
-    subtitles?: {
-        id: string;
-        language: string;
-        label: string;
-        url: string;
-    }[];
     qualityOptions?: { name: string; url: string }[];
 }
 
-export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }: VideoPlayerProps) {
+export function VideoPlayer({ src, movieId, poster, qualityOptions }: VideoPlayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
-    const { isAuthenticated } = useAuth();
-    const updateProgress = useUpdateProgress();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -40,15 +30,29 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [speed, setSpeed] = useState(1);
-    const [showSubs, setShowSubs] = useState(false);
-    const [currentSub, setCurrentSub] = useState<string | null>(null);
     const [qualityMenu, setQualityMenu] = useState<QualityOption[]>([
         { label: 'Auto', value: 'auto', hint: 'Adaptive' },
     ]);
     const [selectedQuality, setSelectedQuality] = useState<QualityValue>('auto');
     const [isHlsSupported, setIsHlsSupported] = useState(false);
 
-    const subtitleTracks = useMemo(() => subtitles ?? [], [subtitles]);
+    // Watch progress saving
+    const updateProgress = useUpdateProgress();
+    const lastSavedRef = useRef(0);
+
+    const saveProgress = useCallback(() => {
+        const video = videoRef.current;
+        if (!video || !movieId || video.duration < 1) return;
+        const now = Date.now();
+        // Throttle to once every 10 seconds
+        if (now - lastSavedRef.current < 10_000) return;
+        lastSavedRef.current = now;
+        updateProgress.mutate({
+            movieId,
+            progressSeconds: Math.floor(video.currentTime),
+            durationSeconds: Math.floor(video.duration),
+        });
+    }, [movieId, updateProgress]);
 
     // HLS & Video Setup
     useEffect(() => {
@@ -154,62 +158,25 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
         }
     }, [qualityOptions, isHlsSupported]);
 
-    // Subtitle Logic
-    useEffect(() => {
-        if (!subtitleTracks.find((track) => track.id === currentSub)) {
-            setCurrentSub(null);
-        }
-    }, [subtitleTracks, currentSub]);
-
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const tracks = Array.from(video.textTracks);
-        tracks.forEach((track, index) => {
-            const targetId = subtitleTracks[index]?.id;
-            track.mode = currentSub && targetId === currentSub ? 'showing' : 'disabled';
-        });
-    }, [currentSub, subtitleTracks]);
-
     // Progress Tracking
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        let lastSaved = 0;
         const handleTimeUpdate = () => {
             setCurrentTime(video.currentTime);
             setDuration(video.duration || 0);
-
-            if (isAuthenticated) {
-                const now = Date.now();
-                if (now - lastSaved < 10000) return;
-                lastSaved = now;
-
-                if (video.currentTime > 0 && video.duration > 0) {
-                    updateProgress.mutate({
-                        movieId,
-                        progressSeconds: Math.floor(video.currentTime),
-                        durationSeconds: Math.floor(video.duration),
-                    });
-                }
-            }
+            saveProgress();
         };
 
-        const handlePause = () => {
-            setIsPlaying(false);
-            if (isAuthenticated && video.currentTime > 0) {
-                updateProgress.mutate({
-                    movieId,
-                    progressSeconds: Math.floor(video.currentTime),
-                    durationSeconds: Math.floor(video.duration),
-                });
-            }
-        };
-
+        const handlePause = () => { setIsPlaying(false); saveProgress(); };
         const handlePlay = () => setIsPlaying(true);
-        const handleEnded = () => setIsPlaying(false);
+        const handleEnded = () => {
+            setIsPlaying(false);
+            // Force save on end
+            lastSavedRef.current = 0;
+            saveProgress();
+        };
 
         video.addEventListener('timeupdate', handleTimeUpdate);
         video.addEventListener('pause', handlePause);
@@ -222,7 +189,7 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
             video.removeEventListener('play', handlePlay);
             video.removeEventListener('ended', handleEnded);
         };
-    }, [movieId, isAuthenticated, updateProgress]);
+    }, []);
 
     // Fullscreen Change Listener
     useEffect(() => {
@@ -369,17 +336,7 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
                 crossOrigin="anonymous"
                 onClick={togglePlay}
                 style={{ width: '100%', height: '100%', cursor: 'pointer' }}
-            >
-                {subtitleTracks.map((track) => (
-                    <track
-                        key={track.id}
-                        kind="subtitles"
-                        src={track.url}
-                        srcLang={track.language}
-                        label={track.label}
-                    />
-                ))}
-            </video>
+            />
 
             {/* Skip Intro Button */}
             <SkipIntro
@@ -468,23 +425,6 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
                             disabled={qualityMenu.length <= 1}
                         />
 
-                        <button
-                            onClick={() => setShowSubs(true)}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: 'white',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                fontSize: '14px',
-                                fontWeight: 600
-                            }}
-                            title="Subtitles"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                        </button>
-
                         <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                             {screenState === 'fullscreen' ? (
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" /></svg>
@@ -496,13 +436,6 @@ export function VideoPlayer({ src, movieId, poster, subtitles, qualityOptions }:
                 </div>
             </div>
 
-            <SubtitlesPicker
-                subtitles={subtitleTracks}
-                currentSubtitle={currentSub}
-                onSelect={(id) => setCurrentSub(id)}
-                isOpen={showSubs}
-                onClose={() => setShowSubs(false)}
-            />
         </div>
     );
 }

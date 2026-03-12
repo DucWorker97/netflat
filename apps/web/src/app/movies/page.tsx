@@ -44,7 +44,7 @@ export default function MoviesPage() {
                 <div className={styles.heroContent}>
                     <h1 className={styles.title}>Movies</h1>
                     <p className={styles.subtitle}>
-                        Browse the full Netflop catalog and discover your next favorite.
+                        Browse the full Netflat catalog and discover your next favorite.
                     </p>
                     <div className={styles.searchRow}>
                         <input

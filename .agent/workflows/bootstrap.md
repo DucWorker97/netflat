@@ -1,11 +1,11 @@
----
+﻿---
 name: workflow-bootstrap
-description: First-time local setup for Netflop (deps, infra, migrate/seed).
+description: First-time local setup for NETFLAT (deps, infra, migrate/seed).
 trigger: manual
 ---
 
 ## ---
-description: First-time local setup for netflop (install deps, start infra, migrate/seed DB)
+description: First-time local setup for NETFLAT (install deps, start infra, migrate/seed DB)
 ## ---
 
 1. Install dependencies

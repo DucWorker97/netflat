@@ -7,7 +7,6 @@ import { useMovie, useStreamUrl, useFavorites, useAddFavorite, useRemoveFavorite
 import { useState } from 'react';
 import { Stars } from '@/components/stars';
 import { VideoPlayer } from './VideoPlayer';
-import { SimilarMovies } from '@/components/similar-movies';
 import { ShareModal } from '@/components/ShareModal';
 import { ReviewsModal } from '@/components/ReviewsModal';
 import styles from './movie.module.css';
@@ -89,44 +88,10 @@ export default function MovieDetailPage() {
     }
 
     const canPlay = movie.encodeStatus === 'ready' && streamData?.playbackUrl;
-    const buildMediaUrl = (path?: string | null) => {
-        if (!path) return null;
-        if (path.startsWith('http')) return path;
 
-        const envBase = process.env.NEXT_PUBLIC_S3_PUBLIC_BASE_URL;
-        if (envBase) {
-            return `${envBase.replace(/\/$/, '')}/${path}`;
-        }
-
-        if (streamData?.playbackUrl) {
-            try {
-                const url = new URL(streamData.playbackUrl);
-                const marker = '/hls/';
-                const index = url.pathname.indexOf(marker);
-                if (index !== -1) {
-                    return `${url.origin}${url.pathname.slice(0, index)}/${path}`;
-                }
-                return `${url.origin}/${path}`;
-            } catch {
-                return path;
-            }
-        }
-
-        return path;
-    };
-
-    const subtitleUrl = buildMediaUrl(movie.subtitleUrl);
     const tmdbVoteAverage = typeof movie.voteAverage === 'number' && movie.voteAverage > 0
         ? movie.voteAverage
         : null;
-    const subtitleTracks = subtitleUrl
-        ? [{
-            id: 'default',
-            language: movie.originalLanguage || 'en',
-            label: movie.originalLanguage ? movie.originalLanguage.toUpperCase() : 'Subtitles',
-            url: subtitleUrl,
-        }]
-        : [];
 
     return (
         <div className={styles.container}>
@@ -141,7 +106,6 @@ export default function MovieDetailPage() {
                             movieId={movieId}
                             poster={movie.backdropUrl || movie.posterUrl || undefined}
                             qualityOptions={streamData?.qualityOptions}
-                            subtitles={subtitleTracks}
                         />
                     ) : (
                         <div className={styles.playerPlaceholder}>
@@ -265,10 +229,6 @@ export default function MovieDetailPage() {
                     {movie.description && (
                         <p className={styles.description}>{movie.description}</p>
                     )}
-                </div>
-
-                <div className={styles.similar}>
-                    <SimilarMovies movieId={movieId} />
                 </div>
 
                 <Link href="/" className={styles.backLink}>

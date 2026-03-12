@@ -1,56 +1,56 @@
-# Diagnostic Report: Upload & Playback Issues
+﻿# Diagnostic Report: Upload & Playback Issues
 
 > **Report Date**: 2026-01-17  
 > **Issues Investigated**:  
-> 1. Không xem phim song song Web + Mobile  
-> 2. Upload phim không được
+> 1. KhĂ´ng xem phim song song Web + Mobile  
+> 2. Upload phim khĂ´ng Ä‘Æ°á»£c
 
 ---
 
 ## 1. Executive Summary
 
-**Root Cause #1 (HIGH - Parallel Viewing)**: Cấu hình `.env` có mâu thuẫn:
-- `DEV_PUBLIC_HOST=localhost` (dòng 7)
-- `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/...` (dòng 42, hardcoded)
-- `S3_PRESIGN_BASE_URL=http://10.0.2.2:9000` (dòng 43, hardcoded)
-- `EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000` (dòng 71, hardcoded)
+**Root Cause #1 (HIGH - Parallel Viewing)**: Cáº¥u hĂ¬nh `.env` cĂ³ mĂ¢u thuáº«n:
+- `DEV_PUBLIC_HOST=localhost` (dĂ²ng 7)
+- `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/...` (dĂ²ng 42, hardcoded)
+- `S3_PRESIGN_BASE_URL=http://10.0.2.2:9000` (dĂ²ng 43, hardcoded)
+- `EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000` (dĂ²ng 71, hardcoded)
 
-**Kết quả**: Web nhận playbackUrl với `10.0.2.2` → không resolve được → không phát video. Mobile hoạt động vì `10.0.2.2` đúng cho Android Emulator.
+**Káº¿t quáº£**: Web nháº­n playbackUrl vá»›i `10.0.2.2` â†’ khĂ´ng resolve Ä‘Æ°á»£c â†’ khĂ´ng phĂ¡t video. Mobile hoáº¡t Ä‘á»™ng vĂ¬ `10.0.2.2` Ä‘Ăºng cho Android Emulator.
 
-**Root Cause #2 (MEDIUM - Upload)**: Không phát hiện lỗi upload cấu trúc. Nhưng nếu `S3_PRESIGN_BASE_URL` sai, presigned URL trả về cho client cũng sai host → client không PUT được tới MinIO.
+**Root Cause #2 (MEDIUM - Upload)**: KhĂ´ng phĂ¡t hiá»‡n lá»—i upload cáº¥u trĂºc. NhÆ°ng náº¿u `S3_PRESIGN_BASE_URL` sai, presigned URL tráº£ vá» cho client cÅ©ng sai host â†’ client khĂ´ng PUT Ä‘Æ°á»£c tá»›i MinIO.
 
-**Fix nhanh**: Thống nhất `S3_PUBLIC_BASE_URL`, `S3_PRESIGN_BASE_URL` và `EXPO_PUBLIC_*` theo platform:
-- **Web only**: dùng `localhost`
-- **Mobile Emulator**: dùng `10.0.2.2`
-- **Parallel (Web + Mobile)**: dùng IP LAN của máy (vd: `192.168.1.x`)
+**Fix nhanh**: Thá»‘ng nháº¥t `S3_PUBLIC_BASE_URL`, `S3_PRESIGN_BASE_URL` vĂ  `EXPO_PUBLIC_*` theo platform:
+- **Web only**: dĂ¹ng `localhost`
+- **Mobile Emulator**: dĂ¹ng `10.0.2.2`
+- **Parallel (Web + Mobile)**: dĂ¹ng IP LAN cá»§a mĂ¡y (vd: `192.168.1.x`)
 
 ---
 
-## 2. Bảng Nguyên nhân → Triệu chứng → Cách kiểm tra → Cách fix
+## 2. Báº£ng NguyĂªn nhĂ¢n â†’ Triá»‡u chá»©ng â†’ CĂ¡ch kiá»ƒm tra â†’ CĂ¡ch fix
 
-| # | Nguyên nhân | Triệu chứng | Cách kiểm tra | Cách fix | Độ chắc chắn |
+| # | NguyĂªn nhĂ¢n | Triá»‡u chá»©ng | CĂ¡ch kiá»ƒm tra | CĂ¡ch fix | Äá»™ cháº¯c cháº¯n |
 |---|-------------|-------------|---------------|----------|--------------|
-| 1 | `.env` hardcode `10.0.2.2` trong `S3_PUBLIC_BASE_URL` nhưng `DEV_PUBLIC_HOST=localhost` | Web không load video, Mobile OK | Mở console Web → xem `playbackUrl` → chứa `10.0.2.2` | Sửa `.env`: set tất cả URL về IP LAN hoặc `localhost` (chọn 1) | **HIGH** |
-| 2 | Presigned upload URL trả về host sai | Admin upload fail với lỗi CORS hoặc network | Inspect Network tab → PUT request → xem URL host | Sửa `S3_PRESIGN_BASE_URL` đúng host client có thể reach | **HIGH** |
-| 3 | MinIO CORS chưa allow `localhost:3001` | Upload fail với CORS error | Check MinIO console → bucket settings → CORS | Add `http://localhost:3001` vào CORS allowed origins | **MEDIUM** |
-| 4 | Segment URLs không signed (public mode) | Segment 403 nếu bucket không public | `curl http://<host>:9000/netflop-media/hls/<id>/master.m3u8` | Đảm bảo `minio-init` set anonymous download cho `hls/` | **LOW** |
+| 1 | `.env` hardcode `10.0.2.2` trong `S3_PUBLIC_BASE_URL` nhÆ°ng `DEV_PUBLIC_HOST=localhost` | Web khĂ´ng load video, Mobile OK | Má»Ÿ console Web â†’ xem `playbackUrl` â†’ chá»©a `10.0.2.2` | Sá»­a `.env`: set táº¥t cáº£ URL vá» IP LAN hoáº·c `localhost` (chá»n 1) | **HIGH** |
+| 2 | Presigned upload URL tráº£ vá» host sai | Admin upload fail vá»›i lá»—i CORS hoáº·c network | Inspect Network tab â†’ PUT request â†’ xem URL host | Sá»­a `S3_PRESIGN_BASE_URL` Ä‘Ăºng host client cĂ³ thá»ƒ reach | **HIGH** |
+| 3 | MinIO CORS chÆ°a allow `localhost:3001` | Upload fail vá»›i CORS error | Check MinIO console â†’ bucket settings â†’ CORS | Add `http://localhost:3001` vĂ o CORS allowed origins | **MEDIUM** |
+| 4 | Segment URLs khĂ´ng signed (public mode) | Segment 403 náº¿u bucket khĂ´ng public | `curl http://<host>:9000/NETFLAT-media/hls/<id>/master.m3u8` | Äáº£m báº£o `minio-init` set anonymous download cho `hls/` | **LOW** |
 
 ---
 
-## 3. Chi tiết phân tích
+## 3. Chi tiáº¿t phĂ¢n tĂ­ch
 
 ### 3.1 ENV & Networking
 
 **File**: `.env`
 
-| Biến | Giá trị hiện tại | Vấn đề |
+| Biáº¿n | GiĂ¡ trá»‹ hiá»‡n táº¡i | Váº¥n Ä‘á» |
 |------|------------------|--------|
-| `DEV_PUBLIC_HOST` (L7) | `localhost` | Không được sử dụng để derive các URL khác |
-| `S3_PUBLIC_BASE_URL` (L42) | `http://10.0.2.2:9000/netflop-media` | **HARDCODED** - không theo `DEV_PUBLIC_HOST` |
-| `S3_PRESIGN_BASE_URL` (L43) | `http://10.0.2.2:9000` | **HARDCODED** - không theo `DEV_PUBLIC_HOST` |
+| `DEV_PUBLIC_HOST` (L7) | `localhost` | KhĂ´ng Ä‘Æ°á»£c sá»­ dá»¥ng Ä‘á»ƒ derive cĂ¡c URL khĂ¡c |
+| `S3_PUBLIC_BASE_URL` (L42) | `http://10.0.2.2:9000/NETFLAT-media` | **HARDCODED** - khĂ´ng theo `DEV_PUBLIC_HOST` |
+| `S3_PRESIGN_BASE_URL` (L43) | `http://10.0.2.2:9000` | **HARDCODED** - khĂ´ng theo `DEV_PUBLIC_HOST` |
 | `API_PUBLIC_BASE_URL` (L45) | `http://10.0.2.2:3000` | **HARDCODED** |
 | `EXPO_PUBLIC_API_BASE_URL` (L71) | `http://10.0.2.2:3000` | **HARDCODED** |
-| `EXPO_PUBLIC_S3_PUBLIC_BASE_URL` (L72) | `http://10.0.2.2:9000/netflop-media` | **HARDCODED** |
+| `EXPO_PUBLIC_S3_PUBLIC_BASE_URL` (L72) | `http://10.0.2.2:9000/NETFLAT-media` | **HARDCODED** |
 
 **Code sinh playbackUrl**: `apps/api/src/movies/movies.service.ts#L204-210`
 ```typescript
@@ -59,7 +59,7 @@ if (s3PublicBaseUrl) {
     playbackUrl = `${s3PublicBaseUrl}/${masterKey}`;
 }
 ```
-→ Nếu `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/...`, Web browser không resolve được `10.0.2.2`.
+â†’ Náº¿u `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/...`, Web browser khĂ´ng resolve Ä‘Æ°á»£c `10.0.2.2`.
 
 ---
 
@@ -74,18 +74,18 @@ if (s3PublicBaseUrl) {
 **Presigned URL Config** (`upload.service.ts#L52-125`):
 - **Method**: PUT (S3 presigned)
 - **Host**: `S3_PRESIGN_BASE_URL` (public endpoint for client upload)
-- **Content-Type**: Validated (video/* hoặc image/*)
-- **Max Size**: `UPLOAD_MAX_MB` (default 500MB, hiện 2000MB)
-- **TTL**: `UPLOAD_PRESIGNED_TTL_SECONDS` (1800s = 30 phút)
+- **Content-Type**: Validated (video/* hoáº·c image/*)
+- **Max Size**: `UPLOAD_MAX_MB` (default 500MB, hiá»‡n 2000MB)
+- **TTL**: `UPLOAD_PRESIGNED_TTL_SECONDS` (1800s = 30 phĂºt)
 - **Key Naming**: `originals/{movieId}/{uuid}-{sanitized_filename}`
-- **Overwrite**: Không conflict (UUID unique)
+- **Overwrite**: KhĂ´ng conflict (UUID unique)
 
 **Error Codes**:
-| HTTP | Code | Điều kiện |
+| HTTP | Code | Äiá»u kiá»‡n |
 |------|------|-----------|
-| 404 | `MOVIE_NOT_FOUND` | Movie ID không tồn tại |
-| 400 | `FILE_TOO_LARGE` | Vượt `maxSizeBytes` |
-| 400 | `INVALID_CONTENT_TYPE` | `contentType` không match `fileType` |
+| 404 | `MOVIE_NOT_FOUND` | Movie ID khĂ´ng tá»“n táº¡i |
+| 400 | `FILE_TOO_LARGE` | VÆ°á»£t `maxSizeBytes` |
+| 400 | `INVALID_CONTENT_TYPE` | `contentType` khĂ´ng match `fileType` |
 
 ---
 
@@ -107,22 +107,22 @@ if (s3PublicBaseUrl) {
 3. **Worker idempotency** (`processor.ts#L73-83`):
    - Skip if `encodeStatus === 'ready'`
    - Skip if `encodeStatus === 'processing'`
-   - Atomic claim với `claimJob()`
+   - Atomic claim vá»›i `claimJob()`
 
 **HLS Output Convention**:
 ```
 hls/{movieId}/
-├── master.m3u8
-├── v0/prog_index.m3u8  (360p)
-├── v1/prog_index.m3u8  (480p)
-└── v2/prog_index.m3u8  (720p)
+â”œâ”€â”€ master.m3u8
+â”œâ”€â”€ v0/prog_index.m3u8  (360p)
+â”œâ”€â”€ v1/prog_index.m3u8  (480p)
+â””â”€â”€ v2/prog_index.m3u8  (720p)
 ```
 
 ---
 
 ### 3.4 Playback (Web vs Mobile)
 
-| Đặc điểm | Web | Mobile |
+| Äáº·c Ä‘iá»ƒm | Web | Mobile |
 |----------|-----|--------|
 | **Player** | `hls.js` | `expo-av` |
 | **Fetch playbackUrl** | `GET /api/movies/:id/stream` | Same |
@@ -136,112 +136,112 @@ hls/{movieId}/
 
 **Policy** (`docker-compose.yml#L57-58`):
 ```sh
-mc anonymous set download local/netflop-media/hls || true;
-mc anonymous set download local/netflop-media/posters || true;
-mc anonymous set download local/netflop-media/thumbnails || true;
-mc anonymous set download local/netflop-media/subtitles || true;
+mc anonymous set download local/NETFLAT-media/hls || true;
+mc anonymous set download local/NETFLAT-media/posters || true;
+mc anonymous set download local/NETFLAT-media/thumbnails || true;
+mc anonymous set download local/NETFLAT-media/subtitles || true;
 ```
-→ `hls/`, `posters/`, `thumbnails/`, `subtitles/` là **public download** (không cần signed URL cho segments).
+â†’ `hls/`, `posters/`, `thumbnails/`, `subtitles/` lĂ  **public download** (khĂ´ng cáº§n signed URL cho segments).
 
 ---
 
 ### 3.6 Observability
 
 **x-request-id Propagation**:
-1. API: `request-id.middleware.ts#L20` - tạo/đọc từ header
-2. Queue: `upload.service.ts#L284` - truyền vào job data
-3. Worker: `processor.ts#L43` - đọc từ job data
+1. API: `request-id.middleware.ts#L20` - táº¡o/Ä‘á»c tá»« header
+2. Queue: `upload.service.ts#L284` - truyá»n vĂ o job data
+3. Worker: `processor.ts#L43` - Ä‘á»c tá»« job data
 
 **Log Locations**:
-- API: Terminal chạy `pnpm dev:core` (stdout)
+- API: Terminal cháº¡y `pnpm dev:core` (stdout)
 - Worker: Same terminal (stdout)
-- MinIO: `docker logs netflop-minio`
+- MinIO: `docker logs NETFLAT-minio`
 
 ---
 
 ## 4. Repro Steps & Curl Commands
 
-### Case A: Web không xem được, Mobile OK
+### Case A: Web khĂ´ng xem Ä‘Æ°á»£c, Mobile OK
 
 **Repro**:
-1. Set `.env`: `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/netflop-media`
+1. Set `.env`: `S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/NETFLAT-media`
 2. Start `pnpm dev:core`
-3. Web: Login → Open movie → Play → **FAIL** (network error to 10.0.2.2)
-4. Mobile (Emulator): Login → Open movie → Play → **OK**
+3. Web: Login â†’ Open movie â†’ Play â†’ **FAIL** (network error to 10.0.2.2)
+4. Mobile (Emulator): Login â†’ Open movie â†’ Play â†’ **OK**
 
 ### Case B: Upload fail
 
 **Repro**:
 1. Set `.env`: `S3_PRESIGN_BASE_URL=http://10.0.2.2:9000`
-2. Open Admin (`localhost:3001`) → Create movie → Upload video
-3. Inspect Network → PUT request → URL contains `10.0.2.2`
-4. Browser cannot reach `10.0.2.2` → **CORS/network error**
+2. Open Admin (`localhost:3001`) â†’ Create movie â†’ Upload video
+3. Inspect Network â†’ PUT request â†’ URL contains `10.0.2.2`
+4. Browser cannot reach `10.0.2.2` â†’ **CORS/network error**
 
 ### Curl Commands
 
 ```powershell
 # Test master.m3u8
-curl -v http://localhost:9000/netflop-media/hls/{movieId}/master.m3u8
+curl -v http://localhost:9000/NETFLAT-media/hls/{movieId}/master.m3u8
 
 # Test segment
-curl -v http://localhost:9000/netflop-media/hls/{movieId}/v0/seg_000.ts
+curl -v http://localhost:9000/NETFLAT-media/hls/{movieId}/v0/seg_000.ts
 
-# Test presigned upload (cần token admin)
+# Test presigned upload (cáº§n token admin)
 curl -X GET "http://localhost:3000/api/upload/presigned-url?movieId={id}&fileName=test.mp4&contentType=video/mp4&sizeBytes=1000" \
   -H "Authorization: Bearer {token}"
 ```
 
 ---
 
-## 5. Patch Plan (Ưu tiên)
+## 5. Patch Plan (Æ¯u tiĂªn)
 
-### Priority 1: Fix Host Configuration ⚠️ CRITICAL
+### Priority 1: Fix Host Configuration â ï¸ CRITICAL
 
 **File**: `.env`
 
 **Option A** - Web only dev:
 ```diff
-- S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/netflop-media
-+ S3_PUBLIC_BASE_URL=http://localhost:9000/netflop-media
+- S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/NETFLAT-media
++ S3_PUBLIC_BASE_URL=http://localhost:9000/NETFLAT-media
 - S3_PRESIGN_BASE_URL=http://10.0.2.2:9000
 + S3_PRESIGN_BASE_URL=http://localhost:9000
 - API_PUBLIC_BASE_URL=http://10.0.2.2:3000
 + API_PUBLIC_BASE_URL=http://localhost:3000
 - EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000
 + EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
-- EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/netflop-media
-+ EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://localhost:9000/netflop-media
+- EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/NETFLAT-media
++ EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://localhost:9000/NETFLAT-media
 ```
 
 **Option B** - Parallel Web + Mobile (RECOMMENDED):
 ```diff
-# Thay 192.168.1.x bằng IP LAN thực của máy bạn
-- S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/netflop-media
-+ S3_PUBLIC_BASE_URL=http://192.168.1.x:9000/netflop-media
+# Thay 192.168.1.x báº±ng IP LAN thá»±c cá»§a mĂ¡y báº¡n
+- S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/NETFLAT-media
++ S3_PUBLIC_BASE_URL=http://192.168.1.x:9000/NETFLAT-media
 - S3_PRESIGN_BASE_URL=http://10.0.2.2:9000
 + S3_PRESIGN_BASE_URL=http://192.168.1.x:9000
 - API_PUBLIC_BASE_URL=http://10.0.2.2:3000
 + API_PUBLIC_BASE_URL=http://192.168.1.x:3000
 - EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000
 + EXPO_PUBLIC_API_BASE_URL=http://192.168.1.x:3000
-- EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/netflop-media
-+ EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://192.168.1.x:9000/netflop-media
+- EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://10.0.2.2:9000/NETFLAT-media
++ EXPO_PUBLIC_S3_PUBLIC_BASE_URL=http://192.168.1.x:9000/NETFLAT-media
 ```
 
 ### Priority 2: Add Dynamic Host Derivation (Future)
 
-Sửa code để derive `S3_PUBLIC_BASE_URL` từ `DEV_PUBLIC_HOST` thay vì hardcode.
+Sá»­a code Ä‘á»ƒ derive `S3_PUBLIC_BASE_URL` tá»« `DEV_PUBLIC_HOST` thay vĂ¬ hardcode.
 
 ---
 
-## 6. Files Liên quan
+## 6. Files LiĂªn quan
 
-| File | Mô tả |
+| File | MĂ´ táº£ |
 |------|-------|
-| `.env` | Cấu hình chính - chứa hardcoded URLs |
-| `apps/api/src/movies/movies.service.ts#L204-210` | Sinh playbackUrl từ `S3_PUBLIC_BASE_URL` |
-| `apps/api/src/upload/upload.service.ts#L52-120` | Presign dùng `S3_PRESIGN_BASE_URL` (không rewrite host) |
-| `apps/mobile/src/lib/env.ts` | Mobile env config với EXPO_PUBLIC vars |
+| `.env` | Cáº¥u hĂ¬nh chĂ­nh - chá»©a hardcoded URLs |
+| `apps/api/src/movies/movies.service.ts#L204-210` | Sinh playbackUrl tá»« `S3_PUBLIC_BASE_URL` |
+| `apps/api/src/upload/upload.service.ts#L52-120` | Presign dĂ¹ng `S3_PRESIGN_BASE_URL` (khĂ´ng rewrite host) |
+| `apps/mobile/src/lib/env.ts` | Mobile env config vá»›i EXPO_PUBLIC vars |
 | `docker-compose.yml#L57` | MinIO init - set public policy cho hls/ |
 | `apps/api/prisma/schema.prisma#L240,255` | Unique constraints cho idempotency |
 | `apps/worker/src/lib/processor.ts` | Worker idempotency logic |

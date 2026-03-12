@@ -1,9 +1,9 @@
-# Netflop Mobile App - Context for Redesign
+﻿# NETFLAT Mobile App - Context for Redesign
 
-This file contains all necessary information to redesign the Netflop mobile application. Ideally, use this context to generate a modern, premium UI/UX using `react-native`, `expo`, and `react-native-reanimated`.
+This file contains all necessary information to redesign the NETFLAT mobile application. Ideally, use this context to generate a modern, premium UI/UX using `react-native`, `expo`, and `react-native-reanimated`.
 
 ## 1. Project Overview
-- **Name**: Netflop (Netflix Clone)
+- **Name**: NETFLAT (Netflix Clone)
 - **Platform**: Mobile (iOS & Android) via Expo (React Native)
 - **Type**: Streaming App (Video-on-Demand)
 - **Monorepo**: Part of a Turborepo workspace.
@@ -102,19 +102,19 @@ The detailed file structure is as follows:
 
 ```
 apps/mobile/app/
-├── (auth)/
-│   └── login.tsx       # Login Screen
-├── (tabs)/
-│   ├── _layout.tsx     # Tab Bar Navigation
-│   ├── index.tsx       # Home Screen (Rails)
-│   ├── search.tsx      # Search Screen
-│   ├── my-list.tsx     # My List Screen
-│   └── settings.tsx    # Settings/Profile Screen
-├── movie/
-│   └── [id].tsx        # Movie Detail Screen
-├── player/
-│   └── [id].tsx        # Video Player Screen
-└── _layout.tsx         # Root Layout (Providers)
+â”œâ”€â”€ (auth)/
+â”‚   â””â”€â”€ login.tsx       # Login Screen
+â”œâ”€â”€ (tabs)/
+â”‚   â”œâ”€â”€ _layout.tsx     # Tab Bar Navigation
+â”‚   â”œâ”€â”€ index.tsx       # Home Screen (Rails)
+â”‚   â”œâ”€â”€ search.tsx      # Search Screen
+â”‚   â”œâ”€â”€ my-list.tsx     # My List Screen
+â”‚   â””â”€â”€ settings.tsx    # Settings/Profile Screen
+â”œâ”€â”€ movie/
+â”‚   â””â”€â”€ [id].tsx        # Movie Detail Screen
+â”œâ”€â”€ player/
+â”‚   â””â”€â”€ [id].tsx        # Video Player Screen
+â””â”€â”€ _layout.tsx         # Root Layout (Providers)
 ```
 
 ## 5. Design Guidelines (Current & Target)

@@ -6,17 +6,12 @@ import { MovieStatus, EncodeStatus } from '@prisma/client';
 export class FavoritesService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(userId: string, profileId?: string, page = 1, limit = 20) {
+    async findAll(userId: string, page = 1, limit = 20) {
         const skip = (page - 1) * limit;
-
-        // Build where clause - use profileId if provided, fallback to userId
-        const whereClause = profileId
-            ? { profileId }
-            : { userId };
 
         const [favorites, total] = await Promise.all([
             this.prisma.favorite.findMany({
-                where: whereClause,
+                where: { userId },
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
@@ -28,7 +23,7 @@ export class FavoritesService {
                     },
                 },
             }),
-            this.prisma.favorite.count({ where: whereClause }),
+            this.prisma.favorite.count({ where: { userId } }),
         ]);
 
         const data = favorites.map((fav: typeof favorites[number]) => ({
@@ -52,8 +47,7 @@ export class FavoritesService {
         return { data, total };
     }
 
-    async add(userId: string, movieId: string, profileId?: string) {
-        // Check movie exists and is published+ready
+    async add(userId: string, movieId: string) {
         const movie = await this.prisma.movie.findUnique({ where: { id: movieId } });
         if (!movie) {
             throw new NotFoundException({
@@ -69,14 +63,9 @@ export class FavoritesService {
             });
         }
 
-        // Check if already favorited (by profile if provided)
-        const existing = profileId
-            ? await this.prisma.favorite.findUnique({
-                where: { profileId_movieId: { profileId, movieId } },
-            })
-            : await this.prisma.favorite.findFirst({
-                where: { userId, movieId, profileId: null },
-            });
+        const existing = await this.prisma.favorite.findUnique({
+            where: { userId_movieId: { userId, movieId } },
+        });
 
         if (existing) {
             throw new ConflictException({
@@ -86,7 +75,7 @@ export class FavoritesService {
         }
 
         const favorite = await this.prisma.favorite.create({
-            data: { userId, movieId, profileId: profileId || null },
+            data: { userId, movieId },
             include: {
                 movie: {
                     include: {
@@ -115,14 +104,10 @@ export class FavoritesService {
         };
     }
 
-    async remove(userId: string, movieId: string, profileId?: string) {
-        const existing = profileId
-            ? await this.prisma.favorite.findUnique({
-                where: { profileId_movieId: { profileId, movieId } },
-            })
-            : await this.prisma.favorite.findFirst({
-                where: { userId, movieId, profileId: null },
-            });
+    async remove(userId: string, movieId: string) {
+        const existing = await this.prisma.favorite.findUnique({
+            where: { userId_movieId: { userId, movieId } },
+        });
 
         if (!existing) {
             throw new NotFoundException({

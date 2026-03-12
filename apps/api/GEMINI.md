@@ -1,4 +1,4 @@
-# apps/api – NestJS API Context
+﻿# apps/api â€“ NestJS API Context
 
 ## Architecture
 - **Framework**: NestJS with modular architecture
@@ -9,15 +9,15 @@
 ## Module Structure
 ```
 src/
-├── auth/          # Login, register, refresh, JWT guards
-├── movies/        # CRUD, search, stream URL, upload-complete
-├── genres/        # Genre listing
-├── favorites/     # User favorites (My List)
-├── watch-history/ # Progress tracking, continue watching
-├── upload/        # Presigned URL generation
-├── encode/        # BullMQ job producer, encode callback
-├── common/        # Guards, filters, interceptors, decorators
-└── prisma/        # PrismaService
+â”œâ”€â”€ auth/          # Login, register, refresh, JWT guards
+â”œâ”€â”€ movies/        # CRUD, search, stream URL, upload-complete
+â”œâ”€â”€ genres/        # Genre listing
+â”œâ”€â”€ favorites/     # User favorites (My List)
+â”œâ”€â”€ watch-history/ # Progress tracking, continue watching
+â”œâ”€â”€ upload/        # Presigned URL generation
+â”œâ”€â”€ encode/        # BullMQ job producer, encode callback
+â”œâ”€â”€ common/        # Guards, filters, interceptors, decorators
+â””â”€â”€ prisma/        # PrismaService
 ```
 
 ## Conventions
@@ -34,8 +34,8 @@ src/
 
 ## Prisma Migrations
 ```bash
-pnpm --filter @netflop/api prisma migrate dev --name migration_name
-pnpm --filter @netflop/api prisma generate
+pnpm --filter @netflat/api prisma migrate dev --name migration_name
+pnpm --filter @netflat/api prisma generate
 ```
 Update `DATABASE_SCHEMA.md` after schema changes.
 

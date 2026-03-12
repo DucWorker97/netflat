@@ -230,6 +230,27 @@
     background: #dbeafe;
 }
 
+.action-btn.warning {
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+.action-btn.warning:hover {
+    background: #fef3c7;
+}
+
+.status-active {
+    background: #dcfce7 !important;
+    color: #16a34a !important;
+    border-color: #bbf7d0 !important;
+}
+
+.status-disabled {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-color: #fecaca !important;
+}
+
 /* Pagination */
 .pagination {
     display: flex;

@@ -1,64 +1,59 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { SecurityConfig } from '../config/security.config';
 
 @Injectable()
 export class MailService {
     private readonly logger = new Logger(MailService.name);
-    private readonly mailConfig: SecurityConfig['mail'];
     private transporter: nodemailer.Transporter | null = null;
+    private readonly mailFrom: string;
 
-    constructor(configService: ConfigService) {
-        this.mailConfig = configService.getOrThrow<SecurityConfig>('security').mail;
+    constructor(private configService: ConfigService) {
+        const host = this.configService.get<string>('SMTP_HOST');
+        const port = this.configService.get<number>('SMTP_PORT');
+        const user = this.configService.get<string>('SMTP_USER');
+        const pass = this.configService.get<string>('SMTP_PASS');
+        this.mailFrom = this.configService.get<string>('MAIL_FROM') || 'noreply@netflat.local';
 
-        if (this.mailConfig.enabled && this.mailConfig.provider === 'smtp') {
+        if (host) {
             this.transporter = nodemailer.createTransport({
-                host: this.mailConfig.host,
-                port: this.mailConfig.port,
-                secure: this.mailConfig.secure,
-                auth:
-                    this.mailConfig.user && this.mailConfig.pass
-                        ? { user: this.mailConfig.user, pass: this.mailConfig.pass }
-                        : undefined,
+                host,
+                port: port || 587,
+                secure: port === 465,
+                auth: user ? { user, pass } : undefined,
             });
-
-            this.transporter.verify().then(
-                () => this.logger.log('SMTP mail transport ready'),
-                (err: Error) => this.logger.error(`SMTP mail transport failed: ${err.message}`),
-            );
+            this.logger.log(`Mail transport configured: ${host}:${port || 587}`);
+        } else {
+            this.logger.warn('SMTP_HOST not set – emails will be logged to console only');
         }
     }
 
-    get isEnabled(): boolean {
-        return this.mailConfig.enabled && !!this.transporter;
+    async sendMail(to: string, subject: string, html: string): Promise<void> {
+        if (this.transporter) {
+            await this.transporter.sendMail({
+                from: this.mailFrom,
+                to,
+                subject,
+                html,
+            });
+            this.logger.log(`Email sent to ${to}: ${subject}`);
+        } else {
+            this.logger.log(`[DEV-MAIL] To: ${to} | Subject: ${subject}\n${html}`);
+        }
     }
 
-    async sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
-        if (!this.isEnabled || !this.transporter) {
-            this.logger.warn('Mail is disabled — skipping password reset email');
-            return;
-        }
+    async sendPasswordResetEmail(to: string, resetToken: string): Promise<void> {
+        const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3002';
+        const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
 
-        await this.transporter.sendMail({
-            from: this.mailConfig.from || 'noreply@netflop.dev',
-            to,
-            subject: 'Reset your Netflop password',
-            html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>Password Reset</h2>
-                    <p>You requested a password reset for your Netflop account.</p>
-                    <p>Click the button below to reset your password. This link expires in 1 hour.</p>
-                    <a href="${resetUrl}" style="display: inline-block; background: #e50914; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
-                        Reset Password
-                    </a>
-                    <p style="color: #888; font-size: 14px;">
-                        If you didn't request this, you can safely ignore this email.
-                    </p>
-                </div>
-            `,
-        });
+        const html = `
+            <h2>Password Reset</h2>
+            <p>You requested a password reset for your Netflat account.</p>
+            <p>Click the link below to reset your password (valid for 1 hour):</p>
+            <p><a href="${resetUrl}">${resetUrl}</a></p>
+            <p>If you did not request this, you can safely ignore this email.</p>
+        `;
 
-        this.logger.log(`Password reset email sent to ${to}`);
+        await this.sendMail(to, 'Netflat - Password Reset', html);
     }
 }

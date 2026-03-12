@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
-MinIO CORS Configuration for Netflop
-Apply with: mc cors set local/netflop-media ./minio-cors.xml
-View with: mc cors get local/netflop-media
+MinIO CORS Configuration for netflat
+Apply with: mc cors set local/netflat-media ./minio-cors.xml
+View with: mc cors get local/netflat-media
 -->
 <CORSConfiguration>
   <CORSRule>

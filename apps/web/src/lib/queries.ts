@@ -8,25 +8,6 @@ export interface Genre {
     slug: string;
 }
 
-export interface Actor {
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-    role?: string;
-    movieCount?: number;
-}
-
-export interface ActorWithMovies extends Actor {
-    movies: {
-        id: string;
-        title: string;
-        posterUrl: string | null;
-        releaseYear: number | null;
-        role: string | null;
-        genres: Genre[];
-    }[];
-}
-
 export interface Movie {
     id: string;
     title: string;
@@ -44,9 +25,8 @@ export interface Movie {
     popularity?: number | null;
     originalLanguage?: string | null;
     trailerUrl?: string | null;
-    subtitleUrl?: string | null;
     genres: Genre[];
-    actors?: Actor[];
+    actors?: string[];
     createdAt: string;
     updatedAt?: string;
 }
@@ -119,7 +99,6 @@ export function useStreamUrl(id: string) {
                 data: {
                     playbackUrl: string;
                     qualityOptions?: { name: string; url: string }[];
-                    expiresAt: string | null;
                 }
             }>(
                 `/api/movies/${id}/stream`
@@ -162,50 +141,6 @@ export function useRemoveFavorite() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['favorites'] });
-        },
-    });
-}
-
-// Watch History
-export function useWatchHistory() {
-    return useQuery({
-        queryKey: ['history'],
-        queryFn: async () => {
-            const res = await api.get<{ data: { id: string; movie: Movie; progressSeconds: number; completed: boolean }[] }>('/api/history');
-            return res.data;
-        },
-    });
-}
-
-// Continue Watching - incomplete movies only
-export function useContinueWatching() {
-    return useQuery({
-        queryKey: ['continueWatching'],
-        queryFn: async () => {
-            const res = await api.get<{ data: { id: string; movie: Movie; progressSeconds: number; completed: boolean; durationSeconds: number }[] }>('/api/history');
-            // Filter for movies with progress > 0 and not completed
-            return res.data.filter(item => item.progressSeconds > 0 && !item.completed);
-        },
-    });
-}
-
-export function useUpdateProgress() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({
-            movieId,
-            progressSeconds,
-            durationSeconds,
-        }: {
-            movieId: string;
-            progressSeconds: number;
-            durationSeconds: number;
-        }) => {
-            await api.post(`/api/history/${movieId}`, { progressSeconds, durationSeconds });
-        },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['progress', variables.movieId] });
-            queryClient.invalidateQueries({ queryKey: ['history'] });
         },
     });
 }
@@ -267,40 +202,127 @@ export function useMovieReviews(movieId: string, limit = 20) {
     });
 }
 
-// Similar Movies (AI-powered content-based similarity)
-export function useSimilarMovies(movieId: string) {
+// Actor Autocomplete
+export function useActorSuggest(q: string) {
     return useQuery({
-        queryKey: ['movies', movieId, 'similar'],
+        queryKey: ['actors', 'suggest', q],
         queryFn: async () => {
-            const res = await api.get<{ source: string; items: Movie[] }>(
-                `/api/recommendations/similar/${movieId}?limit=8`,
+            const res = await api.get<{ data: string[] }>(`/api/actors/suggest?q=${encodeURIComponent(q)}`);
+            return res.data;
+        },
+        enabled: q.length > 0,
+    });
+}
+
+// Profile
+export interface UserProfile {
+    id: string;
+    email: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    role: string;
+    isActive: boolean;
+    createdAt: string;
+    stats: {
+        favorites: number;
+        ratings: number;
+    };
+}
+
+export function useProfile(enabled = true) {
+    return useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            const res = await api.get<{ data: UserProfile }>('/api/users/profile');
+            return res.data;
+        },
+        enabled,
+    });
+}
+
+export function useUpdateProfile() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data: { displayName?: string; avatarUrl?: string }) => {
+            const res = await api.put<{ data: { displayName: string | null; avatarUrl: string | null } }>(
+                '/api/users/profile',
+                data,
             );
-            return res.items;
+            return res.data;
         },
-        enabled: !!movieId,
-        retry: false,
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+        },
     });
 }
 
-// Actors
-export function useActors() {
+export function useChangePassword() {
+    return useMutation({
+        mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+            await api.post('/api/users/change-password', data);
+        },
+    });
+}
+
+// Watch History
+export interface WatchHistoryItem {
+    id: string;
+    movieId: string;
+    progressSeconds: number;
+    durationSeconds: number;
+    completed: boolean;
+    lastWatchedAt: string;
+    movie: Movie;
+}
+
+export function useWatchHistory(page = 1, limit = 20) {
     return useQuery({
-        queryKey: ['actors'],
+        queryKey: ['history', page, limit],
         queryFn: async () => {
-            const res = await api.get<{ data: Actor[] }>('/api/actors');
+            const res = await api.get<{ data: WatchHistoryItem[]; meta: PaginationMeta }>(
+                `/api/history?page=${page}&limit=${limit}`
+            );
+            return res;
+        },
+    });
+}
+
+export function useContinueWatching(limit = 10) {
+    return useQuery({
+        queryKey: ['history', 'continue-watching', limit],
+        queryFn: async () => {
+            const res = await api.get<{ data: WatchHistoryItem[] }>(
+                `/api/history/continue-watching?limit=${limit}`
+            );
             return res.data;
         },
     });
 }
 
-export function useActor(id: string) {
-    return useQuery({
-        queryKey: ['actor', id],
-        queryFn: async () => {
-            const res = await api.get<{ data: ActorWithMovies }>(`/api/actors/${id}`);
-            return res.data;
+export function useUpdateProgress() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ movieId, progressSeconds, durationSeconds }: {
+            movieId: string;
+            progressSeconds: number;
+            durationSeconds: number;
+        }) => {
+            await api.post(`/api/history/${movieId}`, { progressSeconds, durationSeconds });
         },
-        enabled: !!id,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['history'] });
+        },
+    });
+}
+
+export function useRemoveHistory() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (movieId: string) => {
+            await api.delete(`/api/history/${movieId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['history'] });
+        },
     });
 }

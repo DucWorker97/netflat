@@ -10,8 +10,6 @@ import {
     usePresignedUrl,
     useUploadComplete,
     useMoviePolling,
-    useSubtitlePresignedUrl,
-    useSubtitleComplete
 } from '@/lib/queries';
 import styles from '../../media-center.module.css';
 
@@ -40,17 +38,9 @@ export default function MediaCenterPage() {
     const [posterStatus, setPosterStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
     const posterInputRef = useRef<HTMLInputElement>(null);
 
-    // -- Subtitle Upload State --
-    const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
-    const [subtitleProgress, setSubtitleProgress] = useState(0);
-    const [subtitleStatus, setSubtitleStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-    const subtitleInputRef = useRef<HTMLInputElement>(null);
-
     // Mutations
     const getPresignedUrl = usePresignedUrl();
     const uploadComplete = useUploadComplete();
-    const getSubtitlePresigned = useSubtitlePresignedUrl();
-    const subtitleComplete = useSubtitleComplete();
 
     // Sync status from DB
     useEffect(() => {
@@ -80,14 +70,6 @@ export default function MediaCenterPage() {
         }
     };
 
-    const handleSubtitleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.[0]) {
-            const file = e.target.files[0];
-            setSubtitleFile(file);
-            uploadSubtitle(file);
-        }
-    };
-
     const uploadPoster = async (file: File) => {
         try {
             setPosterStatus('uploading');
@@ -114,31 +96,6 @@ export default function MediaCenterPage() {
         } catch (err) {
             console.error(err);
             setPosterStatus('error');
-        }
-    };
-
-    const uploadSubtitle = async (file: File) => {
-        try {
-            setSubtitleStatus('uploading');
-            setSubtitleProgress(0);
-
-            const presigned = await getSubtitlePresigned.mutateAsync({
-                movieId,
-                fileName: file.name
-            });
-
-            await performUpload(file, presigned.uploadUrl, setSubtitleProgress);
-
-            await subtitleComplete.mutateAsync({
-                movieId,
-                objectKey: presigned.objectKey
-            });
-
-            setSubtitleStatus('success');
-            queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
-        } catch (err) {
-            console.error(err);
-            setSubtitleStatus('error');
         }
     };
 
@@ -274,7 +231,7 @@ export default function MediaCenterPage() {
                                         <h3 className="text-xl font-bold mb-2">Processing Video</h3>
                                         <div className="max-w-md mx-auto bg-base-200 p-4 rounded-lg mt-4 text-left font-mono text-sm max-h-32 overflow-y-auto">
                                             <p className="text-success">&gt; Upload complete</p>
-                                            <p className="text-warning animate-pulse">&gt; Transcoding to HLS (360p, 480p, 720p)...</p>
+                                            <p className="text-warning animate-pulse">&gt; Transcoding to HLS (480p, 720p)...</p>
                                             <p className="text-muted-foreground mt-2">This process runs on the worker server.</p>
                                             <p className="text-muted-foreground">You can safely leave this page now.</p>
                                         </div>
@@ -379,54 +336,6 @@ export default function MediaCenterPage() {
                         </div>
                     </div>
 
-                    {/* Subtitle Card */}
-                    <div className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <div className={styles.cardTitle}>📝 Subtitles</div>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <div className="bg-base-200 p-4 rounded-lg min-h-[100px]">
-                                {(movie as any)?.subtitles && (movie as any).subtitles.length > 0 ? (
-                                    <ul className="space-y-2">
-                                        {(movie as any).subtitles.map((sub: any, i: number) => (
-                                            <li key={i} className="flex items-center gap-2 text-sm bg-base-100 p-2 rounded">
-                                                <span>📄</span>
-                                                <span className="flex-1 truncate font-medium">{sub.language}</span>
-                                                <span className="badge badge-xs badge-neutral">VTT</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-gray-500 text-sm opacity-60">
-                                        <p>No subtitles yet</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* HIDDEN INPUT */}
-                            <input
-                                ref={subtitleInputRef}
-                                type="file"
-                                accept=".vtt,.srt"
-                                style={{ display: 'none' }}
-                                onChange={handleSubtitleSelect}
-                            />
-
-                            {subtitleStatus === 'uploading' ? (
-                                <div className="w-full">
-                                    <progress className="progress progress-secondary w-full" value={subtitleProgress} max="100"></progress>
-                                    <p className="text-xs text-center mt-1">Uploading...</p>
-                                </div>
-                            ) : (
-                                <button
-                                    className="btn btn-outline btn-sm w-full border-dashed"
-                                    onClick={() => subtitleInputRef.current?.click()}
-                                >
-                                    + Add Subtitle File
-                                </button>
-                            )}
-                        </div>
-                    </div>
                 </div>
             </div>
 

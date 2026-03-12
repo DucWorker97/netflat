@@ -1,10 +1,10 @@
-const { PrismaClient, UserRole } = require('@prisma/client');
+﻿const { PrismaClient, UserRole } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🌱 Seeding database...');
+    console.log('đŸŒ± Seeding database...');
 
     // 1. Create genres
     const genres = [
@@ -25,15 +25,15 @@ async function main() {
             create: genre,
         });
     }
-    console.log(`✅ Created ${genres.length} genres`);
+    console.log(`âœ… Created ${genres.length} genres`);
 
     // 2. Create users
     const adminPassword = await bcrypt.hash('admin123', 10);
     await prisma.user.upsert({
-        where: { email: 'admin@netflop.local' },
+        where: { email: 'admin@netflat.local' },
         update: {},
         create: {
-            email: 'admin@netflop.local',
+            email: 'admin@netflat.local',
             passwordHash: adminPassword,
             role: 'admin', // UserRole.admin enum value is usually string or mapped
         },
@@ -41,15 +41,15 @@ async function main() {
 
     const viewerPassword = await bcrypt.hash('viewer123', 10);
     await prisma.user.upsert({
-        where: { email: 'viewer@netflop.local' },
+        where: { email: 'viewer@netflat.local' },
         update: {},
         create: {
-            email: 'viewer@netflop.local',
+            email: 'viewer@netflat.local',
             passwordHash: viewerPassword,
             role: 'viewer',
         },
     });
-    console.log('✅ Created users');
+    console.log('âœ… Created users');
 
     // 3. Create actors
     const actorsList = [
@@ -61,7 +61,7 @@ async function main() {
         { name: 'Chris Hemsworth', avatarUrl: 'https://image.tmdb.org/t/p/w200/jpurJ9jAcLCYjgHHfYF32m3zJYm.jpg' },
         { name: 'Zendaya', avatarUrl: 'https://image.tmdb.org/t/p/w200/cbCibU53C2X4B57WjYp1h4B5ZtF.jpg' },
         { name: 'Tom Holland', avatarUrl: 'https://image.tmdb.org/t/p/w200/2qhIDp44cAqP2clOgt2afQI07X8.jpg' },
-        { name: 'Timothée Chalamet', avatarUrl: 'https://image.tmdb.org/t/p/w200/BE2sdjpgEHrPSjUI8gqPGk31W5.jpg' },
+        { name: 'TimothĂ©e Chalamet', avatarUrl: 'https://image.tmdb.org/t/p/w200/BE2sdjpgEHrPSjUI8gqPGk31W5.jpg' },
         { name: 'Rebecca Ferguson', avatarUrl: 'https://image.tmdb.org/t/p/w200/lJloTOheuQSirSLXNA3JHsrMNfH.jpg' },
     ];
 
@@ -73,7 +73,7 @@ async function main() {
         }
         dbActors.push(actor);
     }
-    console.log(`✅ Seeded ${dbActors.length} actors`);
+    console.log(`âœ… Seeded ${dbActors.length} actors`);
 
     // Helper
     const findActor = (name) => dbActors.find(a => a.name === name);
@@ -159,7 +159,7 @@ async function main() {
             encodeStatus: 'ready',
             genres: ['sci-fi', 'action'],
             cast: [
-                { actor: 'Timothée Chalamet', role: 'Paul Atreides' },
+                { actor: 'TimothĂ©e Chalamet', role: 'Paul Atreides' },
                 { actor: 'Rebecca Ferguson', role: 'Lady Jessica' },
                 { actor: 'Zendaya', role: 'Chani' }
             ]
@@ -179,7 +179,7 @@ async function main() {
                     encodeStatus: m.encodeStatus,
                 }
             });
-            console.log(`✅ Created movie: ${m.title}`);
+            console.log(`âœ… Created movie: ${m.title}`);
         } else {
             console.log(`  Skipping existing movie: ${m.title}`);
         }
@@ -217,12 +217,12 @@ async function main() {
         }
     }
 
-    console.log('🎉 Seeding completed!');
+    console.log('đŸ‰ Seeding completed!');
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Seeding failed:', e);
+        console.error('âŒ Seeding failed:', e);
         process.exit(1);
     })
     .finally(async () => {

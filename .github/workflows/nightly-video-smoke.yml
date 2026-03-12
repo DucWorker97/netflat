@@ -49,9 +49,9 @@ jobs:
         run: |
           echo "Waiting for services..."
           sleep 10
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-minio 2>/dev/null | grep -q healthy; do sleep 2; done'
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-redis 2>/dev/null | grep -q healthy; do sleep 2; done'
-          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflop-postgres 2>/dev/null | grep -q healthy; do sleep 2; done'
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-minio 2>/dev/null | grep -q healthy; do sleep 2; done'
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-redis 2>/dev/null | grep -q healthy; do sleep 2; done'
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" netflat-postgres 2>/dev/null | grep -q healthy; do sleep 2; done'
           docker compose ps
 
       - name: DB Setup
@@ -60,16 +60,15 @@ jobs:
           pnpm db:migrate:deploy
           pnpm db:seed
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflop
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflat
 
       - name: Start Services
         run: |
-          pnpm --filter @netflop/api dev > api.log 2>&1 &
-          pnpm --filter @netflop/worker dev > worker.log 2>&1 &
+          pnpm --filter @netflat/api dev > api.log 2>&1 &
           echo "Services started in background, waiting 15s..."
           sleep 15
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflop
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/netflat
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: ci-test-secret
           JWT_REFRESH_SECRET: ci-test-refresh-secret
@@ -77,7 +76,7 @@ jobs:
           S3_REGION: us-east-1
           S3_ACCESS_KEY: minioadmin
           S3_SECRET_KEY: minioadmin
-          S3_BUCKET: netflop-media
+          S3_BUCKET: netflat-media
           UPLOAD_PRESIGNED_TTL_SECONDS: 3600
 
       - name: Run Smoke Test
@@ -95,7 +94,7 @@ jobs:
           docker compose ps > artifacts/compose_ps.txt
           docker compose logs --no-color > artifacts/compose.log
           cp api.log artifacts/api.log || true
-          cp worker.log artifacts/worker.log || true
+
           ls -R artifacts/
 
       - uses: actions/upload-artifact@v4

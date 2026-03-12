@@ -9,6 +9,8 @@ interface User {
     id: string;
     email: string;
     role: 'admin' | 'viewer';
+    isActive: boolean;
+    disabledReason: string | null;
     createdAt: string;
     lastLoginAt: string | null;
 }
@@ -173,6 +175,26 @@ export default function UsersPage() {
         }
     };
 
+    const handleToggleActive = async (user: User) => {
+        const action = user.isActive ? 'disable' : 'enable';
+        if (user.isActive) {
+            const reason = prompt('Reason for disabling this account (optional):');
+            try {
+                await api.patch(`/api/users/${user.id}/disable`, { reason: reason || undefined });
+                await fetchUsers();
+            } catch (err) {
+                alert(err instanceof Error ? err.message : 'Failed to disable user');
+            }
+        } else {
+            try {
+                await api.patch(`/api/users/${user.id}/enable`);
+                await fetchUsers();
+            } catch (err) {
+                alert(err instanceof Error ? err.message : 'Failed to enable user');
+            }
+        }
+    };
+
     const adminCount = users.filter(u => u.role === 'admin').length;
     const viewerCount = users.filter(u => u.role === 'viewer').length;
 
@@ -251,6 +273,7 @@ export default function UsersPage() {
                                 <tr>
                                     <th>User</th>
                                     <th>Role</th>
+                                    <th>Status</th>
                                     <th>Created</th>
                                     <th>Last Login</th>
                                     <th>Actions</th>
@@ -276,6 +299,14 @@ export default function UsersPage() {
                                             </span>
                                         </td>
                                         <td>
+                                            <span
+                                                className={`${styles['role-badge']} ${user.isActive ? styles['status-active'] : styles['status-disabled']}`}
+                                                title={user.disabledReason || undefined}
+                                            >
+                                                {user.isActive ? 'Active' : 'Disabled'}
+                                            </span>
+                                        </td>
+                                        <td>
                                             <span className={styles['date-text']}>{formatDate(user.createdAt)}</span>
                                         </td>
                                         <td>
@@ -288,6 +319,12 @@ export default function UsersPage() {
                                                     onClick={() => openEdit(user)}
                                                 >
                                                     Edit
+                                                </button>
+                                                <button
+                                                    className={`${styles['action-btn']} ${user.isActive ? styles.warning : styles.success}`}
+                                                    onClick={() => handleToggleActive(user)}
+                                                >
+                                                    {user.isActive ? 'Disable' : 'Enable'}
                                                 </button>
                                                 <button
                                                     className={`${styles['action-btn']} ${styles.danger}`}

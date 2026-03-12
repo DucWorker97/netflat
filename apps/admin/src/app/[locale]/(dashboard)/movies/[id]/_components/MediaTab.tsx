@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
     usePresignedUrl,
     useUploadComplete,
     useMoviePolling,
-    useSubtitlePresignedUrl,
-    useSubtitleComplete
 } from '@/lib/queries';
 
 interface MediaTabProps {
@@ -21,9 +19,7 @@ const FilmIcon = ({ className = '' }: { className?: string }) => (
 const ImageIcon = ({ className = '' }: { className?: string }) => (
     <svg className={className} width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
 );
-const SubtitleIcon = ({ className = '' }: { className?: string }) => (
-    <svg className={className} width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
-);
+
 const CloudIcon = () => (
     <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--text-muted)' }}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
 );
@@ -74,17 +70,9 @@ export default function MediaTab({ movie }: MediaTabProps) {
     const [posterStatus, setPosterStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
     const posterInputRef = useRef<HTMLInputElement>(null);
 
-    // -- Subtitle Upload State --
-    const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
-    const [subtitleProgress, setSubtitleProgress] = useState(0);
-    const [subtitleStatus, setSubtitleStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-    const subtitleInputRef = useRef<HTMLInputElement>(null);
-
     // Mutations
     const getPresignedUrl = usePresignedUrl();
     const uploadComplete = useUploadComplete();
-    const getSubtitlePresigned = useSubtitlePresignedUrl();
-    const subtitleComplete = useSubtitleComplete();
 
     const [showToast, setShowToast] = useState(false);
 
@@ -113,7 +101,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
 
     // Prevent accidental tab close during upload
     useEffect(() => {
-        const isUploading = videoStatus === 'uploading' || posterStatus === 'uploading' || subtitleStatus === 'uploading';
+        const isUploading = videoStatus === 'uploading' || posterStatus === 'uploading';
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (isUploading) {
                 e.preventDefault();
@@ -122,7 +110,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [videoStatus, posterStatus, subtitleStatus]);
+    }, [videoStatus, posterStatus]);
 
     // -- Handlers --
     const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,14 +154,6 @@ export default function MediaTab({ movie }: MediaTabProps) {
         setPosterStatus('idle');
     };
 
-    const handleSubtitleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.[0]) {
-            setSubtitleFile(e.target.files[0]);
-            setSubtitleStatus('idle');
-        }
-        e.target.value = '';
-    };
-
     const startPosterUpload = async () => {
         if (!posterFile) return;
         try {
@@ -199,29 +179,6 @@ export default function MediaTab({ movie }: MediaTabProps) {
         } catch (err) {
             console.error(err);
             setPosterStatus('error');
-        }
-    };
-
-    const startSubtitleUpload = async () => {
-        if (!subtitleFile) return;
-        try {
-            setSubtitleStatus('uploading');
-            setSubtitleProgress(0);
-            const presigned = await getSubtitlePresigned.mutateAsync({
-                movieId,
-                fileName: subtitleFile.name
-            });
-            await performUpload(subtitleFile, presigned.uploadUrl, setSubtitleProgress);
-            await subtitleComplete.mutateAsync({
-                movieId,
-                objectKey: presigned.objectKey
-            });
-            setSubtitleStatus('success');
-            setSubtitleFile(null);
-            queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
-        } catch (err) {
-            console.error(err);
-            setSubtitleStatus('error');
         }
     };
 
@@ -428,107 +385,51 @@ export default function MediaTab({ movie }: MediaTabProps) {
                 )}
             </div>
 
-            {/* ═══════ POSTER & SUBTITLES ═══════ */}
-            <div className="grid-2-md">
-                {/* Poster */}
-                <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div className="flex items-center gap-2">
-                        <ImageIcon className="section-header-icon" />
-                        <h3 className="section-title">Poster</h3>
-                    </div>
-
-                    <input ref={posterInputRef} type="file" accept="image/*" onChange={handlePosterSelect} className="hidden" />
-
-                    {displayPosterUrl ? (
-                        <div>
-                            <div className="poster-container relative rounded-xl overflow-hidden aspect-poster" style={{ background: 'var(--bg-tertiary)' }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={displayPosterUrl} alt="Poster" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                <div className="poster-overlay">
-                                    <button onClick={() => posterInputRef.current?.click()} className="gradient-btn" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500 }}>
-                                        Replace
-                                    </button>
-                                </div>
-                            </div>
-                            {posterFile && (
-                                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <p className="text-sm font-medium text-foreground truncate">{posterFile.name}</p>
-                                    <p className="text-xs text-muted">{formatBytes(posterFile.size)}</p>
-                                    {posterStatus === 'uploading' ? (
-                                        <div className="progress-bar" style={{ height: 6 }}>
-                                            <div className="progress-bar-fill" style={{ width: `${posterProgress}%` }} />
-                                        </div>
-                                    ) : (
-                                        <div className="flex gap-2">
-                                            <button className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }} onClick={startPosterUpload}>Upload</button>
-                                            <button className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }} onClick={handlePosterRemove}>Remove</button>
-                                        </div>
-                                    )}
-                                    {posterStatus === 'error' && <p className="text-xs text-error">Upload failed. Try again.</p>}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div onClick={() => posterInputRef.current?.click()} className="drop-zone drop-zone-sm" style={{ aspectRatio: '2/3', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <ImageIcon className="text-muted-dim" />
-                            <p className="text-sm text-muted" style={{ marginTop: '8px' }}>Click to upload poster</p>
-                            <p className="text-xs text-muted-dim mt-1">JPG, PNG · 2:3 ratio</p>
-                        </div>
-                    )}
+            {/* ═══════ POSTER ═══════ */}
+            <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="flex items-center gap-2">
+                    <ImageIcon className="section-header-icon" />
+                    <h3 className="section-title">Poster</h3>
                 </div>
 
-                {/* Subtitles */}
-                <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div className="flex items-center gap-2">
-                        <SubtitleIcon className="section-header-icon" />
-                        <h3 className="section-title">Subtitles</h3>
-                    </div>
+                <input ref={posterInputRef} type="file" accept="image/*" onChange={handlePosterSelect} className="hidden" />
 
-                    <input ref={subtitleInputRef} type="file" accept=".vtt,.srt" onChange={handleSubtitleSelect} className="hidden" />
-
-                    {/* Existing subtitles */}
-                    {movie.subtitles && movie.subtitles.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {movie.subtitles.map((sub: any, i: number) => (
-                                <div key={i} className="subtitle-item">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-medium text-foreground">{sub.language || `Subtitle ${i + 1}`}</span>
-                                        <span className="text-xs text-muted font-mono">{sub.fileName}</span>
+                {displayPosterUrl ? (
+                    <div>
+                        <div className="poster-container relative rounded-xl overflow-hidden aspect-poster" style={{ background: 'var(--bg-tertiary)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={displayPosterUrl} alt="Poster" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div className="poster-overlay">
+                                <button onClick={() => posterInputRef.current?.click()} className="gradient-btn" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500 }}>
+                                    Replace
+                                </button>
+                            </div>
+                        </div>
+                        {posterFile && (
+                            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <p className="text-sm font-medium text-foreground truncate">{posterFile.name}</p>
+                                <p className="text-xs text-muted">{formatBytes(posterFile.size)}</p>
+                                {posterStatus === 'uploading' ? (
+                                    <div className="progress-bar" style={{ height: 6 }}>
+                                        <div className="progress-bar-fill" style={{ width: `${posterProgress}%` }} />
                                     </div>
-                                    <span className="badge text-xs font-medium" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '4px' }}>VTT</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Selected subtitle */}
-                    {subtitleFile && (
-                        <div className="subtitle-item" style={{ background: 'rgba(124,58,237,0.05)' }}>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-foreground truncate">{subtitleFile.name}</p>
-                                <p className="text-xs text-muted">{formatBytes(subtitleFile.size)}</p>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }} onClick={startPosterUpload}>Upload</button>
+                                        <button className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }} onClick={handlePosterRemove}>Remove</button>
+                                    </div>
+                                )}
+                                {posterStatus === 'error' && <p className="text-xs text-error">Upload failed. Try again.</p>}
                             </div>
-                            {subtitleStatus === 'uploading' ? (
-                                <div className="progress-bar" style={{ width: 80, height: 4 }}>
-                                    <div className="progress-bar-fill" style={{ width: `${subtitleProgress}%` }} />
-                                </div>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <button className="gradient-btn" style={{ padding: '4px 12px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 500 }} onClick={startSubtitleUpload}>Upload</button>
-                                    <button className="btn btn-ghost text-error" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={() => setSubtitleFile(null)}><XIcon /></button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {subtitleStatus === 'error' && <p className="text-xs text-error">Upload failed.</p>}
-
-                    {/* Add subtitle */}
-                    <div onClick={() => subtitleInputRef.current?.click()} className="drop-zone drop-zone-sm" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <PlusIcon />
-                        <p className="text-sm text-muted" style={{ marginTop: '8px' }}>Add subtitle file • SRT, VTT, ASS</p>
+                        )}
                     </div>
-                </div>
+                ) : (
+                    <div onClick={() => posterInputRef.current?.click()} className="drop-zone drop-zone-sm" style={{ aspectRatio: '2/3', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <ImageIcon className="text-muted-dim" />
+                        <p className="text-sm text-muted" style={{ marginTop: '8px' }}>Click to upload poster</p>
+                        <p className="text-xs text-muted-dim mt-1">JPG, PNG · 2:3 ratio</p>
+                    </div>
+                )}
             </div>
         </div>
     );
