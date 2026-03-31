@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
 
 // Types
@@ -20,6 +20,13 @@ interface Movie {
     encodeStatus: 'pending' | 'processing' | 'ready' | 'failed';
     genres: Genre[];
     actors: string[];
+    tmdbId?: number | null;
+    voteAverage?: number | null;
+    voteCount?: number | null;
+    popularity?: number | null;
+    originalLanguage?: string | null;
+    trailerUrl?: string | null;
+    playbackUrl?: string | null;
     createdAt: string;
     updatedAt: string;
     videoUrl?: string | null;
@@ -274,3 +281,5 @@ export type {
     CreateMovieInput,
     UpdateMovieInput,
 };
+
+
