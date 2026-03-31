@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface StarsProps {
-    rating: number; // 0-5, can be decimal for average
+    rating?: number | null; // 0-5, can be decimal for average
     onRate?: (rating: number) => void;
     readOnly?: boolean;
     size?: 'small' | 'medium' | 'large';
@@ -11,6 +11,7 @@ interface StarsProps {
 
 export function Stars({ rating, onRate, readOnly = false, size = 'medium' }: StarsProps) {
     const [hoverRating, setHoverRating] = useState(0);
+    const safeRating = typeof rating === 'number' && Number.isFinite(rating) ? rating : 0;
 
     const sizeMap = {
         small: '16px',
@@ -27,7 +28,7 @@ export function Stars({ rating, onRate, readOnly = false, size = 'medium' }: Sta
     };
 
     const getStarType = (index: number): 'full' | 'half' | 'empty' => {
-        const displayRating = hoverRating || rating;
+        const displayRating = hoverRating || safeRating;
         if (displayRating >= index) return 'full';
         if (displayRating >= index - 0.5) return 'half';
         return 'empty';
@@ -50,15 +51,15 @@ export function Stars({ rating, onRate, readOnly = false, size = 'medium' }: Sta
                             transition: 'color 0.1s',
                             userSelect: 'none',
                         }}
-                        title={readOnly ? `${rating.toFixed(1)} stars` : `Rate ${star} star${star > 1 ? 's' : ''}`}
+                        title={readOnly ? `${safeRating.toFixed(1)} stars` : `Rate ${star} star${star > 1 ? 's' : ''}`}
                     >
                         {starType === 'full' ? '★' : starType === 'half' ? '⯨' : '☆'}
                     </span>
                 );
             })}
-            {readOnly && rating > 0 && (
+            {readOnly && safeRating > 0 && (
                 <span style={{ marginLeft: '8px', fontSize: '14px', color: '#9ca3af' }}>
-                    {rating.toFixed(1)}
+                    {safeRating.toFixed(1)}
                 </span>
             )}
         </div>
