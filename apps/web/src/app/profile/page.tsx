@@ -60,9 +60,9 @@ export default function ProfilePage() {
                 displayName: displayName.trim() || undefined,
                 avatarUrl: avatarUrl.trim() || undefined,
             });
-            setProfileMsg('Profile updated successfully');
+            setProfileMsg('Cập nhật hồ sơ thành công');
         } catch (err) {
-            setProfileError(err instanceof Error ? err.message : 'Update failed');
+            setProfileError(err instanceof Error ? err.message : 'Cập nhật thất bại');
         }
     };
 
@@ -78,18 +78,18 @@ export default function ProfilePage() {
         }
 
         if (newPassword !== confirmPassword) {
-            setPasswordError('Passwords do not match');
+            setPasswordError('Mật khẩu xác nhận không khớp');
             return;
         }
 
         try {
             await changePassword.mutateAsync({ currentPassword, newPassword });
-            setPasswordMsg('Password changed successfully');
+            setPasswordMsg('Đổi mật khẩu thành công');
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            setPasswordError(err instanceof Error ? err.message : 'Change failed');
+            setPasswordError(err instanceof Error ? err.message : 'Đổi mật khẩu thất bại');
         }
     };
 
@@ -115,28 +115,28 @@ export default function ProfilePage() {
                     <div className={styles.stats}>
                         <div className={styles.statItem}>
                             <div className={styles.statValue}>{profile.stats.favorites}</div>
-                            <div className={styles.statLabel}>Favorites</div>
+                            <div className={styles.statLabel}>Yêu thích</div>
                         </div>
                         <div className={styles.statItem}>
                             <div className={styles.statValue}>{profile.stats.ratings}</div>
-                            <div className={styles.statLabel}>Ratings</div>
+                            <div className={styles.statLabel}>Đánh giá</div>
                         </div>
                     </div>
                 </div>
             )}
 
             <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Profile Information</h2>
+                <h2 className={styles.sectionTitle}>Thông tin hồ sơ</h2>
                 <form onSubmit={handleProfileSubmit}>
                     <div className={styles.field}>
-                        <label htmlFor="displayName">Display Name</label>
+                        <label htmlFor="displayName">Tên hiển thị</label>
                         <input
                             id="displayName"
                             type="text"
                             className="input"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="Your display name"
+                            placeholder="Tên hiển thị của bạn"
                             maxLength={100}
                         />
                     </div>
@@ -161,16 +161,16 @@ export default function ProfilePage() {
                         style={{ marginTop: '1rem' }}
                         disabled={updateProfile.isPending}
                     >
-                        {updateProfile.isPending ? 'Saving...' : 'Save Profile'}
+                        {updateProfile.isPending ? 'Đang lưu...' : 'Lưu hồ sơ'}
                     </button>
                 </form>
             </div>
 
             <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Change Password</h2>
+                <h2 className={styles.sectionTitle}>Đổi mật khẩu</h2>
                 <form onSubmit={handlePasswordSubmit}>
                     <div className={styles.field}>
-                        <label htmlFor="currentPassword">Current Password</label>
+                        <label htmlFor="currentPassword">Mật khẩu hiện tại</label>
                         <input
                             id="currentPassword"
                             type="password"
@@ -181,7 +181,7 @@ export default function ProfilePage() {
                         />
                     </div>
                     <div className={styles.field}>
-                        <label htmlFor="newPassword">New Password</label>
+                        <label htmlFor="newPassword">Mật khẩu mới</label>
                         <input
                             id="newPassword"
                             type="password"
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                         </span>
                     </div>
                     <div className={styles.field}>
-                        <label htmlFor="confirmNewPassword">Confirm New Password</label>
+                        <label htmlFor="confirmNewPassword">Xác nhận mật khẩu mới</label>
                         <input
                             id="confirmNewPassword"
                             type="password"
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                         style={{ marginTop: '1rem' }}
                         disabled={changePassword.isPending}
                     >
-                        {changePassword.isPending ? 'Changing...' : 'Change Password'}
+                        {changePassword.isPending ? 'Đang đổi...' : 'Đổi mật khẩu'}
                     </button>
                 </form>
             </div>

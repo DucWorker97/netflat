@@ -7,7 +7,15 @@
         "upload": "Tải lên",
         "language": "Ngôn ngữ",
         "loading": "Đang xử lý...",
-        "error": "Đã xảy ra lỗi"
+        "error": "Đã xảy ra lỗi",
+        "search": "Tìm kiếm",
+        "clear": "Xóa lọc",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa",
+        "add": "Thêm",
+        "update": "Cập nhật",
+        "status": "Trạng thái",
+        "actions": "Thao tác"
     },
     "Movies": {
         "title": "Quản lý Phim",
@@ -15,11 +23,56 @@
         "create_new": "Thêm phim mới",
         "status_draft": "Bản nháp",
         "status_published": "Đã đăng",
+        "status_ready": "Sẵn sàng",
+        "status_processing": "Đang xử lý",
+        "status_pending": "Chờ xử lý",
+        "status_failed": "Thất bại",
         "form": {
-            "title": "Tên phim"
+            "title": "Tên phim",
+            "description": "Mô tả",
+            "release_year": "Năm phát hành",
+            "duration": "Thời lượng",
+            "genres": "Thể loại",
+            "actors": "Diễn viên",
+            "poster": "Ảnh poster",
+            "video_source": "Nguồn video"
         },
         "actions": {
-            "create": "Tạo phim"
+            "create": "Tạo phim",
+            "publish": "Xuất bản",
+            "unpublish": "Gỡ xuất bản",
+            "preview": "Xem thử",
+            "replace": "Thay thế"
+        },
+        "ratings": {
+            "ratings_title": "Đánh giá & Gợi ý",
+            "reviews_title": "Đánh giá của người dùng",
+            "add_review": "Thêm đánh giá",
+            "no_reviews": "Chưa có đánh giá nào.",
+            "edit": "Sửa",
+            "delete": "Xóa",
+            "suggestions_title": "Phim gợi ý",
+            "add_suggestion": "Thêm gợi ý",
+            "no_suggestions": "Chưa có phim gợi ý nào.",
+            "remove": "Gỡ bỏ"
         }
+    },
+    "Dashboard": {
+        "title": "Tổng quan",
+        "recent_movies": "Phim mới cập nhật",
+        "encoding_status": "Trạng thái mã hóa"
+    },
+    "Users": {
+        "title": "Quản lý người dùng",
+        "add_user": "Thêm người dùng",
+        "email": "Email",
+        "role": "Vai trò",
+        "active": "Đang hoạt động",
+        "disabled": "Đã vô hiệu hóa"
+    },
+    "Genres": {
+        "title": "Thể loại",
+        "add_genre": "Thêm thể loại",
+        "empty": "Chưa có thể loại nào"
     }
 }

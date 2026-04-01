@@ -39,8 +39,8 @@ export function SurpriseMe({ variant = 'button', genreId }: SurpriseMeProps) {
                     <span className={styles.dice}>🎲</span>
                 </div>
                 <div className={styles.cardContent}>
-                    <h3>Surprise Me!</h3>
-                    <p>Let us pick something for you</p>
+                    <h3>Gợi ý bất ngờ!</h3>
+                    <p>Để chúng tôi chọn giúp bạn</p>
                 </div>
                 {isAnimating && <div className={styles.spinner} />}
             </button>
@@ -54,7 +54,7 @@ export function SurpriseMe({ variant = 'button', genreId }: SurpriseMeProps) {
             disabled={isAnimating || !movies?.data?.length}
         >
             <span className={styles.icon}>🎲</span>
-            {isAnimating ? 'Finding...' : 'Surprise Me'}
+            {isAnimating ? 'Đang tìm...' : 'Gợi ý bất ngờ'}
         </button>
     );
 }

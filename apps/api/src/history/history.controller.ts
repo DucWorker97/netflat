@@ -49,7 +49,7 @@ export class HistoryController {
         const pageNum = parseInt(page || '1', 10);
         const limitNum = parseInt(limit || '20', 10);
 
-        const result = await this.historyService.findAll(user.id, pageNum, limitNum);
+        const result = await this.historyService.getHistory(user.id, pageNum, limitNum);
 
         return {
             data: result.data,
@@ -70,7 +70,7 @@ export class HistoryController {
         @Query('limit') limit?: string,
     ) {
         const limitNum = parseInt(limit || '10', 10);
-        const data = await this.historyService.continueWatching(user.id, limitNum);
+        const data = await this.historyService.getContinueWatching(user.id);
         return { data };
     }
 
@@ -81,11 +81,10 @@ export class HistoryController {
         @Param('movieId', ParseUUIDPipe) movieId: string,
         @Body() dto: UpsertProgressDto,
     ) {
-        const result = await this.historyService.upsert(
+        const result = await this.historyService.upsertProgress(
             user.id,
             movieId,
             dto.progressSeconds,
-            dto.durationSeconds || 0,
         );
         return { data: result };
     }
@@ -95,7 +94,7 @@ export class HistoryController {
         @CurrentUser() user: User,
         @Param('movieId', ParseUUIDPipe) movieId: string,
     ) {
-        const result = await this.historyService.remove(user.id, movieId);
+        const result = await this.historyService.removeHistory(user.id, movieId);
         return { data: result };
     }
 }

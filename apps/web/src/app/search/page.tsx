@@ -85,7 +85,7 @@ export default function AdvancedSearchPage() {
     }, []);
 
     if (!FEATURE_FLAGS.search) {
-        return <FeatureDisabled title="Search is paused" message="Use the Movies page to browse while we focus on core streaming." />;
+        return <FeatureDisabled title="Tính năng tìm kiếm đang tạm dừng" message="Hãy dùng trang Phim để duyệt nội dung trong lúc chúng tôi tối ưu hệ thống phát." />;
     }
 
     const movies = data?.data || [];
@@ -111,8 +111,8 @@ export default function AdvancedSearchPage() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <Link href="/" className={styles.backLink}>← Back</Link>
-                <h1 className={styles.title}>Search</h1>
+                <Link href="/" className={styles.backLink}>← Quay lại</Link>
+                <h1 className={styles.title}>Tìm kiếm</h1>
             </div>
 
             {/* Search Input */}
@@ -121,7 +121,7 @@ export default function AdvancedSearchPage() {
                     <span className={styles.searchIcon}>🔍</span>
                     <input
                         type="text"
-                        placeholder="Search movies, genres, actors..."
+                        placeholder="Tìm phim, thể loại, diễn viên..."
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
@@ -143,7 +143,7 @@ export default function AdvancedSearchPage() {
                         className={`${styles.filterToggle} ${showFilters ? styles.filterActive : ''}`}
                         onClick={() => setShowFilters(!showFilters)}
                     >
-                        ⚙️ Filters {hasActiveFilters && <span className={styles.filterBadge}>•</span>}
+                        ⚙️ Bộ lọc {hasActiveFilters && <span className={styles.filterBadge}>•</span>}
                     </button>
                 </div>
 
@@ -170,12 +170,12 @@ export default function AdvancedSearchPage() {
             {showFilters && (
                 <div className={styles.filtersPanel}>
                     <div className={styles.filterGroup}>
-                        <label>Genre</label>
+                        <label>Thể loại</label>
                         <select
                             value={filters.genreId}
                             onChange={(e) => setFilters({ ...filters, genreId: e.target.value })}
                         >
-                            <option value="">All Genres</option>
+                            <option value="">Tất cả thể loại</option>
                             {genres?.map(genre => (
                                 <option key={genre.id} value={genre.id}>{genre.name}</option>
                             ))}
@@ -183,13 +183,13 @@ export default function AdvancedSearchPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <label>Year</label>
+                        <label>Năm</label>
                         <div className={styles.yearRange}>
                             <select
                                 value={filters.yearFrom}
                                 onChange={(e) => setFilters({ ...filters, yearFrom: e.target.value })}
                             >
-                                <option value="">From</option>
+                                <option value="">Từ</option>
                                 {YEARS.map(year => (
                                     <option key={year} value={year}>{year}</option>
                                 ))}
@@ -199,7 +199,7 @@ export default function AdvancedSearchPage() {
                                 value={filters.yearTo}
                                 onChange={(e) => setFilters({ ...filters, yearTo: e.target.value })}
                             >
-                                <option value="">To</option>
+                                <option value="">Đến</option>
                                 {YEARS.map(year => (
                                     <option key={year} value={year}>{year}</option>
                                 ))}
@@ -208,12 +208,12 @@ export default function AdvancedSearchPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <label>Min Rating</label>
+                        <label>Điểm tối thiểu</label>
                         <select
                             value={filters.minRating}
                             onChange={(e) => setFilters({ ...filters, minRating: e.target.value })}
                         >
-                            <option value="">Any</option>
+                            <option value="">Bất kỳ</option>
                             <option value="9">9+ ⭐</option>
                             <option value="8">8+ ⭐</option>
                             <option value="7">7+ ⭐</option>
@@ -222,21 +222,21 @@ export default function AdvancedSearchPage() {
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <label>Sort By</label>
+                        <label>Sắp xếp theo</label>
                         <select
                             value={filters.sortBy}
                             onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as typeof filters.sortBy })}
                         >
-                            <option value="relevance">Relevance</option>
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="rating">Highest Rated</option>
+                            <option value="relevance">Liên quan</option>
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="rating">Điểm cao nhất</option>
                         </select>
                     </div>
 
                     {hasActiveFilters && (
                         <button className={styles.clearFilters} onClick={clearFilters}>
-                            Clear Filters
+                            Xóa bộ lọc
                         </button>
                     )}
                 </div>
@@ -260,11 +260,11 @@ export default function AdvancedSearchPage() {
                 {showEmpty && (
                     <div className={styles.empty}>
                         <span className={styles.emptyIcon}>🎬</span>
-                        <h2>No movies found</h2>
-                        <p>Try different keywords or adjust your filters</p>
+                        <h2>Không tìm thấy phim</h2>
+                        <p>Hãy thử từ khóa khác hoặc điều chỉnh bộ lọc</p>
                         {hasActiveFilters && (
                             <button className={styles.clearFiltersBtn} onClick={clearFilters}>
-                                Clear Filters
+                                Xóa bộ lọc
                             </button>
                         )}
                     </div>
@@ -274,7 +274,7 @@ export default function AdvancedSearchPage() {
                 {movies.length > 0 && (
                     <>
                         <p className={styles.resultCount}>
-                            Found {data?.meta?.total || movies.length} results
+                            Tìm thấy {data?.meta?.total || movies.length} kết quả
                         </p>
                         <div className={styles.grid}>
                             {movies.map((movie) => (
@@ -310,20 +310,20 @@ export default function AdvancedSearchPage() {
                 {!debouncedSearch && !hasActiveFilters && !isLoading && (
                     <div className={styles.initial}>
                         <span className={styles.initialIcon}>🔍</span>
-                        <h2>Discover Movies</h2>
-                        <p>Search by title or use filters to explore</p>
+                        <h2>Khám phá phim</h2>
+                        <p>Tìm theo tên hoặc dùng bộ lọc để khám phá</p>
                         <div className={styles.quickFilters}>
                             <button onClick={() => setFilters({ ...filters, genreId: 'action' })}>
-                                🎬 Action
+                                🎬 Hành động
                             </button>
                             <button onClick={() => setFilters({ ...filters, genreId: 'comedy' })}>
-                                😂 Comedy
+                                😂 Hài
                             </button>
                             <button onClick={() => setFilters({ ...filters, minRating: '8' })}>
-                                ⭐ Top Rated
+                                ⭐ Điểm cao
                             </button>
                             <button onClick={() => setFilters({ ...filters, yearFrom: String(CURRENT_YEAR) })}>
-                                🆕 This Year
+                                🆕 Năm nay
                             </button>
                         </div>
                     </div>

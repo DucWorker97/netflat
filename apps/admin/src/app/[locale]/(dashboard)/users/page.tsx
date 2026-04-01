@@ -63,7 +63,7 @@ export default function UsersPage() {
             setTotalPages(res.meta?.totalPages || 1);
             setTotalUsers(res.meta?.total || 0);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch users');
+            setError(err instanceof Error ? err.message : 'Không thể tải danh sách người dùng');
             setUsers([]);
             setTotalUsers(0);
             setTotalPages(1);
@@ -77,8 +77,8 @@ export default function UsersPage() {
     }, [fetchUsers]);
 
     const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'Never';
-        return new Date(dateString).toLocaleDateString('en-US', {
+        if (!dateString) return 'Chưa từng';
+        return new Date(dateString).toLocaleDateString('vi-VN', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -114,7 +114,7 @@ export default function UsersPage() {
         setFormError(null);
 
         if (!formState.email.trim()) {
-            setFormError('Email is required');
+            setFormError('Email là bắt buộc');
             return;
         }
 
@@ -125,7 +125,7 @@ export default function UsersPage() {
         };
 
         if (!editingUser && !payload.password) {
-            setFormError('Password is required for new users');
+            setFormError('Mật khẩu là bắt buộc khi tạo người dùng mới');
             return;
         }
 
@@ -144,7 +144,7 @@ export default function UsersPage() {
                 !!payload.password;
 
             if (!hasChanges) {
-                setFormError('No changes to save');
+                setFormError('Không có thay đổi để lưu');
                 return;
             }
         }
@@ -159,38 +159,37 @@ export default function UsersPage() {
             closeModal();
             await fetchUsers();
         } catch (err) {
-            setFormError(err instanceof Error ? err.message : 'Failed to save user');
+            setFormError(err instanceof Error ? err.message : 'Không thể lưu người dùng');
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (userId: string) => {
-        if (!confirm('Delete this user? This will remove all their data.')) return;
+        if (!confirm('Xóa người dùng này? Thao tác này sẽ xóa toàn bộ dữ liệu của họ.')) return;
         try {
             await api.delete(`/api/admin/users/${userId}`);
             await fetchUsers();
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete user');
+            alert(err instanceof Error ? err.message : 'Không thể xóa người dùng');
         }
     };
 
     const handleToggleActive = async (user: User) => {
-        const action = user.isActive ? 'disable' : 'enable';
         if (user.isActive) {
-            const reason = prompt('Reason for disabling this account (optional):');
+            const reason = prompt('Lý do vô hiệu hóa tài khoản này (không bắt buộc):');
             try {
                 await api.patch(`/api/users/${user.id}/disable`, { reason: reason || undefined });
                 await fetchUsers();
             } catch (err) {
-                alert(err instanceof Error ? err.message : 'Failed to disable user');
+                alert(err instanceof Error ? err.message : 'Không thể vô hiệu hóa người dùng');
             }
         } else {
             try {
                 await api.patch(`/api/users/${user.id}/enable`);
                 await fetchUsers();
             } catch (err) {
-                alert(err instanceof Error ? err.message : 'Failed to enable user');
+                alert(err instanceof Error ? err.message : 'Không thể kích hoạt người dùng');
             }
         }
     };
@@ -201,9 +200,9 @@ export default function UsersPage() {
     return (
         <div className={styles['users-page']}>
             <div className={styles['users-header']}>
-                <h1>User Management</h1>
+                <h1>Quản lý người dùng</h1>
                 <button className="btn btn-primary" onClick={openCreate}>
-                    + Add User
+                    + Thêm người dùng
                 </button>
             </div>
 
@@ -211,15 +210,15 @@ export default function UsersPage() {
             <div className={styles['users-stats']}>
                 <div className={styles['stat-card']}>
                     <div className={styles['stat-value']}>{totalUsers}</div>
-                    <div className={styles['stat-label']}>Total Users</div>
+                    <div className={styles['stat-label']}>Tổng người dùng</div>
                 </div>
                 <div className={styles['stat-card']}>
                     <div className={styles['stat-value']}>{adminCount}</div>
-                    <div className={styles['stat-label']}>Admins</div>
+                    <div className={styles['stat-label']}>Quản trị viên</div>
                 </div>
                 <div className={styles['stat-card']}>
                     <div className={styles['stat-value']}>{viewerCount}</div>
-                    <div className={styles['stat-label']}>Viewers</div>
+                    <div className={styles['stat-label']}>Người dùng</div>
                 </div>
             </div>
 
@@ -228,7 +227,7 @@ export default function UsersPage() {
                 <input
                     type="text"
                     className={styles['search-input']}
-                    placeholder="Search by email..."
+                    placeholder="Tìm theo email..."
                     value={searchQuery}
                     onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -243,9 +242,9 @@ export default function UsersPage() {
                         setCurrentPage(1);
                     }}
                 >
-                    <option value="all">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="viewer">User</option>
+                    <option value="all">Tất cả vai trò</option>
+                    <option value="admin">Quản trị viên</option>
+                    <option value="viewer">Người dùng</option>
                 </select>
             </div>
 
@@ -258,25 +257,25 @@ export default function UsersPage() {
                 {loading ? (
                     <div className={styles['loading-container']}>
                         <div className={styles.spinner}></div>
-                        <p style={{ marginTop: '1rem' }}>Loading users...</p>
+                        <p style={{ marginTop: '1rem' }}>Đang tải người dùng...</p>
                     </div>
                 ) : users.length === 0 ? (
                     <div className={styles['empty-state']}>
-                        <div className={styles['empty-state-icon']}>Users</div>
-                        <h3>No users found</h3>
-                        <p>Try adjusting your filters</p>
+                        <div className={styles['empty-state-icon']}>Người dùng</div>
+                        <h3>Không tìm thấy người dùng</h3>
+                        <p>Hãy thử điều chỉnh bộ lọc</p>
                     </div>
                 ) : (
                     <>
                         <table className={styles['users-table']}>
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Created</th>
-                                    <th>Last Login</th>
-                                    <th>Actions</th>
+                                    <th>Người dùng</th>
+                                    <th>Vai trò</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Đăng nhập gần nhất</th>
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -295,7 +294,7 @@ export default function UsersPage() {
                                         </td>
                                         <td>
                                             <span className={`${styles['role-badge']} ${styles[user.role]}`}>
-                                                {user.role === 'viewer' ? 'user' : user.role}
+                                                {user.role === 'viewer' ? 'người dùng' : 'quản trị viên'}
                                             </span>
                                         </td>
                                         <td>
@@ -303,7 +302,7 @@ export default function UsersPage() {
                                                 className={`${styles['role-badge']} ${user.isActive ? styles['status-active'] : styles['status-disabled']}`}
                                                 title={user.disabledReason || undefined}
                                             >
-                                                {user.isActive ? 'Active' : 'Disabled'}
+                                                {user.isActive ? 'Đang hoạt động' : 'Đã vô hiệu hóa'}
                                             </span>
                                         </td>
                                         <td>
@@ -318,19 +317,19 @@ export default function UsersPage() {
                                                     className={`${styles['action-btn']} ${styles.primary}`}
                                                     onClick={() => openEdit(user)}
                                                 >
-                                                    Edit
+                                                    Sửa
                                                 </button>
                                                 <button
                                                     className={`${styles['action-btn']} ${user.isActive ? styles.warning : styles.success}`}
                                                     onClick={() => handleToggleActive(user)}
                                                 >
-                                                    {user.isActive ? 'Disable' : 'Enable'}
+                                                    {user.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
                                                 </button>
                                                 <button
                                                     className={`${styles['action-btn']} ${styles.danger}`}
                                                     onClick={() => handleDelete(user.id)}
                                                 >
-                                                    Delete
+                                                    Xóa
                                                 </button>
                                             </div>
                                         </td>
@@ -342,7 +341,7 @@ export default function UsersPage() {
                         {/* Pagination */}
                         <div className={styles.pagination}>
                             <span className={styles['pagination-info']}>
-                                Showing {(currentPage - 1) * USERS_PER_PAGE + 1}-{Math.min(currentPage * USERS_PER_PAGE, totalUsers)} of {totalUsers}
+                                Hiển thị {(currentPage - 1) * USERS_PER_PAGE + 1}-{Math.min(currentPage * USERS_PER_PAGE, totalUsers)} trên tổng {totalUsers}
                             </span>
                             <div className={styles['pagination-buttons']}>
                                 <button
@@ -350,14 +349,14 @@ export default function UsersPage() {
                                     disabled={currentPage === 1}
                                     onClick={() => setCurrentPage(currentPage - 1)}
                                 >
-                                    Previous
+                                    Trước
                                 </button>
                                 <button
                                     className={styles['pagination-btn']}
                                     disabled={currentPage >= totalPages}
                                     onClick={() => setCurrentPage(currentPage + 1)}
                                 >
-                                    Next
+                                    Sau
                                 </button>
                             </div>
                         </div>
@@ -369,7 +368,7 @@ export default function UsersPage() {
                 <div className={styles.modalOverlay} onClick={closeModal}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <h2 className={styles.modalTitle}>
-                            {editingUser ? 'Edit User' : 'Add User'}
+                            {editingUser ? 'Chỉnh sửa người dùng' : 'Thêm người dùng'}
                         </h2>
 
                         <div className={styles.formGroup}>
@@ -384,19 +383,19 @@ export default function UsersPage() {
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>Role</label>
+                            <label>Vai trò</label>
                             <select
                                 className="input"
                                 value={formState.role}
                                 onChange={(e) => setFormState(prev => ({ ...prev, role: e.target.value as 'viewer' | 'admin' }))}
                             >
-                                <option value="viewer">User</option>
-                                <option value="admin">Admin</option>
+                                <option value="viewer">Người dùng</option>
+                                <option value="admin">Quản trị viên</option>
                             </select>
                         </div>
 
                         <div className={styles.formGroup}>
-                            <label>{editingUser ? 'Reset Password' : 'Password'}{!editingUser && ' *'}</label>
+                            <label>{editingUser ? 'Đặt lại mật khẩu' : 'Mật khẩu'}{!editingUser && ' *'}</label>
                             <input
                                 type="password"
                                 className="input"
@@ -404,8 +403,8 @@ export default function UsersPage() {
                                 onChange={(e) => setFormState(prev => ({ ...prev, password: e.target.value }))}
                                 placeholder={
                                     editingUser
-                                        ? 'Leave blank to keep current password'
-                                        : 'At least 8 characters with letters and numbers'
+                                        ? 'Để trống nếu muốn giữ mật khẩu hiện tại'
+                                        : 'Ít nhất 8 ký tự gồm chữ và số'
                                 }
                             />
                         </div>
@@ -416,10 +415,10 @@ export default function UsersPage() {
 
                         <div className={styles.modalActions}>
                             <button className="btn btn-secondary" onClick={closeModal} disabled={saving}>
-                                Cancel
+                                Hủy
                             </button>
                             <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                                {saving ? 'Saving...' : 'Save'}
+                                {saving ? 'Đang lưu...' : 'Lưu'}
                             </button>
                         </div>
                     </div>

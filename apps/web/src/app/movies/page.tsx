@@ -42,21 +42,21 @@ export default function MoviesPage() {
         <div className={styles.page}>
             <div className={styles.hero}>
                 <div className={styles.heroContent}>
-                    <h1 className={styles.title}>Movies</h1>
+                    <h1 className={styles.title}>Phim</h1>
                     <p className={styles.subtitle}>
-                        Browse the full Netflat catalog and discover your next favorite.
+                        Duyệt toàn bộ kho phim Netflat và tìm bộ phim yêu thích tiếp theo.
                     </p>
                     <div className={styles.searchRow}>
                         <input
                             className={styles.searchInput}
                             type="search"
-                            placeholder="Search by title..."
+                            placeholder="Tìm theo tên phim..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         {(searchTerm || selectedGenre) && (
                             <button className={styles.clearButton} onClick={clearFilters}>
-                                Clear Filters
+                                Xóa bộ lọc
                             </button>
                         )}
                     </div>
@@ -69,7 +69,7 @@ export default function MoviesPage() {
                         className={`${styles.filterButton} ${!selectedGenre ? styles.filterActive : ''}`}
                         onClick={() => setSelectedGenre('')}
                     >
-                        All Genres
+                        Tất cả thể loại
                     </button>
                     {genres?.map((genre) => (
                         <button
@@ -85,12 +85,12 @@ export default function MoviesPage() {
                 <div className={styles.resultsHeader}>
                     <h2 className={styles.resultsTitle}>
                         {selectedGenre
-                            ? genres?.find(g => g.id === selectedGenre)?.name || 'Movies'
-                            : 'All Movies'}
+                            ? genres?.find(g => g.id === selectedGenre)?.name || 'Phim'
+                            : 'Tất cả phim'}
                     </h2>
                     {total > 0 && (
                         <span className={styles.summary}>
-                            Showing {(currentPage - 1) * MOVIES_PER_PAGE + 1} - {Math.min(currentPage * MOVIES_PER_PAGE, total)} of {total}
+                            Hiển thị {(currentPage - 1) * MOVIES_PER_PAGE + 1} - {Math.min(currentPage * MOVIES_PER_PAGE, total)} trên tổng {total}
                         </span>
                     )}
                 </div>
@@ -103,17 +103,17 @@ export default function MoviesPage() {
                     </div>
                 ) : error ? (
                     <ErrorState
-                        title="Unable to load movies"
-                        message="We ran into a problem loading the catalog. Please try again."
+                        title="Không thể tải danh sách phim"
+                        message="Có lỗi khi tải kho phim. Vui lòng thử lại."
                         onRetry={() => refetch()}
                     />
                 ) : movies.length === 0 ? (
                     <EmptyState
                         icon="đŸŽ¬"
-                        title="No movies found"
+                        title="Không tìm thấy phim"
                         message={debouncedSearch || selectedGenre
-                            ? 'Try clearing filters or searching a different title.'
-                            : 'Check back later for new releases.'}
+                            ? 'Hãy xóa bộ lọc hoặc thử từ khóa khác.'
+                            : 'Vui lòng quay lại sau để xem phim mới.'}
                     />
                 ) : (
                     <div className="movie-grid">

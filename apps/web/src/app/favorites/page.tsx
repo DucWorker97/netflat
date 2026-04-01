@@ -28,17 +28,17 @@ export default function FavoritesPage() {
         <>
             <main className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
                 <div className="section-header">
-                    <h1 className="section-title">My Favorites</h1>
+                    <h1 className="section-title">Phim yêu thích</h1>
                 </div>
 
                 {isLoading ? (
                     <div className="loading-spinner"><div className="spinner" /></div>
                 ) : favorites?.length === 0 ? (
                     <div className="empty-state">
-                        <h3>No favorites yet</h3>
-                        <p>Browse movies and add them to your favorites!</p>
+                        <h3>Bạn chưa có phim yêu thích</h3>
+                        <p>Hãy duyệt phim và thêm vào danh sách yêu thích!</p>
                         <Link href="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                            Browse Movies
+                            Duyệt phim
                         </Link>
                     </div>
                 ) : (

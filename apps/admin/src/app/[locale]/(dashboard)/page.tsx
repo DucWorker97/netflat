@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMovies, useGenres } from '@/lib/queries';
+import { normalizeMediaUrl } from '@/lib/media-url';
 import { useLocalePath } from '@/lib/use-locale-path';
 
 export default function DashboardPage() {
@@ -27,7 +28,7 @@ export default function DashboardPage() {
     if (moviesLoading || genresLoading) {
         return (
             <div>
-                <h1 style={{ marginBottom: '2rem' }}>Dashboard</h1>
+                <h1 style={{ marginBottom: '2rem' }}>Bảng điều khiển</h1>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
                     {[...Array(4)].map((_, i) => (
                         <div key={i} className="skeleton" style={{ height: 100, borderRadius: 8 }} />
@@ -39,7 +40,7 @@ export default function DashboardPage() {
 
     return (
         <div>
-            <h1 style={{ marginBottom: '2rem' }}>Dashboard</h1>
+            <h1 style={{ marginBottom: '2rem' }}>Bảng điều khiển</h1>
 
             {/* Stats Cards */}
             <div style={{
@@ -48,39 +49,39 @@ export default function DashboardPage() {
                 gap: '1rem',
                 marginBottom: '2rem'
             }}>
-                <StatCard title="Total Movies" value={stats.total} icon="🎬" />
-                <StatCard title="Published" value={stats.published} icon="✅" color="#22c55e" />
-                <StatCard title="Drafts" value={stats.draft} icon="📝" color="#f59e0b" />
-                <StatCard title="Total Genres" value={genres?.length || 0} icon="🏷️" color="#8b5cf6" />
+                <StatCard title="Tổng số phim" value={stats.total} icon="🎬" />
+                <StatCard title="Đã xuất bản" value={stats.published} icon="✅" color="#22c55e" />
+                <StatCard title="Bản nháp" value={stats.draft} icon="📝" color="#f59e0b" />
+                <StatCard title="Tổng thể loại" value={genres?.length || 0} icon="🏷️" color="#8b5cf6" />
             </div>
 
             {/* Encode Status */}
             <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Encode Status</h2>
+                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Trạng thái mã hóa</h2>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
                     gap: '1rem'
                 }}>
-                    <StatCard title="Ready" value={stats.ready} icon="✅" color="#22c55e" small />
-                    <StatCard title="Pending" value={stats.pending} icon="⏳" color="#f59e0b" small />
-                    <StatCard title="Processing" value={stats.processing} icon="⚙️" color="#3b82f6" small />
-                    <StatCard title="Failed" value={stats.failed} icon="❌" color="#ef4444" small />
+                    <StatCard title="Sẵn sàng" value={stats.ready} icon="✅" color="#22c55e" small />
+                    <StatCard title="Chờ xử lý" value={stats.pending} icon="⏳" color="#f59e0b" small />
+                    <StatCard title="Đang xử lý" value={stats.processing} icon="⚙️" color="#3b82f6" small />
+                    <StatCard title="Thất bại" value={stats.failed} icon="❌" color="#ef4444" small />
                 </div>
             </div>
 
             {/* Quick Actions */}
             <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Quick Actions</h2>
+                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Thao tác nhanh</h2>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <Link href={localePath('/movies/new')} className="btn btn-primary">
-                        + New Movie
+                        + Tạo phim mới
                     </Link>
                     <Link href={localePath('/movies')} className="btn btn-secondary">
-                        Manage Movies
+                        Quản lý phim
                     </Link>
                     <Link href={localePath('/genres')} className="btn btn-secondary">
-                        Manage Genres
+                        Quản lý thể loại
                     </Link>
                 </div>
             </div>
@@ -88,13 +89,16 @@ export default function DashboardPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
                 {/* Recent Movies */}
                 <div>
-                    <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Recently Updated</h2>
+                    <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Cập nhật gần đây</h2>
                     <div style={{
                         background: 'var(--bg-card)',
                         borderRadius: 8,
                         overflow: 'hidden'
                     }}>
                         {recentMovies.map(movie => (
+                        (() => {
+                            const posterUrl = normalizeMediaUrl(movie.posterUrl);
+                            return (
                             <Link
                                 key={movie.id}
                                 href={localePath(`/movies/${movie.id}`)}
@@ -112,13 +116,13 @@ export default function DashboardPage() {
                                     width: 40,
                                     height: 60,
                                     borderRadius: 4,
-                                    background: movie.posterUrl ? `url(${movie.posterUrl}) center/cover` : 'var(--bg-secondary)',
+                                    background: posterUrl ? `url(${posterUrl}) center/cover` : 'var(--bg-secondary)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: '1rem'
                                 }}>
-                                    {!movie.posterUrl && '🎬'}
+                                    {!posterUrl && '🎬'}
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontWeight: 500 }}>{movie.title}</div>
@@ -130,6 +134,8 @@ export default function DashboardPage() {
                                     {movie.encodeStatus}
                                 </span>
                             </Link>
+                            );
+                        })()
                         ))}
                     </div>
                 </div>

@@ -45,7 +45,7 @@ export default function HomePage() {
                 {/* Continue Watching Rail */}
                 {isAuthenticated && (
                     <MovieRail
-                        title="Continue Watching"
+                        title="Tiếp tục xem"
                         movies={continueWatching?.map(item => item.movie)}
                         isLoading={cwLoading}
                     />
@@ -53,14 +53,14 @@ export default function HomePage() {
 
                 {/* Recently Added Rail */}
                 <MovieRail
-                    title="Recently Added"
+                    title="Mới thêm"
                     movies={recentlyAdded}
                     isLoading={recentLoading}
                 />
 
                 {/* Quick Actions Section */}
                 <div className="section-header" style={{ marginTop: '2rem' }}>
-                    <h2 className="section-title">Quick Actions</h2>
+                    <h2 className="section-title">Thao tác nhanh</h2>
                 </div>
                 <div style={{
                     display: 'grid',
@@ -83,7 +83,7 @@ export default function HomePage() {
                         }}
                         onClick={() => setSelectedGenre('')}
                     >
-                        All
+                        Tất cả
                     </button>
                     {genres?.map((genre) => (
                         <Link
@@ -106,8 +106,8 @@ export default function HomePage() {
                 <div className="section-header">
                     <h2 className="section-title">
                         {selectedGenre
-                            ? genres?.find(g => g.id === selectedGenre)?.name || 'Movies'
-                            : 'All Movies'
+                            ? genres?.find(g => g.id === selectedGenre)?.name || 'Phim'
+                            : 'Tất cả phim'
                         }
                     </h2>
                 </div>
@@ -121,17 +121,17 @@ export default function HomePage() {
                     </div>
                 ) : moviesError ? (
                     <ErrorState
-                        title="Failed to load movies"
-                        message="We couldn't load the movies. Please try again."
+                        title="Không thể tải danh sách phim"
+                        message="Đã có lỗi khi tải dữ liệu. Vui lòng thử lại."
                         onRetry={() => refetchMovies()}
                     />
                 ) : moviesData?.data?.length === 0 ? (
                     <EmptyState
                         icon="🎬"
-                        title="No movies found"
+                        title="Không tìm thấy phim"
                         message={selectedGenre
-                            ? "No movies in this genre. Try another one."
-                            : "Check back later for more content."
+                            ? 'Thể loại này chưa có phim. Hãy thử thể loại khác.'
+                            : 'Vui lòng quay lại sau để xem nội dung mới.'
                         }
                     />
                 ) : (
@@ -158,7 +158,7 @@ export default function HomePage() {
                                 fontSize: '0.875rem',
                                 marginTop: '0.5rem'
                             }}>
-                                Showing {(currentPage - 1) * MOVIES_PER_PAGE + 1}–{Math.min(currentPage * MOVIES_PER_PAGE, moviesData.meta.total)} of {moviesData.meta.total} movies
+                                Hiển thị {(currentPage - 1) * MOVIES_PER_PAGE + 1}–{Math.min(currentPage * MOVIES_PER_PAGE, moviesData.meta.total)} trên tổng {moviesData.meta.total} phim
                             </p>
                         )}
                     </>

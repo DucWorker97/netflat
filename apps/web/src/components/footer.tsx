@@ -22,33 +22,33 @@ export function Footer() {
                             netflat
                         </Link>
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '300px' }}>
-                            Your premium destination for streaming entertainment. Watch anywhere, cancel anytime.
+                            Nền tảng giải trí trực tuyến cao cấp của bạn. Xem mọi lúc, mọi nơi.
                         </p>
                     </div>
 
                     <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
                         <div>
-                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Links</h4>
+                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Liên kết</h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <Link href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Home</Link>
+                                <Link href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Trang chủ</Link>
                                 {FEATURE_FLAGS.search && (
-                                    <Link href="/search" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Search</Link>
+                                    <Link href="/search" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Tìm kiếm</Link>
                                 )}
-                                <Link href="/favorites" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>My List</Link>
+                                <Link href="/favorites" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Danh sách của tôi</Link>
                             </div>
                         </div>
 
                         <div>
-                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Support</h4>
+                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Hỗ trợ</h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Help Center</Link>
-                                <Link href="/account" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Account</Link>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Media Center</Link>
-                                <Link href="/parental-controls" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Parental Controls</Link>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Redeem Gift Cards</Link>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Use</Link>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy</Link>
-                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Cookie Preferences</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Trung tâm trợ giúp</Link>
+                                <Link href="/account" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Tài khoản</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Trung tâm truyền thông</Link>
+                                <Link href="/parental-controls" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Kiểm soát phụ huynh</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Đổi thẻ quà tặng</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Điều khoản sử dụng</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Quyền riêng tư</Link>
+                                <Link href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Tùy chọn cookie</Link>
                             </div>
                         </div>
                     </div>
@@ -61,7 +61,7 @@ export function Footer() {
                     color: 'var(--text-secondary)',
                     fontSize: '0.875rem'
                 }}>
-                    <p>&copy; {new Date().getFullYear()} Netflat. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Netflat. Bảo lưu mọi quyền.</p>
                 </div>
             </div>
         </footer>

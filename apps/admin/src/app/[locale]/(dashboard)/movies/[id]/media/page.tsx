@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useLocalePath } from '@/lib/use-locale-path';
+import { normalizeMediaUrl } from '@/lib/media-url';
 import {
     useMovie,
     usePresignedUrl,
@@ -307,9 +308,9 @@ export default function MediaCenterPage() {
 
                             <div className="relative w-full aspect-[2/3] bg-base-200 rounded-lg overflow-hidden group border border-dashed border-gray-600 hover:border-primary transition-colors cursor-pointer"
                                 onClick={() => posterInputRef.current?.click()}>
-                                {movie?.posterUrl || posterProgress > 0 ? (
+                                {normalizeMediaUrl(movie?.posterUrl) || posterProgress > 0 ? (
                                     <Image
-                                        src={posterFile ? URL.createObjectURL(posterFile) : (movie?.posterUrl || '')}
+                                        src={posterFile ? URL.createObjectURL(posterFile) : (normalizeMediaUrl(movie?.posterUrl) || '')}
                                         alt="Poster"
                                         fill
                                         className="object-cover"

@@ -1,247 +1,172 @@
-import { Injectable, Logger, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+/**
+ * ===== ADMIN SERVICE - LOGIC QUẢN TRỊ HỆ THỐNG =====
+ *
+ * AdminService cung cấp các công cụ quản trị cho admin:
+ *
+ * - getDiagnostics()   → Kiểm tra sức khỏe hệ thống (health check)
+ *   + Database (PostgreSQL): Test kết nối bằng SELECT 1
+ *   + Redis: Test kết nối qua URL
+ *   + S3/MinIO: Test kết nối bằng HeadBucket
+ *
+ * - getUsers()         → Danh sách user (delegate sang UsersService)
+ * - toggleUserStatus() → Vô hiệu hóa/kích hoạt user
+ *
+ * Mục đích:
+ * - Dashboard admin xem trạng thái hệ thống
+ * - Nhanh chóng phát hiện lỗi kết nối infrastructure
+ */
+
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from '../users/users.service';
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
-import * as bcrypt from 'bcrypt';
-import { UserRole } from '@prisma/client';
-import { assertStrongPassword, normalizeEmail } from '../common/utils/security';
+import Redis from 'ioredis';
 
 @Injectable()
 export class AdminService {
     private readonly logger = new Logger(AdminService.name);
+    private s3: S3Client;
+    private bucket: string;
 
     constructor(
-        private readonly prisma: PrismaService,
-        private readonly config: ConfigService,
-    ) { }
-
-    async getDiagnostics() {
-        const diagnostics: Record<string, unknown> = {
-            timestamp: new Date().toISOString(),
-            database: { status: 'unknown' },
-            redis: { status: 'unknown' },
-            storage: { status: 'unknown' },
-        };
-
-        // Check database
-        try {
-            await this.prisma.$queryRaw`SELECT 1`;
-            diagnostics.database = { status: 'connected' };
-        } catch (err) {
-            diagnostics.database = { status: 'error', message: String(err).slice(0, 200) };
-        }
-
-        // Check Redis
-        try {
-            const redisUrl = this.config.get<string>('REDIS_URL') || 'redis://localhost:6379';
-            const redis = new Redis(redisUrl);
-            const pong = await redis.ping();
-            await redis.quit();
-            diagnostics.redis = { status: pong === 'PONG' ? 'connected' : 'error' };
-        } catch (err) {
-            diagnostics.redis = { status: 'error', message: String(err).slice(0, 200) };
-        }
-
-        // Check S3/MinIO
-        try {
-            const s3Client = new S3Client({
-                endpoint: this.config.get<string>('S3_ENDPOINT'),
-                region: this.config.get<string>('S3_REGION') || 'us-east-1',
-                credentials: {
-                    accessKeyId: this.config.get<string>('S3_ACCESS_KEY') || '',
-                    secretAccessKey: this.config.get<string>('S3_SECRET_KEY') || '',
-                },
-                forcePathStyle: true,
-            });
-
-            await s3Client.send(
-                new HeadBucketCommand({
-                    Bucket: this.config.get<string>('S3_BUCKET') || 'netflat-media',
-                })
-            );
-            diagnostics.storage = { status: 'connected', bucket: this.config.get<string>('S3_BUCKET') };
-        } catch (err) {
-            diagnostics.storage = { status: 'error', message: String(err).slice(0, 200) };
-        }
-
-        return diagnostics;
+        private prisma: PrismaService,
+        private config: ConfigService,
+        private usersService: UsersService,
+    ) {
+        this.bucket = this.config.get<string>('S3_BUCKET') || 'netflat-media';
+        this.s3 = new S3Client({
+            endpoint: this.config.get<string>('S3_ENDPOINT') || 'http://localhost:9002',
+            region: this.config.get<string>('S3_REGION') || 'us-east-1',
+            credentials: {
+                accessKeyId: this.config.get<string>('S3_ACCESS_KEY') || 'minioadmin',
+                secretAccessKey: this.config.get<string>('S3_SECRET_KEY') || 'minioadmin',
+            },
+            forcePathStyle: true,
+        });
     }
 
     /**
-     * Get users with pagination and filtering
+     * KIỂM TRA SỨC KHỎE HỆ THỐNG (Diagnostics)
+     *
+     * Kiểm tra 3 thành phần infrastructure chính:
+     * 1. Database (PostgreSQL): Chạy "SELECT 1" → xác nhận kết nối
+     * 2. Redis: Kết nối qua URL, gọi PING → mong đợi "PONG"
+     * 3. S3/MinIO: Gọi HeadBucket → xác nhận bucket tồn tại
+     *
+     * Trả về: { database, redis, s3 } - mỗi cái có status + latency
+     * Status: "ok" (thành công) hoặc "error" (thất bại kèm message)
+     *
+     * Tất cả 3 check chạy SONG SONG (Promise.allSettled) để nhanh hơn.
+     * Promise.allSettled: Luôn trả kết quả tất cả, không dừng khi 1 cái lỗi.
      */
-    async getUsers(options: {
-        page?: number;
-        limit?: number;
-        search?: string;
-        role?: string;
-    }) {
-        const page = options.page || 1;
-        const limit = Math.min(options.limit || 10, 100);
-        const skip = (page - 1) * limit;
-
-        const where: any = {};
-
-        if (options.search) {
-            where.email = { contains: options.search, mode: 'insensitive' };
-        }
-
-        if (options.role && (options.role === 'admin' || options.role === 'viewer')) {
-            where.role = options.role;
-        }
-
-        const [users, total] = await Promise.all([
-            this.prisma.user.findMany({
-                where,
-                select: {
-                    id: true,
-                    email: true,
-                    role: true,
-                    isActive: true,
-                    disabledReason: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    _count: {
-                        select: {
-                            favorites: true,
-                            ratings: true,
-                        }
-                    }
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            this.prisma.user.count({ where }),
+    async getDiagnostics() {
+        // Chạy song song 3 health check
+        const [dbResult, redisResult, s3Result] = await Promise.allSettled([
+            this.checkDatabase(),
+            this.checkRedis(),
+            this.checkS3(),
         ]);
 
         return {
-            data: users.map((user: typeof users[number]) => ({
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                isActive: user.isActive,
-                disabledReason: user.disabledReason,
-                createdAt: user.createdAt,
-                lastLoginAt: user.updatedAt, // Using updatedAt as proxy
-                stats: {
-                    favorites: user._count.favorites,
-                    ratings: user._count.ratings,
-                }
-            })),
-            meta: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            }
+            database: dbResult.status === 'fulfilled' ? dbResult.value : {
+                status: 'error',
+                message: (dbResult as PromiseRejectedResult).reason?.message,
+            },
+            redis: redisResult.status === 'fulfilled' ? redisResult.value : {
+                status: 'error',
+                message: (redisResult as PromiseRejectedResult).reason?.message,
+            },
+            s3: s3Result.status === 'fulfilled' ? s3Result.value : {
+                status: 'error',
+                message: (s3Result as PromiseRejectedResult).reason?.message,
+            },
         };
     }
 
     /**
-     * Create a new user (admin only action)
+     * DANH SÁCH USER (Admin only)
+     * Delegate sang UsersService.findAll()
      */
-    async createUser(params: { email: string; password: string; role?: UserRole }) {
-        const email = normalizeEmail(params.email);
-        assertStrongPassword(params.password);
-
-        const existing = await this.prisma.user.findUnique({ where: { email } });
-        if (existing) {
-            throw new ConflictException({
-                code: 'EMAIL_ALREADY_EXISTS',
-                message: 'Email already registered',
-            });
-        }
-
-        const passwordHash = await bcrypt.hash(params.password, 10);
-        const user = await this.prisma.user.create({
-            data: {
-                email,
-                passwordHash,
-                role: params.role || UserRole.viewer,
-            },
-            select: {
-                id: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-
-        return user;
+    async getUsers(page = 1, limit = 20) {
+        return this.usersService.findAll(page, limit);
     }
 
     /**
-     * Update user fields (admin only action)
+     * VÔ HIỆU HÓA / KÍCH HOẠT USER (Admin only)
+     * Delegate sang UsersService.toggleUserStatus()
      */
-    async updateUser(params: { userId: string; email?: string; role?: UserRole; password?: string }) {
-        const { userId, email, role, password } = params;
+    async toggleUserStatus(userId: string, active: boolean) {
+        return this.usersService.toggleUserStatus(userId, active);
+    }
 
-        if (!email && !role && !password) {
-            throw new BadRequestException({
-                code: 'NO_FIELDS',
-                message: 'At least one field must be provided',
-            });
-        }
+    // ═══════════════════════════════════════════════
+    // HEALTH CHECK HELPERS
+    // ═══════════════════════════════════════════════
 
-        let normalizedEmail = email ? normalizeEmail(email) : undefined;
+    /**
+     * KIỂM TRA DATABASE (PostgreSQL)
+     *
+     * Thực hiện query đơn giản "SELECT 1" để xác nhận:
+     * - Kết nối database hoạt động
+     * - Prisma client OK
+     * - PostgreSQL đang chạy
+     *
+     * Đo latency (thời gian phản hồi) bằng performance.now()
+     */
+    private async checkDatabase(): Promise<{ status: string; latencyMs: number }> {
+        const start = performance.now();
+        await this.prisma.$queryRaw`SELECT 1`;
+        const latencyMs = Math.round(performance.now() - start);
+        return { status: 'ok', latencyMs };
+    }
 
-        if (normalizedEmail) {
-            const existing = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
-            if (existing && existing.id !== userId) {
-                throw new ConflictException({
-                    code: 'EMAIL_ALREADY_EXISTS',
-                    message: 'Email already registered',
-                });
+    /**
+     * KIỂM TRA REDIS
+     *
+     * Tạo kết nối Redis tạm, gọi PING, đợi PONG.
+     * Luôn đóng kết nối sau khi kiểm tra (finally).
+     * Có timeout 5 giây (lazyConnect + connectTimeout).
+     */
+    private async checkRedis(): Promise<{ status: string; latencyMs: number }> {
+        const redisUrl = this.config.get<string>('REDIS_URL') || 'redis://localhost:6379';
+        const start = performance.now();
+
+        // Tạo kết nối Redis tạm thời (lazyConnect: không kết nối ngay)
+        const redis = new Redis(redisUrl, {
+            lazyConnect: true,
+            connectTimeout: 5000,     // Timeout 5 giây
+            maxRetriesPerRequest: 0,  // Không retry (chỉ kiểm tra 1 lần)
+        });
+
+        try {
+            await redis.connect();          // Kết nối
+            const pong = await redis.ping(); // Gửi PING → mong đợi "PONG"
+            const latencyMs = Math.round(performance.now() - start);
+
+            if (pong !== 'PONG') {
+                throw new Error(`Unexpected Redis response: ${pong}`);
             }
+
+            return { status: 'ok', latencyMs };
+        } finally {
+            // LUÔN đóng kết nối Redis tạm (tránh rò rỉ kết nối)
+            try { redis.disconnect(); } catch { /* bỏ qua */ }
         }
-
-        const data: Record<string, unknown> = {};
-        if (normalizedEmail) data.email = normalizedEmail;
-        if (role) data.role = role;
-        if (password) {
-            assertStrongPassword(password);
-            data.passwordHash = await bcrypt.hash(password, 10);
-        }
-
-        const user = await this.prisma.user.update({
-            where: { id: userId },
-            data,
-            select: {
-                id: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-
-        if (password) {
-            await this.prisma.refreshToken.updateMany({
-                where: { userId, revoked: false },
-                data: { revoked: true },
-            });
-        }
-
-        return user;
     }
 
     /**
-     * Delete user (admin only action)
+     * KIỂM TRA S3/MINIO
+     *
+     * Gọi HeadBucket để xác nhận:
+     * - S3/MinIO đang chạy
+     * - Bucket tồn tại
+     * - Credential (access key) hợp lệ
      */
-    async deleteUser(userId: string) {
-        const existing = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!existing) {
-            throw new NotFoundException({
-                code: 'USER_NOT_FOUND',
-                message: 'User not found',
-            });
-        }
-
-        await this.prisma.user.delete({ where: { id: userId } });
-        return { id: userId };
+    private async checkS3(): Promise<{ status: string; latencyMs: number }> {
+        const start = performance.now();
+        await this.s3.send(new HeadBucketCommand({ Bucket: this.bucket }));
+        const latencyMs = Math.round(performance.now() - start);
+        return { status: 'ok', latencyMs };
     }
 }
-

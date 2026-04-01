@@ -6,8 +6,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-    title = 'Something went wrong',
-    message = 'We encountered an error loading this content.',
+    title = 'Đã xảy ra lỗi',
+    message = 'Có lỗi khi tải nội dung này.',
     onRetry,
     showRetry = true
 }: ErrorStateProps) {
@@ -32,7 +32,7 @@ export function ErrorState({
                     className="btn btn-primary"
                     style={{ padding: '0.75rem 2rem' }}
                 >
-                    🔄 Try Again
+                    🔄 Thử lại
                 </button>
             )}
         </div>
@@ -41,8 +41,8 @@ export function ErrorState({
 
 export function EmptyState({
     icon = '📭',
-    title = 'No content found',
-    message = 'There\'s nothing here yet.'
+    title = 'Không có nội dung',
+    message = 'Hiện chưa có dữ liệu.'
 }: {
     icon?: string;
     title?: string;

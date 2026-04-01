@@ -63,7 +63,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                     transition: 'all 0.2s'
                 }}
             >
-                ← Prev
+                ← Trước
             </button>
 
             {getPageNumbers().map((page, index) => (
@@ -107,7 +107,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                     transition: 'all 0.2s'
                 }}
             >
-                Next →
+                Tiếp →
             </button>
         </div>
     );

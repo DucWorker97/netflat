@@ -98,7 +98,7 @@ export function HeroBanner({ movie, isLoading }: HeroBannerProps) {
                             gap: '0.5rem'
                         }}
                     >
-                        ▶ Play
+                        ▶ Xem ngay
                     </Link>
                     {movie.releaseYear && (
                         <span style={{

@@ -30,9 +30,9 @@ const SettingsIcon = () => (
 );
 
 const tabs = [
-    { key: 'metadata' as const, label: 'Metadata', Icon: FileTextIcon },
-    { key: 'media' as const, label: 'Media & Assets', Icon: FilmIcon },
-    { key: 'settings' as const, label: 'Settings', Icon: SettingsIcon },
+    { key: 'metadata' as const, label: 'Thông tin', Icon: FileTextIcon },
+    { key: 'media' as const, label: 'Media & Tài nguyên', Icon: FilmIcon },
+    { key: 'settings' as const, label: 'Cài đặt', Icon: SettingsIcon },
 ];
 
 export default function EditMoviePage({ params }: EditMoviePageProps) {
@@ -58,7 +58,7 @@ export default function EditMoviePage({ params }: EditMoviePageProps) {
         <div className="animate-fade-in" style={{ maxWidth: '56rem', margin: '0 auto', padding: '2rem 1rem' }}>
             {/* Breadcrumb */}
             <div className="breadcrumb">
-                <Link href={localePath('/movies')}>Movies</Link>
+                <Link href={localePath('/movies')}>Phim</Link>
                 <span className="separator">/</span>
                 <span className="current">{movie.title}</span>
             </div>

@@ -32,7 +32,7 @@ export class FavoritesController {
         const pageNum = parseInt(page || '1', 10);
         const limitNum = parseInt(limit || '20', 10);
 
-        const result = await this.favoritesService.findAll(user.id, pageNum, limitNum);
+        const result = await this.favoritesService.getFavorites(user.id, pageNum, limitNum);
 
         return {
             data: result.data,
@@ -53,7 +53,7 @@ export class FavoritesController {
         @CurrentUser() user: User,
         @Param('movieId', ParseUUIDPipe) movieId?: string,
     ) {
-        const favorite = await this.favoritesService.add(user.id, movieId!);
+        const favorite = await this.favoritesService.addFavorite(user.id, movieId!);
         return { data: favorite };
     }
 
@@ -62,7 +62,7 @@ export class FavoritesController {
         @CurrentUser() user: User,
         @Param('movieId', ParseUUIDPipe) movieId?: string,
     ) {
-        const result = await this.favoritesService.remove(user.id, movieId!);
+        const result = await this.favoritesService.removeFavorite(user.id, movieId!);
         return { data: result };
     }
 }

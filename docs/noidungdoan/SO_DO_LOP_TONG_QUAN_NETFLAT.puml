@@ -1,0 +1,84 @@
+@startuml
+title ERD tong quan Netflat
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+
+entity "Users\n(Nguoi dung)" as Users {
+  * id : UUID <<PK>>
+  --
+  email : String <<UQ>>
+  password : String
+  fullName : String
+  avatar : String
+  createdAt : DateTime
+  role : Enum(USER, ADMIN)
+}
+
+entity "Movies\n(Phim)" as Movies {
+  * id : UUID <<PK>>
+  --
+  title : String
+  description : Text
+  releaseYear : Int
+  posterUrl : String
+  videoUrl : String
+  duration : Int
+  createdAt : DateTime
+  status : Enum(PENDING, PROCESSING, READY, ERROR)
+}
+
+entity "Genres\n(The loai)" as Genres {
+  * id : UUID <<PK>>
+  --
+  name : String <<UQ>>
+}
+
+entity "Actors\n(Dien vien)" as Actors {
+  * id : UUID <<PK>>
+  --
+  name : String
+}
+
+entity "Favorites\n(Yeu thich)" as Favorites {
+  * id : UUID <<PK>>
+  --
+  userId : UUID <<FK>>
+  movieId : UUID <<FK>>
+  createdAt : DateTime
+}
+
+entity "Reviews\n(Danh gia)" as Reviews {
+  * id : UUID <<PK>>
+  --
+  userId : UUID <<FK>>
+  movieId : UUID <<FK>>
+  rating : Int
+  comment : Text
+  createdAt : DateTime
+}
+
+entity "Movie_Genres\n(Bang trung gian)" as MovieGenres {
+  * movieId : UUID <<PK, FK>>
+  * genreId : UUID <<PK, FK>>
+}
+
+entity "Movie_Actors\n(Bang trung gian)" as MovieActors {
+  * movieId : UUID <<PK, FK>>
+  * actorId : UUID <<PK, FK>>
+}
+
+Users  ||--o{ Favorites
+Movies ||--o{ Favorites
+
+Users  ||--o{ Reviews
+Movies ||--o{ Reviews
+
+Movies ||--o{ MovieGenres
+Genres ||--o{ MovieGenres
+
+Movies ||--o{ MovieActors
+Actors ||--o{ MovieActors
+
+@enduml

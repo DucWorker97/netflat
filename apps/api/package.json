@@ -13,6 +13,9 @@
         "db:generate": "prisma generate",
         "db:migrate": "prisma migrate dev",
         "db:seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts",
+        "db:seed:test-users": "ts-node scripts/seed-test-users.ts",
+        "db:migrate:poster-url:dry": "ts-node scripts/migrate-poster-urls.ts --dry-run",
+        "db:migrate:poster-url": "ts-node scripts/migrate-poster-urls.ts",
         "import:tmdb": "ts-node scripts/import-tmdb.ts"
     },
     "dependencies": {

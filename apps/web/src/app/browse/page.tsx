@@ -92,15 +92,15 @@ export default function BrowsePage() {
             {/* Navbar */}
             <nav className={styles.navbar}>
                 <Link href="/" className={styles.logo}>NETFLAT</Link>
-                <Link href="/" className={styles.backLink}>← Home</Link>
+                <Link href="/" className={styles.backLink}>← Trang chủ</Link>
             </nav>
 
             <main className={styles.main}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <h1 className={styles.title}>Browse by Genre</h1>
+                    <h1 className={styles.title}>Duyệt theo thể loại</h1>
                     <p className={styles.subtitle}>
-                        {loadingGenres ? 'Loading genres...' : `Explore movies across ${genres.length} genres`}
+                        {loadingGenres ? 'Đang tải thể loại...' : `Khám phá phim trong ${genres.length} thể loại`}
                     </p>
                 </div>
 
@@ -122,33 +122,33 @@ export default function BrowsePage() {
                 {selectedGenre && (
                     <div className={styles.moviesSection}>
                         <div className={styles.sectionHeader}>
-                            <h2>{selectedGenre.name} Movies</h2>
+                            <h2>Phim thể loại {selectedGenre.name}</h2>
                             <div className={styles.sortOptions}>
                                 <button
                                     className={`${styles.sortBtn} ${sortBy === 'popular' ? styles.sortActive : ''}`}
                                     onClick={() => setSortBy('popular')}
                                 >
-                                    Popular
+                                    Phổ biến
                                 </button>
                                 <button
                                     className={`${styles.sortBtn} ${sortBy === 'recent' ? styles.sortActive : ''}`}
                                     onClick={() => setSortBy('recent')}
                                 >
-                                    Recent
+                                    Mới
                                 </button>
                                 <button
                                     className={`${styles.sortBtn} ${sortBy === 'rating' ? styles.sortActive : ''}`}
                                     onClick={() => setSortBy('rating')}
                                 >
-                                    Top Rated
+                                    Điểm cao
                                 </button>
                             </div>
                         </div>
 
                         {loadingMovies ? (
-                            <p style={{ color: '#888', textAlign: 'center', padding: '2rem' }}>Loading movies...</p>
+                            <p style={{ color: '#888', textAlign: 'center', padding: '2rem' }}>Đang tải phim...</p>
                         ) : movies.length === 0 ? (
-                            <p style={{ color: '#888', textAlign: 'center', padding: '2rem' }}>No movies in this genre yet.</p>
+                            <p style={{ color: '#888', textAlign: 'center', padding: '2rem' }}>Thể loại này chưa có phim.</p>
                         ) : (
                             <div className={styles.moviesGrid}>
                                 {movies.map((movie) => (
@@ -173,7 +173,7 @@ export default function BrowsePage() {
                 {/* Featured Genres (when nothing selected) */}
                 {!selectedGenre && genres.length > 0 && (
                     <div className={styles.featuredSection}>
-                        <h2>🔥 Trending Genres</h2>
+                        <h2>🔥 Thể loại nổi bật</h2>
                         <div className={styles.trendingGenres}>
                             {genres.slice(0, 4).map((genre) => (
                                 <div
@@ -186,7 +186,7 @@ export default function BrowsePage() {
                                         className={styles.exploreBtn}
                                         onClick={() => setSelectedGenre(genre)}
                                     >
-                                        Explore →
+                                        Khám phá →
                                     </button>
                                 </div>
                             ))}

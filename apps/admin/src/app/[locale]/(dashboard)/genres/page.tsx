@@ -22,7 +22,7 @@ export default function GenresPage() {
             await createGenre.mutateAsync({ name: newGenreName.trim() });
             setNewGenreName('');
         } catch (err) {
-            console.error('Failed to create genre:', err);
+            console.error('Không thể tạo thể loại:', err);
         }
     };
 
@@ -34,7 +34,7 @@ export default function GenresPage() {
             setEditingId(null);
             setEditingName('');
         } catch (err) {
-            console.error('Failed to update genre:', err);
+            console.error('Không thể cập nhật thể loại:', err);
         }
     };
 
@@ -43,7 +43,7 @@ export default function GenresPage() {
             await deleteGenre.mutateAsync(id);
             setShowDeleteConfirm(null);
         } catch (err) {
-            console.error('Failed to delete genre:', err);
+            console.error('Không thể xóa thể loại:', err);
         }
     };
 
@@ -55,7 +55,7 @@ export default function GenresPage() {
     if (isLoading) {
         return (
             <div>
-                <h1 style={{ marginBottom: '2rem' }}>Genres</h1>
+                <h1 style={{ marginBottom: '2rem' }}>Thể loại</h1>
                 <div className="skeleton" style={{ height: 300 }} />
             </div>
         );
@@ -64,15 +64,15 @@ export default function GenresPage() {
     if (error) {
         return (
             <div>
-                <h1 style={{ marginBottom: '2rem' }}>Genres</h1>
-                <div style={{ color: 'var(--danger)' }}>Failed to load genres</div>
+                <h1 style={{ marginBottom: '2rem' }}>Thể loại</h1>
+                <div style={{ color: 'var(--danger)' }}>Không thể tải danh sách thể loại</div>
             </div>
         );
     }
 
     return (
         <div>
-            <h1 style={{ marginBottom: '2rem' }}>Genres</h1>
+            <h1 style={{ marginBottom: '2rem' }}>Thể loại</h1>
 
             {/* Add New Genre Form */}
             <form onSubmit={handleCreate} style={{
@@ -87,7 +87,7 @@ export default function GenresPage() {
                     type="text"
                     value={newGenreName}
                     onChange={(e) => setNewGenreName(e.target.value)}
-                    placeholder="New genre name..."
+                    placeholder="Tên thể loại mới..."
                     className="input"
                     style={{ flex: 1 }}
                 />
@@ -96,7 +96,7 @@ export default function GenresPage() {
                     className="btn btn-primary"
                     disabled={!newGenreName.trim() || createGenre.isPending}
                 >
-                    {createGenre.isPending ? 'Adding...' : '+ Add Genre'}
+                    {createGenre.isPending ? 'Đang thêm...' : '+ Thêm thể loại'}
                 </button>
             </form>
 
@@ -116,9 +116,9 @@ export default function GenresPage() {
                     color: 'var(--text-secondary)',
                     fontSize: '0.875rem'
                 }}>
-                    <div>NAME</div>
-                    <div>MOVIES</div>
-                    <div>ACTIONS</div>
+                    <div>TÊN</div>
+                    <div>SỐ PHIM</div>
+                    <div>THAO TÁC</div>
                 </div>
 
                 {genres?.map((genre) => (
@@ -153,14 +153,14 @@ export default function GenresPage() {
                                     style={{ padding: '0.5rem 1rem' }}
                                     disabled={updateGenre.isPending}
                                 >
-                                    Save
+                                    Lưu
                                 </button>
                                 <button
                                     onClick={() => setEditingId(null)}
                                     className="btn btn-secondary"
                                     style={{ padding: '0.5rem 1rem' }}
                                 >
-                                    Cancel
+                                    Hủy
                                 </button>
                             </div>
                         ) : (
@@ -183,7 +183,7 @@ export default function GenresPage() {
                                     className="btn btn-secondary"
                                     style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                                 >
-                                    Edit
+                                    Sửa
                                 </button>
                                 {showDeleteConfirm === genre.id ? (
                                     <>
@@ -198,14 +198,14 @@ export default function GenresPage() {
                                             }}
                                             disabled={deleteGenre.isPending}
                                         >
-                                            Confirm
+                                            Xác nhận
                                         </button>
                                         <button
                                             onClick={() => setShowDeleteConfirm(null)}
                                             className="btn btn-secondary"
                                             style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
                                         >
-                                            Cancel
+                                            Hủy
                                         </button>
                                     </>
                                 ) : (
@@ -220,7 +220,7 @@ export default function GenresPage() {
                                             border: '1px solid var(--danger)'
                                         }}
                                     >
-                                        Delete
+                                        Xóa
                                     </button>
                                 )}
                             </div>
@@ -234,7 +234,7 @@ export default function GenresPage() {
                         textAlign: 'center',
                         color: 'var(--text-secondary)'
                     }}>
-                        No genres yet. Create one above!
+                        Chưa có thể loại nào. Hãy tạo một thể loại ở trên!
                     </div>
                 )}
             </div>

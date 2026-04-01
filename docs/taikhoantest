@@ -1,0 +1,10 @@
+admin@netflat.local / admin123
+moderator@netflat.local / moderator123
+qa.admin@netflat.local / qaadmin123
+viewer@netflat.local / viewer123
+viewer1@netflat.local / viewer123
+viewer2@netflat.local / viewer123
+viewer3@netflat.local / viewer123
+viewer4@netflat.local / viewer123
+qa.viewer@netflat.local / qaviewer123
+loadtest.viewer@netflat.local / viewer123

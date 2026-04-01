@@ -55,23 +55,23 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
             await deleteMovie.mutateAsync(movie.id);
             router.push(localePath('/movies'));
         } catch (error) {
-            console.error('Failed to delete movie:', error);
+            console.error('Không thể xóa phim:', error);
             setIsDeleting(false);
         }
     };
 
     const infoItems = [
-        { Icon: ShieldIcon, label: 'Status', value: movie.movieStatus || 'Draft', style: getStatusColor(movie.movieStatus) },
-        { Icon: ZapIcon, label: 'Encode Status', value: movie.encodeStatus || 'Pending', style: getStatusColor(movie.encodeStatus) },
-        { Icon: CalendarIcon, label: 'Created', value: movie.createdAt ? new Date(movie.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—', style: getStatusColor('') },
-        { Icon: ClockIcon, label: 'Last Updated', value: movie.updatedAt ? new Date(movie.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—', style: getStatusColor('') },
+        { Icon: ShieldIcon, label: 'Trạng thái phát hành', value: movie.movieStatus === 'published' ? 'Đã xuất bản' : 'Bản nháp', style: getStatusColor(movie.movieStatus) },
+        { Icon: ZapIcon, label: 'Trạng thái mã hóa', value: movie.encodeStatus === 'ready' ? 'Sẵn sàng' : movie.encodeStatus === 'processing' ? 'Đang xử lý' : movie.encodeStatus === 'failed' ? 'Thất bại' : 'Chờ xử lý', style: getStatusColor(movie.encodeStatus) },
+        { Icon: CalendarIcon, label: 'Ngày tạo', value: movie.createdAt ? new Date(movie.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short', day: 'numeric' }) : '—', style: getStatusColor('') },
+        { Icon: ClockIcon, label: 'Cập nhật lần cuối', value: movie.updatedAt ? new Date(movie.updatedAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short', day: 'numeric' }) : '—', style: getStatusColor('') },
     ];
 
     return (
         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* General Settings */}
             <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 className="section-title">General Settings</h3>
+                <h3 className="section-title">Cài đặt chung</h3>
                 <div className="grid-2">
                     {infoItems.map(item => (
                         <div key={item.label} className="status-chip" style={Object.fromEntries(item.style.split(';').filter(Boolean).map(s => { const [k, v] = s.split(':').map(x => x.trim()); return [k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v]; }))}>
@@ -89,10 +89,10 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
             <div className="glass-card danger-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="flex items-center gap-2">
                     <AlertIcon />
-                    <h3 className="danger-title">Danger Zone</h3>
+                    <h3 className="danger-title">Khu vực nguy hiểm</h3>
                 </div>
                 <p className="text-sm text-muted">
-                    Once you delete this movie, there is no going back. All media files, subtitles, and metadata will be permanently removed.
+                    Khi xóa phim này, bạn sẽ không thể hoàn tác. Toàn bộ tệp media, phụ đề và metadata sẽ bị xóa vĩnh viễn.
                 </p>
                 {!showConfirm ? (
                     <button
@@ -102,7 +102,7 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
                         onMouseOver={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
                         onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
                     >
-                        <TrashIcon /> Delete Movie
+                        <TrashIcon /> Xóa phim
                     </button>
                 ) : (
                     <div className="flex items-center gap-3">
@@ -112,7 +112,7 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
                             className="btn btn-ghost"
                             style={{ borderRadius: '8px' }}
                         >
-                            Cancel
+                            Hủy
                         </button>
                         <button
                             onClick={handleDelete}
@@ -121,9 +121,9 @@ export default function SettingsTab({ movie }: SettingsTabProps) {
                             style={{ padding: '10px 20px', borderRadius: '8px', background: 'var(--error)', color: '#fff', border: 'none', fontSize: '0.875rem', fontWeight: 500, cursor: isDeleting ? 'not-allowed' : 'pointer', opacity: isDeleting ? 0.6 : 1, transition: 'all 0.2s' }}
                         >
                             {isDeleting ? (
-                                <><span className="spinner spinner-sm" style={{ borderTopColor: '#fff' }}></span> Deleting...</>
+                                <><span className="spinner spinner-sm" style={{ borderTopColor: '#fff' }}></span> Đang xóa...</>
                             ) : (
-                                <><TrashIcon /> Yes, Delete Permanently</>
+                                <><TrashIcon /> Xác nhận xóa vĩnh viễn</>
                             )}
                         </button>
                     </div>
