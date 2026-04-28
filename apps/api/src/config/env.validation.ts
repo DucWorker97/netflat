@@ -28,6 +28,18 @@ export function validateEnvironment(config: EnvRecord): EnvRecord {
         }
     }
 
+    const paymentProvider = (env.PAYMENT_PROVIDER || 'mock').trim();
+    if (!['mock', 'vnpay', 'stripe'].includes(paymentProvider)) {
+        errors.push('PAYMENT_PROVIDER must be one of: mock, vnpay, stripe');
+    }
+
+    const nodeEnv = (env.NODE_ENV || 'development').trim();
+    const strictMockWebhookSecret = paymentProvider === 'mock'
+        && (nodeEnv === 'production' || nodeEnv === 'staging');
+    if (strictMockWebhookSecret && !env.MOCK_WEBHOOK_SECRET?.trim()) {
+        errors.push('MOCK_WEBHOOK_SECRET is required when PAYMENT_PROVIDER=mock in production/staging');
+    }
+
     for (const [key, fallback] of DURATION_KEYS) {
         const value = env[key] || fallback;
         try {

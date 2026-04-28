@@ -39,6 +39,12 @@ export function Navbar() {
                     >
                         Phim
                     </Link>
+                    <Link
+                        href="/pricing"
+                        style={{ color: isActive('/pricing') ? 'var(--text-primary)' : undefined }}
+                    >
+                        Gói cước
+                    </Link>
                     {isAuthenticated && (
                         <Link
                             href="/favorites"
@@ -53,6 +59,14 @@ export function Navbar() {
                             style={{ color: isActive('/history') ? 'var(--text-primary)' : undefined }}
                         >
                             Lịch sử
+                        </Link>
+                    )}
+                    {isAuthenticated && (
+                        <Link
+                            href="/profile/billing"
+                            style={{ color: isActive('/profile/billing') ? 'var(--text-primary)' : undefined }}
+                        >
+                            Thanh toán
                         </Link>
                     )}
                 </div>

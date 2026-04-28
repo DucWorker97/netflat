@@ -118,6 +118,8 @@ interface PaginationMeta {
     limit: number;
     total: number;
     totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
 }
 
 // Genres
@@ -362,6 +364,165 @@ export function useChangePassword() {
     return useMutation({
         mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
             await api.post('/api/users/change-password', data);
+        },
+    });
+}
+
+// Subscriptions & Billing
+export interface SubscriptionPlan {
+    id: string;
+    name: string;
+    displayName: string;
+    description: string | null;
+    maxMoviesPerMonth: number;
+    maxQualityResolution: string;
+    maxFavorites: number;
+    maxDevices: number;
+    showAds: boolean;
+    monthlyPrice: number;
+    annualPrice: number | null;
+    isActive: boolean;
+}
+
+export interface UserSubscription {
+    id: string;
+    status: 'active' | 'canceled' | 'expired';
+    startDate: string;
+    endDate: string;
+    autoRenew: boolean;
+    plan: SubscriptionPlan;
+    usage?: {
+        year: number;
+        month: number;
+        moviesWatched: number;
+    };
+}
+
+export interface PaymentRecord {
+    id: string;
+    amount: number;
+    currency: string;
+    status: 'pending' | 'completed' | 'failed' | 'refunded';
+    paymentMethod: string;
+    createdAt: string;
+    transactionId: string | null;
+    subscription?: {
+        plan?: {
+            name: string;
+            displayName: string;
+        };
+    };
+}
+
+export function useSubscriptionPlans() {
+    return useQuery({
+        queryKey: ['subscriptions', 'plans'],
+        queryFn: async () => {
+            const res = await api.get<{ data: SubscriptionPlan[] }>('/api/subscriptions/plans');
+            return res.data;
+        },
+    });
+}
+
+export function useMySubscription(enabled = true) {
+    return useQuery({
+        queryKey: ['subscriptions', 'me'],
+        queryFn: async () => {
+            const res = await api.get<{ data: UserSubscription }>('/api/subscriptions/me');
+            return res.data;
+        },
+        enabled,
+    });
+}
+
+export function useUpgradeSubscription() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: { planName: string; billingCycle: 'monthly' | 'annual' }) => {
+            const res = await api.post<{ data: UserSubscription }>('/api/subscriptions/upgrade', payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+        },
+    });
+}
+
+export function useCreateCheckout() {
+    return useMutation({
+        mutationFn: async (payload: { planName: string; billingCycle: 'monthly' | 'annual' }) => {
+            const res = await api.post<{
+                data: {
+                    paymentId: string;
+                    amount: number;
+                    currency: string;
+                    status: 'pending' | 'completed' | 'failed' | 'refunded';
+                    checkoutUrl: string;
+                };
+            }>('/api/payments/checkout', payload);
+            return res.data;
+        },
+    });
+}
+
+export function useCompleteMockPayment() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: {
+            paymentId: string;
+            planName?: string;
+            billingCycle?: 'monthly' | 'annual';
+        }) => {
+            const res = await api.post<{ data: PaymentRecord }>('/api/payments/mock-complete', payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['payments'] });
+            queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+        },
+    });
+}
+
+export function useMockPaymentWebhook() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (payload: {
+            paymentId: string;
+            planName: string;
+            billingCycle: 'monthly' | 'annual';
+        }) => {
+            const res = await api.post<{ data: PaymentRecord }>('/api/payments/mock-webhook', payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['payments'] });
+            queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+        },
+    });
+}
+
+export function useBillingHistory(page = 1, limit = 20, enabled = true) {
+    return useQuery({
+        queryKey: ['payments', 'history', page, limit],
+        queryFn: async () => {
+            const res = await api.get<{ data: PaymentRecord[]; meta: PaginationMeta }>(
+                `/api/payments/history?page=${page}&limit=${limit}`,
+            );
+            return res;
+        },
+        enabled,
+    });
+}
+
+export function useCancelSubscription() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const res = await api.post<{ data: UserSubscription }>('/api/subscriptions/cancel');
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
         },
     });
 }

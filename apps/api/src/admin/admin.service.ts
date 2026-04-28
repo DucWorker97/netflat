@@ -16,8 +16,9 @@
  * - Nhanh chóng phát hiện lỗi kết nối infrastructure
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
@@ -98,6 +99,222 @@ export class AdminService {
      */
     async toggleUserStatus(userId: string, active: boolean) {
         return this.usersService.toggleUserStatus(userId, active);
+    }
+
+    async getBillingStats() {
+        const [totalRevenue, completedPayments, recentPayments, subscriptionCounts] = await Promise.all([
+            this.prisma.payment.aggregate({
+                where: { status: 'completed' },
+                _sum: { amount: true },
+            }),
+            this.prisma.payment.findMany({
+                where: { status: 'completed' },
+                include: {
+                    subscription: {
+                        include: { plan: true },
+                    },
+                },
+            }),
+            this.prisma.payment.findMany({
+                where: { status: 'completed' },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            displayName: true,
+                        },
+                    },
+                    subscription: {
+                        include: { plan: true },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 10,
+            }),
+            this.prisma.subscription.groupBy({
+                by: ['planId', 'status'],
+                _count: { id: true },
+            }),
+        ]);
+
+        const planIds = [...new Set(subscriptionCounts.map((item) => item.planId))];
+        const plans = await this.prisma.subscriptionPlan.findMany({
+            where: { id: { in: planIds } },
+        });
+        const planById = new Map(plans.map((plan) => [plan.id, plan]));
+
+        const revenueByPlan = completedPayments.reduce<Record<string, {
+            planName: string;
+            displayName: string;
+            amount: number;
+            payments: number;
+        }>>((acc, payment) => {
+            const plan = payment.subscription.plan;
+            acc[plan.name] ??= {
+                planName: plan.name,
+                displayName: plan.displayName,
+                amount: 0,
+                payments: 0,
+            };
+            acc[plan.name].amount += payment.amount;
+            acc[plan.name].payments += 1;
+            return acc;
+        }, {});
+
+        return {
+            totalRevenue: totalRevenue._sum.amount ?? 0,
+            revenueByPlan: Object.values(revenueByPlan),
+            subscriptionCounts: subscriptionCounts.map((item) => {
+                const plan = planById.get(item.planId);
+                return {
+                    planId: item.planId,
+                    planName: plan?.name ?? 'unknown',
+                    displayName: plan?.displayName ?? 'Unknown',
+                    status: item.status,
+                    count: item._count.id,
+                };
+            }),
+            recentPayments,
+        };
+    }
+
+    async getSubscriptions(params: {
+        page?: number;
+        limit?: number;
+        planName?: string;
+        status?: string;
+    }) {
+        const page = Math.max(1, params.page || 1);
+        const limit = Math.min(100, Math.max(1, params.limit || 20));
+        const where: Prisma.SubscriptionWhereInput = {};
+
+        if (params.status) {
+            if (!Object.values(SubscriptionStatus).includes(params.status as SubscriptionStatus)) {
+                throw new BadRequestException({
+                    code: 'INVALID_SUBSCRIPTION_STATUS',
+                    message: 'Invalid subscription status',
+                });
+            }
+            where.status = params.status as SubscriptionStatus;
+        }
+
+        if (params.planName) {
+            where.plan = { name: params.planName };
+        }
+
+        const [items, total] = await Promise.all([
+            this.prisma.subscription.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            displayName: true,
+                            isActive: true,
+                        },
+                    },
+                    plan: true,
+                },
+                orderBy: { updatedAt: 'desc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            this.prisma.subscription.count({ where }),
+        ]);
+
+        return {
+            data: items,
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+                hasNext: page * limit < total,
+                hasPrev: page > 1,
+            },
+        };
+    }
+
+    async overrideUserPlan(userId: string, planName: string, reason: string) {
+        const trimmedReason = reason?.trim();
+        if (!trimmedReason) {
+            throw new BadRequestException({
+                code: 'OVERRIDE_REASON_REQUIRED',
+                message: 'Override reason is required',
+            });
+        }
+
+        const [user, plan] = await Promise.all([
+            this.prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    id: true,
+                    email: true,
+                    displayName: true,
+                },
+            }),
+            this.prisma.subscriptionPlan.findFirst({
+                where: {
+                    name: planName,
+                    isActive: true,
+                },
+            }),
+        ]);
+
+        if (!user) {
+            throw new NotFoundException({
+                code: 'USER_NOT_FOUND',
+                message: 'User not found',
+            });
+        }
+
+        if (!plan) {
+            throw new NotFoundException({
+                code: 'PLAN_NOT_FOUND',
+                message: 'Subscription plan not found',
+            });
+        }
+
+        const now = new Date();
+        const endDate = new Date(now);
+        endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
+
+        const subscription = await this.prisma.subscription.upsert({
+            where: { userId },
+            create: {
+                userId,
+                planId: plan.id,
+                status: SubscriptionStatus.active,
+                startDate: now,
+                endDate,
+                autoRenew: plan.name === 'free',
+            },
+            update: {
+                planId: plan.id,
+                status: SubscriptionStatus.active,
+                startDate: now,
+                endDate,
+                autoRenew: plan.name === 'free',
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        displayName: true,
+                    },
+                },
+                plan: true,
+            },
+        });
+
+        this.logger.log(
+            `Admin override plan for ${user.email}: ${plan.name}. Reason: ${trimmedReason}`,
+        );
+
+        return subscription;
     }
 
     // ═══════════════════════════════════════════════

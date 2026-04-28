@@ -18,9 +18,11 @@ import { MoviesController } from './movies.controller';
 import { MoviesService } from './movies.service';
 
 import { UploadModule } from '../upload/upload.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { UsageModule } from '../usage/usage.module';
 
 @Module({
-    imports: [UploadModule],           // Import UploadModule để dùng UploadService
+    imports: [UploadModule, SubscriptionsModule, UsageModule], // Import dependencies for upload + subscription gating
     controllers: [MoviesController],   // Đăng ký controller xử lý route
     providers: [MoviesService],        // Đăng ký service logic nghiệp vụ
     exports: [MoviesService],          // Xuất cho module khác inject

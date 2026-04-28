@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useProfile, useUpdateProfile, useChangePassword } from '@/lib/queries';
 import { PASSWORD_REQUIREMENTS_HINT, getPasswordValidationError } from '@/lib/security';
@@ -124,6 +125,22 @@ export default function ProfilePage() {
                     </div>
                 </div>
             )}
+
+            <div className={styles.section}>
+                <div className={styles.billingHint}>
+                    <div>
+                        <h2 className={styles.sectionTitle} style={{ marginBottom: '0.25rem', borderBottom: 'none', paddingBottom: 0 }}>
+                            Gói cước và thanh toán
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                            Quản lý gói hiện tại và lịch sử thanh toán của bạn.
+                        </p>
+                    </div>
+                    <Link href="/profile/billing" className="btn btn-secondary">
+                        Mở trang thanh toán
+                    </Link>
+                </div>
+            </div>
 
             <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>Thông tin hồ sơ</h2>

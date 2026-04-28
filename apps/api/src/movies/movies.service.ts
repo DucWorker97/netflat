@@ -29,6 +29,8 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { ListMoviesDto } from './dto/list-movies.dto';
 import { normalizeS3AssetUrl } from '../common/utils/storage-url';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
+import { UsageService } from '../usage/usage.service';
 
 /**
  * Interface káº¿t quáº£ phĂ¢n trang.
@@ -56,6 +58,8 @@ export class MoviesService {
     constructor(
         private prisma: PrismaService,
         private configService: ConfigService,
+        private subscriptionsService: SubscriptionsService,
+        private usageService: UsageService,
 
     ) {
         // Äá»c cáº¥u hĂ¬nh S3/MinIO tá»« biáº¿n mĂ´i trÆ°á»ng
@@ -374,9 +378,27 @@ export class MoviesService {
             });
         }
 
+        const subscription = await this.subscriptionsService.getActiveSubscription(user.id);
+        const allowed = await this.usageService.canWatchMovie(
+            user.id,
+            subscription.plan.maxMoviesPerMonth,
+        );
+
+        if (!allowed) {
+            throw new ForbiddenException({
+                code: 'MONTHLY_LIMIT_EXCEEDED',
+                message: 'Monthly watch limit exceeded for your current plan',
+            });
+        }
+
         // Náº¿u Ä‘Ă£ cĂ³ playbackUrl trong DB â†’ tráº£ luĂ´n
         if (movie.playbackUrl) {
-            return { playbackUrl: movie.playbackUrl, qualityOptions: [] };
+            await this.usageService.incrementMoviesWatched(user.id);
+            return {
+                playbackUrl: movie.playbackUrl,
+                qualityOptions: [],
+                plan: subscription.plan.name,
+            };
         }
 
         // Táº¡o URL streaming dá»±a trĂªn quy Æ°á»›c lÆ°u trá»¯ HLS trĂªn S3
@@ -392,7 +414,27 @@ export class MoviesService {
             { name: '720p', url: `${s3PublicBaseUrl}/hls/${id}/v1/prog_index.m3u8` },
         ];
 
-        return { playbackUrl, qualityOptions };
+        const maxQuality = subscription.plan.maxQualityResolution.toLowerCase();
+        const restrictedQualityOptions = qualityOptions.filter((q) => {
+            if (maxQuality === '480p') {
+                return q.name === '480p';
+            }
+
+            if (maxQuality === '720p') {
+                return q.name === '480p' || q.name === '720p';
+            }
+
+            return true;
+        });
+
+        await this.usageService.incrementMoviesWatched(user.id);
+
+        return {
+            playbackUrl,
+            qualityOptions: restrictedQualityOptions,
+            plan: subscription.plan.name,
+            maxQualityResolution: subscription.plan.maxQualityResolution,
+        };
     }
 
     /**
@@ -600,5 +642,4 @@ export class MoviesService {
         return maybeError.name === 'NoSuchBucket' || maybeError.Code === 'NoSuchBucket' || maybeError.code === 'NoSuchBucket';
     }
 }
-
 

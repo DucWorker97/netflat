@@ -41,6 +41,92 @@ async function seedUsers(users: TestUserSeed[]): Promise<void> {
     }
 }
 
+async function seedSubscriptionPlans(): Promise<void> {
+    const plans = [
+        {
+            name: 'free',
+            displayName: 'Free',
+            description: 'Starter plan for demo users',
+            maxMoviesPerMonth: 5,
+            maxQualityResolution: '480p',
+            maxFavorites: 10,
+            maxDevices: 1,
+            showAds: true,
+            monthlyPrice: 0,
+            annualPrice: 0,
+            isActive: true,
+        },
+        {
+            name: 'pro',
+            displayName: 'Pro',
+            description: 'No ads, better quality, more devices',
+            maxMoviesPerMonth: 9999,
+            maxQualityResolution: '1080p',
+            maxFavorites: 100,
+            maxDevices: 2,
+            showAds: false,
+            monthlyPrice: 139000,
+            annualPrice: 1390000,
+            isActive: true,
+        },
+        {
+            name: 'premium',
+            displayName: 'Premium',
+            description: 'Best quality and family usage',
+            maxMoviesPerMonth: 9999,
+            maxQualityResolution: '4K',
+            maxFavorites: 200,
+            maxDevices: 4,
+            showAds: false,
+            monthlyPrice: 299000,
+            annualPrice: 2990000,
+            isActive: true,
+        },
+    ];
+
+    for (const plan of plans) {
+        await prisma.subscriptionPlan.upsert({
+            where: { name: plan.name },
+            update: plan,
+            create: plan,
+        });
+    }
+}
+
+async function seedDefaultSubscriptions(): Promise<void> {
+    const freePlan = await prisma.subscriptionPlan.findUnique({
+        where: { name: 'free' },
+        select: { id: true },
+    });
+
+    if (!freePlan) {
+        return;
+    }
+
+    const users = await prisma.user.findMany({
+        select: { id: true },
+    });
+
+    const now = new Date();
+    const nextYear = new Date(now);
+    nextYear.setUTCFullYear(nextYear.getUTCFullYear() + 1);
+
+    for (const user of users) {
+        await prisma.subscription.upsert({
+            where: { userId: user.id },
+            update: {},
+            create: {
+                userId: user.id,
+                planId: freePlan.id,
+                status: 'active',
+                startDate: now,
+                endDate: nextYear,
+                autoRenew: true,
+            },
+        });
+    }
+}
+
 async function upsertLocalGenres(): Promise<Map<string, string>> {
     const genreMap = new Map<string, string>();
 
@@ -126,6 +212,12 @@ async function main(): Promise<void> {
 
     await seedUsers(TEST_USERS);
     console.log(`Seeded ${TEST_USERS.length} test users.`);
+
+    await seedSubscriptionPlans();
+    console.log('Seeded subscription plans.');
+
+    await seedDefaultSubscriptions();
+    console.log('Seeded default subscriptions.');
 
     const existingMovieCount = await prisma.movie.count();
     const tmdbCredentials = getTmdbCredentials();

@@ -28,6 +28,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './health/health.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonModule } from './common/common.module';
@@ -44,6 +45,8 @@ import { ActorsModule } from './actors/actors.module';
 import { HistoryModule } from './history/history.module';
 import { EncodeModule } from './encode/encode.module';
 import { MailModule } from './mail/mail.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { PaymentsModule } from './payments/payments.module';
 import securityConfig from './config/security.config';
 import { validateEnvironment } from './config/env.validation';
 
@@ -98,6 +101,7 @@ import { validateEnvironment } from './config/env.validation';
             ttl: 60_000,     // Khoáº£ng thá»i gian: 60 giĂ¢y (Ä‘Æ¡n vá»‹: ms)
             limit: 20,       // Sá»‘ request tá»‘i Ä‘a trong khoáº£ng thá»i gian trĂªn
         }]),
+        ScheduleModule.forRoot(),
 
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         // CĂC MODULE NGHIá»†P Vá»¤ (Business Modules)
@@ -117,6 +121,8 @@ import { validateEnvironment } from './config/env.validation';
 
         HistoryModule,      // Lá»‹ch sá»­ xem: lÆ°u tiáº¿n trĂ¬nh, "tiáº¿p tá»¥c xem"
         EncodeModule,       // MĂ£ hĂ³a video: FFmpeg â†’ HLS (480p, 720p)
+        SubscriptionsModule,
+        PaymentsModule,
     ],
 
     // HealthController xá»­ lĂ½ endpoint /health (khĂ´ng cĂ³ prefix /api)
@@ -124,6 +130,5 @@ import { validateEnvironment } from './config/env.validation';
     controllers: [HealthController],
 })
 export class AppModule {}
-
 
 
