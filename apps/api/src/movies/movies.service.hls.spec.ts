@@ -1,69 +1,53 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MoviesService } from './movies.service';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-// Mock dependencies
-jest.mock('@aws-sdk/client-s3');
-jest.mock('@aws-sdk/s3-request-presigner');
-
-describe('MoviesService HLS Key Generation', () => {
-    let service: MoviesService;
-    let configService: ConfigService;
-
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                MoviesService,
-                {
-                    provide: ConfigService,
-                    useValue: {
-                        get: jest.fn((key: string) => {
-                            if (key === 'HLS_PREFIX') return '  hls_custom   '; // Test WITH whitespace
-                            if (key === 'S3_BUCKET') return 'test-bucket';
-                            return null;
-                        }),
-                    },
+describe('MoviesService stream subscription gating', () => {
+    it('returns only quality options allowed by the effective subscription plan', async () => {
+        const prisma = {
+            movie: {
+                findUnique: jest.fn().mockResolvedValue({
+                    id: 'movie-1',
+                    movieStatus: 'published',
+                    encodeStatus: 'ready',
+                    playbackUrl: null,
+                }),
+            },
+        };
+        const configService = {
+            get: jest.fn((key: string) => {
+                if (key === 'S3_PUBLIC_BASE_URL') return 'http://cdn.test/netflat-media';
+                return null;
+            }),
+        };
+        const subscriptionsService = {
+            getActiveSubscription: jest.fn().mockResolvedValue({
+                plan: {
+                    name: 'free',
+                    maxMoviesPerMonth: 5,
+                    maxQualityResolution: '480p',
                 },
-                {
-                    provide: PrismaService, useValue: {
-                        movie: {
-                            findUnique: jest.fn().mockResolvedValue({
-                                id: '123',
-                                movieStatus: 'published',
-                                encodeStatus: 'ready',
-                                isPremium: false
-                            })
-                        }
-                    }
-                },
-            ],
-        }).compile();
+            }),
+        };
+        const usageService = {
+            canWatchMovie: jest.fn().mockResolvedValue(true),
+            incrementMoviesWatched: jest.fn(),
+        };
+        const service = new MoviesService(
+            prisma as any,
+            configService as any,
+            subscriptionsService as any,
+            usageService as any,
+        );
 
-        service = module.get<MoviesService>(MoviesService);
-        configService = module.get<ConfigService>(ConfigService);
-    });
+        const result = await service.getStreamUrl('movie-1', { id: 'user-1' } as any);
 
-    it('should trim HLS_PREFIX and generate correct master key', async () => {
-        const s3Mock = new S3Client({});
-        (getSignedUrl as jest.Mock).mockResolvedValue('http://signed-url');
-
-        await service.getStreamUrl('123', { id: 'user1' } as any);
-
-        // Verify GetObjectCommand was called with trimmed key
-        // The first call is for master.m3u8
-        const calls = (GetObjectCommand as unknown as jest.Mock).mock.calls;
-
-        // Find call for master
-        const masterCall = calls.find(args => args[0].Key.includes('master.m3u8'));
-        expect(masterCall).toBeDefined();
-
-        // Key should be "hls_custom/123/master.m3u8", NOT "  hls_custom   / 123/master.m3u8"
-        expect(masterCall[0].Key).toBe('hls_custom/123/master.m3u8');
-
-        // Verify no spaces
-        expect(masterCall[0].Key).not.toMatch(/\s/);
+        expect(result.playbackUrl).toBe('http://cdn.test/netflat-media/hls/movie-1/master.m3u8');
+        expect(result.qualityOptions).toEqual([
+            {
+                name: '480p',
+                url: 'http://cdn.test/netflat-media/hls/movie-1/v0/prog_index.m3u8',
+            },
+        ]);
+        expect(usageService.incrementMoviesWatched).toHaveBeenCalledWith('user-1');
     });
 });

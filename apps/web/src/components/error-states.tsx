@@ -6,8 +6,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-    title = 'Something went wrong',
-    message = 'We encountered an error loading this content.',
+    title = 'Đã xảy ra lỗi',
+    message = 'Có lỗi khi tải nội dung này.',
     onRetry,
     showRetry = true
 }: ErrorStateProps) {
@@ -15,13 +15,13 @@ export function ErrorState({
         <div style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            color: 'rgba(255,255,255,0.7)'
+            color: 'var(--text-secondary)'
         }}>
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
             <h3 style={{
                 fontSize: '1.5rem',
                 marginBottom: '0.5rem',
-                color: 'white'
+                color: 'var(--text-primary)'
             }}>
                 {title}
             </h3>
@@ -32,7 +32,7 @@ export function ErrorState({
                     className="btn btn-primary"
                     style={{ padding: '0.75rem 2rem' }}
                 >
-                    🔄 Try Again
+                    🔄 Thử lại
                 </button>
             )}
         </div>
@@ -41,8 +41,8 @@ export function ErrorState({
 
 export function EmptyState({
     icon = '📭',
-    title = 'No content found',
-    message = 'There\'s nothing here yet.'
+    title = 'Không có nội dung',
+    message = 'Hiện chưa có dữ liệu.'
 }: {
     icon?: string;
     title?: string;
@@ -52,13 +52,13 @@ export function EmptyState({
         <div style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            color: 'rgba(255,255,255,0.5)'
+            color: 'var(--text-secondary)'
         }}>
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{icon}</div>
             <h3 style={{
                 fontSize: '1.5rem',
                 marginBottom: '0.5rem',
-                color: 'rgba(255,255,255,0.7)'
+                color: 'var(--text-primary)'
             }}>
                 {title}
             </h3>

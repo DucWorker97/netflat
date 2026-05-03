@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
             await api.post('/api/auth/forgot-password', { email: email.trim() });
             setSent(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Request failed');
+            setError(err instanceof Error ? err.message : 'Yêu cầu thất bại');
         } finally {
             setIsSubmitting(false);
         }
@@ -30,25 +30,25 @@ export default function ForgotPasswordPage() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <Link href="/" className={styles.title}>netflat</Link>
-                <p className={styles.subtitle}>Reset your password</p>
+                <p className={styles.subtitle}>Khôi phục mật khẩu</p>
 
                 {sent ? (
                     <div>
                         <p style={{ color: 'var(--success)', textAlign: 'center', marginBottom: '1rem' }}>
-                            If an account with that email exists, a reset link has been sent.
+                            Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu.
                         </p>
                         <Link
                             href="/login"
                             className="btn btn-primary"
                             style={{ display: 'block', textAlign: 'center', width: '100%' }}
                         >
-                            Back to Sign In
+                            Quay lại đăng nhập
                         </Link>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className={styles.form}>
                         <div className={styles.field}>
-                            <label htmlFor="email">Email address</label>
+                            <label htmlFor="email">Địa chỉ email</label>
                             <input
                                 id="email"
                                 type="email"
@@ -68,12 +68,12 @@ export default function ForgotPasswordPage() {
                             style={{ width: '100%', marginTop: '0.5rem' }}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                            {isSubmitting ? 'Đang gửi...' : 'Gửi liên kết khôi phục'}
                         </button>
 
                         <p style={{ textAlign: 'center', marginTop: '1rem' }}>
                             <Link href="/login" style={{ color: 'var(--accent)', fontSize: '0.875rem' }}>
-                                Back to Sign In
+                                Quay lại đăng nhập
                             </Link>
                         </p>
                     </form>

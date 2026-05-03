@@ -20,6 +20,18 @@
         },
         "actions": {
             "create": "Create Movie"
+        },
+        "ratings": {
+            "ratings_title": "Ratings & Reviews",
+            "reviews_title": "User Ratings",
+            "add_review": "Add Review",
+            "no_reviews": "No reviews yet.",
+            "edit": "Edit",
+            "delete": "Delete",
+            "suggestions_title": "Suggested Movies",
+            "add_suggestion": "Add Suggestion",
+            "no_suggestions": "No suggestions added.",
+            "remove": "Remove"
         }
     }
 }

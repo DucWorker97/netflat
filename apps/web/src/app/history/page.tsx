@@ -36,17 +36,17 @@ export default function HistoryPage() {
     return (
         <main className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
             <div className="section-header">
-                <h1 className="section-title">Watch History</h1>
+                <h1 className="section-title">Lịch sử xem</h1>
             </div>
 
             {isLoading ? (
                 <div className="loading-spinner"><div className="spinner" /></div>
             ) : !items || items.length === 0 ? (
                 <div className="empty-state">
-                    <h3>No watch history</h3>
-                    <p>Movies you watch will appear here.</p>
+                    <h3>Chưa có lịch sử xem</h3>
+                    <p>Các phim bạn đã xem sẽ hiển thị tại đây.</p>
                     <Link href="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                        Browse Movies
+                        Duyệt phim
                     </Link>
                 </div>
             ) : (
@@ -80,17 +80,17 @@ export default function HistoryPage() {
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(p => p - 1)}
                             >
-                                Previous
+                                Trước
                             </button>
                             <span style={{ alignSelf: 'center', color: 'var(--text-secondary)' }}>
-                                Page {currentPage} of {meta.totalPages}
+                                Trang {currentPage} / {meta.totalPages}
                             </span>
                             <button
                                 className="btn btn-secondary"
                                 disabled={currentPage >= meta.totalPages}
                                 onClick={() => setCurrentPage(p => p + 1)}
                             >
-                                Next
+                                Tiếp
                             </button>
                         </div>
                     )}

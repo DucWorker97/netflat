@@ -40,7 +40,7 @@ export class RatingsController {
         @Body() dto: RateMovieDto,
     ) {
         const userId = this.getUserId(req);
-        const rating = await this.ratingsService.rateMovie(userId, movieId, dto.rating, dto.comment);
+        const rating = await this.ratingsService.createOrUpdate(userId, movieId, dto.rating, dto.comment);
         return { data: rating };
     }
 
@@ -51,7 +51,7 @@ export class RatingsController {
     @UseGuards(JwtAuthGuard)
     async getUserRating(@Req() req: any, @Param('movieId') movieId: string) {
         const userId = this.getUserId(req);
-        const rating = await this.ratingsService.getUserRating(userId, movieId);
+        const rating = await this.ratingsService.getRating(userId, movieId);
         return { data: rating };
     }
 
@@ -62,7 +62,7 @@ export class RatingsController {
     @UseGuards(PolicyGuard)
     @MovieVisiblePolicy('movieId')
     async getMovieStats(@Param('movieId') movieId: string) {
-        const stats = await this.ratingsService.getMovieRatingStats(movieId);
+        const stats = await this.ratingsService.getStats(movieId);
         return { data: stats };
     }
 
@@ -78,7 +78,7 @@ export class RatingsController {
     ) {
         const parsed = limit ? parseInt(limit, 10) : NaN;
         const parsedLimit = Number.isFinite(parsed) ? Math.min(parsed, 50) : 20;
-        const ratings = await this.ratingsService.listMovieRatings(movieId, parsedLimit);
+        const ratings = await this.ratingsService.getMovieRatings(movieId, 1, parsedLimit);
         return { data: ratings };
     }
 

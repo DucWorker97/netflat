@@ -1,18 +1,27 @@
 :root {
-    --bg-primary: #0d0d0d;
-    --bg-secondary: #1a1a1a;
-    --bg-card: #222;
-    --text-primary: #fff;
-    --text-secondary: #aaa;
-    --text-muted: #666;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-light: #60a5fa;
-    --border: #333;
-    --success: #46d369;
-    --warning: #f59e0b;
-    --danger: #ef4444;
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-card: #efefef;
+    --text-primary: #111111;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: #3b82f6;
+    --border: #d1d5db;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
     --container-width: 1400px;
+    --background-primary: var(--bg-primary);
+    --background-secondary: var(--bg-secondary);
+    --background-card: var(--bg-card);
+    --text-on-dark: #f9fafb;
+    --text-on-dark-secondary: #d1d5db;
+    --text-on-dark-muted: #9ca3af;
+    --surface-dark: #111827;
+    --surface-dark-muted: #1f2937;
+    --border-on-dark: rgba(255, 255, 255, 0.16);
 }
 
 * {
@@ -108,7 +117,7 @@ button {
 
 /* Navbar */
 .navbar {
-    background: rgba(13, 13, 13, 0.95);
+    background: rgba(245, 245, 245, 0.95);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -194,7 +203,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #333, #222);
+    background: linear-gradient(135deg, #d1d5db, #e5e7eb);
     color: var(--text-muted);
     font-size: 3rem;
 }
@@ -275,7 +284,7 @@ button {
 .hero {
     position: relative;
     height: 500px;
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    background: linear-gradient(135deg, #dbeafe, #eff6ff);
     display: flex;
     align-items: center;
     margin-bottom: 2rem;

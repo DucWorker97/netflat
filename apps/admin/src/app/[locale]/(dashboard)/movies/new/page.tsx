@@ -9,7 +9,7 @@ import { useCreateMovie } from '@/lib/queries';
 import { useLocalePath } from '@/lib/use-locale-path';
 
 const schema = z.object({
-    title: z.string().min(1, 'Title is required').max(500),
+    title: z.string().min(1, 'Tiêu đề là bắt buộc').max(500),
     description: z.string().max(2000).optional(),
     releaseYear: z.number().int().min(1900).max(2100).optional().nullable(),
 });
@@ -58,28 +58,28 @@ export default function NewMoviePage() {
             {/* Breadcrumb */}
             <div className="breadcrumb">
                 <button onClick={() => router.push(localePath('/movies'))} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, font: 'inherit' }}>
-                    Movies
+                    Phim
                 </button>
                 <span className="separator">/</span>
-                <span className="current">New</span>
+                <span className="current">Mới</span>
             </div>
 
             {/* Form Card */}
             <div className="glass-card overflow-hidden">
                 <div className="p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h1 className="gradient-text" style={{ fontSize: '1.5rem', fontWeight: 700 }}>Create New Movie</h1>
-                    <p className="text-sm text-muted mt-1">Enter basic information. You can add genres, actors, and upload media on the next page.</p>
+                    <h1 className="gradient-text" style={{ fontSize: '1.5rem', fontWeight: 700 }}>Tạo phim mới</h1>
+                    <p className="text-sm text-muted mt-1">Nhập thông tin cơ bản. Bạn có thể thêm thể loại, diễn viên và tải media ở bước tiếp theo.</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {/* Title */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label className="form-label" htmlFor="title">Title <span className="text-error">*</span></label>
+                        <label className="form-label" htmlFor="title">Tiêu đề <span className="text-error">*</span></label>
                         <input
                             id="title"
                             type="text"
                             className="form-input"
-                            placeholder="e.g. Inception"
+                            placeholder="VD: Inception"
                             autoFocus
                             {...register('title')}
                         />
@@ -88,12 +88,12 @@ export default function NewMoviePage() {
 
                     {/* Description */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label className="form-label" htmlFor="description">Description</label>
+                        <label className="form-label" htmlFor="description">Mô tả</label>
                         <textarea
                             id="description"
                             className="form-input form-textarea"
                             rows={3}
-                            placeholder="Enter movie synopsis..."
+                            placeholder="Nhập tóm tắt phim..."
                             {...register('description')}
                         />
                         <p className="text-xs text-muted-dim text-right">{descriptionValue.length}/2000</p>
@@ -101,7 +101,7 @@ export default function NewMoviePage() {
 
                     {/* Release Year */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxWidth: '180px' }}>
-                        <label className="form-label" htmlFor="releaseYear">Release Year</label>
+                        <label className="form-label" htmlFor="releaseYear">Năm phát hành</label>
                         <input
                             id="releaseYear"
                             type="number"
@@ -119,7 +119,7 @@ export default function NewMoviePage() {
                             style={{ borderRadius: '8px' }}
                             onClick={() => router.push(localePath('/movies'))}
                         >
-                            Cancel
+                            Hủy
                         </button>
                         <button
                             type="submit"
@@ -128,9 +128,9 @@ export default function NewMoviePage() {
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (
-                                <><span className="spinner spinner-sm" style={{ borderTopColor: '#fff' }}></span> Creating...</>
+                                <><span className="spinner spinner-sm" style={{ borderTopColor: '#fff' }}></span> Đang tạo...</>
                             ) : (
-                                'Create & Continue'
+                                'Tạo và tiếp tục'
                             )}
                         </button>
                     </div>

@@ -26,7 +26,6 @@ export default function MovieDetailPage() {
     const { data: userRating } = useUserRating(movieId, isAuthenticated);
     const rateMovie = useRateMovie();
     const [showShare, setShowShare] = useState(false);
-    const [showReviews, setShowReviews] = useState(false);
 
     const isFavorite = favorites?.some(f => f.movie.id === movieId);
 
@@ -57,15 +56,15 @@ export default function MovieDetailPage() {
             return (
                 <div className={styles.container}>
                     <div className="empty-state">
-                        <h3>Sign in to watch this movie</h3>
+                        <h3>Đăng nhập để xem phim này</h3>
                         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Please log in to access movie details and streaming.
+                            Vui lòng đăng nhập để xem chi tiết và phát phim.
                         </p>
                         <Link href="/login" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                            Sign In
+                            Đăng nhập
                         </Link>
                         <Link href="/" className="btn btn-secondary" style={{ marginTop: '0.5rem', marginLeft: '0.5rem' }}>
-                            Back to Home
+                            Về trang chủ
                         </Link>
                     </div>
                 </div>
@@ -75,12 +74,12 @@ export default function MovieDetailPage() {
         return (
             <div className={styles.container}>
                 <div className="empty-state">
-                    <h3>Movie not found</h3>
+                    <h3>Không tìm thấy phim</h3>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        The movie you&apos;re looking for doesn&apos;t exist or has been removed.
+                        Phim bạn đang tìm không tồn tại hoặc đã bị gỡ.
                     </p>
                     <Link href="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                        Back to Home
+                        Về trang chủ
                     </Link>
                 </div>
             </div>
@@ -92,6 +91,10 @@ export default function MovieDetailPage() {
     const tmdbVoteAverage = typeof movie.voteAverage === 'number' && movie.voteAverage > 0
         ? movie.voteAverage
         : null;
+    const averageRating = typeof ratingStats?.avgRating === 'number' && Number.isFinite(ratingStats.avgRating)
+        ? ratingStats.avgRating
+        : null;
+    const ratingsCount = ratingStats?.ratingsCount ?? 0;
 
     return (
         <div className={styles.container}>
@@ -112,12 +115,12 @@ export default function MovieDetailPage() {
                             {movie.encodeStatus === 'processing' ? (
                                 <>
                                     <div className="spinner" />
-                                    <p>Video is being processed...</p>
+                                    <p>Video đang được xử lý...</p>
                                 </>
                             ) : movie.encodeStatus === 'failed' ? (
-                                <p>❌ Video encoding failed</p>
+                                <p>❌ Mã hóa video thất bại</p>
                             ) : (
-                                <p>🎬 Video not available yet</p>
+                                <p>🎬 Video chưa sẵn sàng</p>
                             )}
                         </div>
                     )}
@@ -131,18 +134,18 @@ export default function MovieDetailPage() {
                             {/* Rating Section */}
                             <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '2rem' }}>
                                 {/* Average Rating */}
-                                {ratingStats && ratingStats.avgRating !== null && (
+                                {averageRating !== null && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <Stars rating={ratingStats.avgRating} readOnly size="medium" />
+                                        <Stars rating={averageRating} readOnly size="medium" />
                                         <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                                            ({ratingStats.ratingsCount} {ratingStats.ratingsCount === 1 ? 'rating' : 'ratings'})
+                                            ({ratingsCount} {ratingsCount === 1 ? 'đánh giá' : 'đánh giá'})
                                         </span>
                                     </div>
                                 )}
                                 {/* User Rating */}
                                 {isAuthenticated && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Your rating:</span>
+                                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Đánh giá của bạn:</span>
                                         <Stars
                                             rating={userRating?.rating || 0}
                                             onRate={(rating) => rateMovie.mutate({ movieId, rating })}
@@ -158,21 +161,14 @@ export default function MovieDetailPage() {
                                 className="btn btn-secondary"
                                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
                             >
-                                Share
-                            </button>
-                            <button
-                                onClick={() => setShowReviews(true)}
-                                className="btn btn-secondary"
-                                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-                            >
-                                Reviews
+                                Chia sẻ
                             </button>
                             <button
                                 onClick={toggleFavorite}
                                 className={`btn ${isFavorite ? 'btn-primary' : 'btn-secondary'}`}
                                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
                             >
-                                {isFavorite ? '❤️ Favorited' : '🤍 Add to Favorites'}
+                                {isFavorite ? '❤️ Đã yêu thích' : '🤍 Thêm vào yêu thích'}
                             </button>
                         </div>
                     </div>
@@ -187,7 +183,7 @@ export default function MovieDetailPage() {
                         )}
                         {/* TMDb Rating Badge */}
                         {tmdbVoteAverage !== null && (
-                            <span className={styles.tmdbRating} title={`${movie.voteCount?.toLocaleString() || 0} votes on TMDb`}>
+                            <span className={styles.tmdbRating} title={`${movie.voteCount?.toLocaleString() || 0} lượt bình chọn trên TMDb`}>
                                 ⭐ {tmdbVoteAverage.toFixed(1)}/10
                             </span>
                         )}
@@ -206,7 +202,7 @@ export default function MovieDetailPage() {
                                     gap: '0.4rem'
                                 }}
                             >
-                                ▶️ Watch Trailer
+                                ▶️ Xem trailer
                             </a>
                         )}
                     </div>
@@ -232,8 +228,14 @@ export default function MovieDetailPage() {
                 </div>
 
                 <Link href="/" className={styles.backLink}>
-                    ← Back to Movies
+                    ← Quay lại danh sách phim
                 </Link>
+
+                <ReviewsModal
+                    movieId={movie.id}
+                    movieTitle={movie.title}
+                    variant="inline"
+                />
 
                 <ShareModal
                     movieId={movie.id}
@@ -241,12 +243,6 @@ export default function MovieDetailPage() {
                     posterUrl={movie.posterUrl || movie.backdropUrl}
                     isOpen={showShare}
                     onClose={() => setShowShare(false)}
-                />
-                <ReviewsModal
-                    movieId={movie.id}
-                    movieTitle={movie.title}
-                    isOpen={showReviews}
-                    onClose={() => setShowReviews(false)}
                 />
             </main>
         </div>

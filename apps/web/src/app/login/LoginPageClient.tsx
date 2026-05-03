@@ -9,6 +9,11 @@ import styles from './login.module.css';
 
 type AuthMode = 'login' | 'register';
 
+const VIEWER_DEMO_ACCOUNT = {
+    email: 'viewer@netflat.local',
+    password: 'viewer123',
+};
+
 export function LoginPageClient() {
     const { login, register, isLoading } = useAuth();
     const router = useRouter();
@@ -43,7 +48,7 @@ export function LoginPageClient() {
                 return;
             }
             if (password !== confirmPassword) {
-                setError('Passwords do not match');
+                setError('Mật khẩu xác nhận không khớp');
                 return;
             }
         }
@@ -57,7 +62,7 @@ export function LoginPageClient() {
                 await register(email.trim(), password, redirectTo);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Request failed');
+            setError(err instanceof Error ? err.message : 'Yêu cầu thất bại');
         } finally {
             setIsSubmitting(false);
         }
@@ -75,7 +80,7 @@ export function LoginPageClient() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <Link href="/" className={styles.title}>netflat</Link>
-                <p className={styles.subtitle}>{currentMode === 'register' ? 'Create your account' : 'Sign in to watch'}</p>
+                <p className={styles.subtitle}>{currentMode === 'register' ? 'Tạo tài khoản mới' : 'Đăng nhập để xem phim'}</p>
 
                 <div className={styles.modeTabs}>
                     <button
@@ -83,14 +88,14 @@ export function LoginPageClient() {
                         className={`${styles.modeTab} ${currentMode === 'login' ? styles.modeTabActive : ''}`}
                         onClick={() => switchMode('login')}
                     >
-                        Sign In
+                        Đăng nhập
                     </button>
                     <button
                         type="button"
                         className={`${styles.modeTab} ${currentMode === 'register' ? styles.modeTabActive : ''}`}
                         onClick={() => switchMode('register')}
                     >
-                        Register
+                        Đăng ký
                     </button>
                 </div>
 
@@ -109,7 +114,7 @@ export function LoginPageClient() {
                     </div>
 
                     <div className={styles.field}>
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">Mật khẩu</label>
                         <div className={styles.passwordWrapper}>
                             <input
                                 id="password"
@@ -117,7 +122,7 @@ export function LoginPageClient() {
                                 className="input"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
+                                placeholder="Nhập mật khẩu"
                                 required
                                 minLength={currentMode === 'login' ? undefined : 8}
                             />
@@ -126,7 +131,7 @@ export function LoginPageClient() {
                                 className={styles.showPasswordBtn}
                                 onClick={() => setShowPassword((v) => !v)}
                             >
-                                {showPassword ? 'Hide' : 'Show'}
+                                {showPassword ? 'Ẩn' : 'Hiện'}
                             </button>
                         </div>
                     </div>
@@ -135,14 +140,14 @@ export function LoginPageClient() {
                         <>
                             <p className={styles.helperText}>{PASSWORD_REQUIREMENTS_HINT}</p>
                             <div className={styles.field}>
-                                <label htmlFor="confirmPassword">Confirm password</label>
+                                <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                                 <input
                                     id="confirmPassword"
                                     type={showPassword ? 'text' : 'password'}
                                     className="input"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Enter your password again"
+                                    placeholder="Nhập lại mật khẩu"
                                     required
                                     minLength={8}
                                 />
@@ -159,15 +164,20 @@ export function LoginPageClient() {
                         disabled={isSubmitting}
                     >
                         {isSubmitting
-                            ? (currentMode === 'login' ? 'Signing in...' : 'Creating account...')
-                            : (currentMode === 'login' ? 'Sign In' : 'Register')}
+                            ? (currentMode === 'login' ? 'Đang đăng nhập...' : 'Đang tạo tài khoản...')
+                            : (currentMode === 'login' ? 'Đăng nhập' : 'Đăng ký')}
                     </button>
                 </form>
 
                 {currentMode === 'login' && (
-                    <p className={styles.hint}>
-                        <Link href="/forgot-password" className={styles.forgotLink}>Forgot your password?</Link>
-                    </p>
+                    <>
+                        <p className={styles.accountHint}>
+                            Tài khoản xem mẫu: <code>{VIEWER_DEMO_ACCOUNT.email} / {VIEWER_DEMO_ACCOUNT.password}</code>
+                        </p>
+                        <p className={styles.hint}>
+                            <Link href="/forgot-password" className={styles.forgotLink}>Quên mật khẩu?</Link>
+                        </p>
+                    </>
                 )}
             </div>
         </div>

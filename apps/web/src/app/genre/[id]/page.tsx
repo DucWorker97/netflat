@@ -25,22 +25,23 @@ export default function GenrePage({ params }: { params: Promise<{ id: string }> 
             {/* Header */}
             <div style={{
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                color: 'var(--text-on-dark)',
                 padding: '3rem 0',
                 marginBottom: '2rem'
             }}>
                 <div className="container">
                     <Link href="/" style={{
-                        color: 'rgba(255,255,255,0.7)',
+                        color: 'var(--text-on-dark-secondary)',
                         marginBottom: '1rem',
                         display: 'inline-block'
                     }}>
-                        ← Back to Home
+                        ← Về trang chủ
                     </Link>
                     <h1 style={{ fontSize: '3rem', fontWeight: 700 }}>
-                        {genre?.name || 'Genre'}
+                        {genre?.name || 'Thể loại'}
                     </h1>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '0.5rem' }}>
-                        {movies.length} movies
+                    <p style={{ color: 'var(--text-on-dark-secondary)', marginTop: '0.5rem' }}>
+                        {movies.length} phim
                     </p>
                 </div>
             </div>
@@ -55,15 +56,15 @@ export default function GenrePage({ params }: { params: Promise<{ id: string }> 
                     </div>
                 ) : error ? (
                     <ErrorState
-                        title="Failed to load movies"
-                        message="We couldn't load movies for this genre."
+                        title="Không thể tải phim"
+                        message="Không thể tải danh sách phim cho thể loại này."
                         onRetry={() => refetch()}
                     />
                 ) : movies.length === 0 ? (
                     <EmptyState
                         icon="🎬"
-                        title="No movies in this genre"
-                        message="Check back later for new content."
+                        title="Thể loại này chưa có phim"
+                        message="Vui lòng quay lại sau để xem nội dung mới."
                     />
                 ) : (
                     <div className="movie-grid">

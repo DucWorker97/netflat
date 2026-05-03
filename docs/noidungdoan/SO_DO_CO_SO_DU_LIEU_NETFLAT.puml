@@ -1,0 +1,136 @@
+@startuml
+title So do co so du lieu Netflat
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+
+entity "users" as Users {
+  * id : UUID <<PK>>
+  --
+  email : VARCHAR(255) <<UQ>>
+  password_hash : VARCHAR(255)
+  display_name : VARCHAR(100)
+  avatar_url : VARCHAR(1000)
+  role : ENUM(viewer, admin)
+  is_active : BOOLEAN
+  disabled_at : TIMESTAMPTZ
+  disabled_reason : VARCHAR(500)
+  created_at : TIMESTAMPTZ
+  updated_at : TIMESTAMPTZ
+}
+
+entity "movies" as Movies {
+  * id : UUID <<PK>>
+  --
+  title : VARCHAR(500)
+  description : TEXT
+  poster_url : VARCHAR(1000)
+  backdrop_url : VARCHAR(1000)
+  duration_seconds : INT
+  release_year : INT
+  movie_status : ENUM(draft, published)
+  encode_status : ENUM(pending, processing, ready, failed)
+  playback_url : VARCHAR(1000)
+  original_key : VARCHAR(500)
+  tmdb_id : INT <<UQ>>
+  popularity : FLOAT
+  vote_average : FLOAT
+  vote_count : INT
+  original_language : VARCHAR(10)
+  trailer_url : VARCHAR(500)
+  actors : TEXT[]
+  created_at : TIMESTAMPTZ
+  updated_at : TIMESTAMPTZ
+}
+
+entity "genres" as Genres {
+  * id : UUID <<PK>>
+  --
+  name : VARCHAR(100) <<UQ>>
+  slug : VARCHAR(100) <<UQ>>
+}
+
+entity "movie_genres" as MovieGenres {
+  * movie_id : UUID <<PK, FK>>
+  * genre_id : UUID <<PK, FK>>
+}
+
+entity "favorites" as Favorites {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  movie_id : UUID <<FK>>
+  created_at : TIMESTAMPTZ
+}
+
+entity "uploads" as Uploads {
+  * id : UUID <<PK>>
+  --
+  movie_id : UUID <<FK>>
+  object_key : VARCHAR(500) <<UQ>>
+  file_type : ENUM(video, thumbnail)
+  upload_status : ENUM(uploading, uploaded, failed)
+  size_bytes : BIGINT
+  created_at : TIMESTAMPTZ
+}
+
+entity "ratings" as Ratings {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  movie_id : UUID <<FK>>
+  rating : SMALLINT
+  comment : TEXT
+  created_at : TIMESTAMPTZ
+  updated_at : TIMESTAMPTZ
+}
+
+entity "watch_history" as WatchHistory {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  movie_id : UUID <<FK>>
+  progress_seconds : INT
+  duration_seconds : INT
+  completed : BOOLEAN
+  last_watched_at : TIMESTAMPTZ
+  created_at : TIMESTAMPTZ
+  updated_at : TIMESTAMPTZ
+}
+
+entity "refresh_tokens" as RefreshTokens {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  token : VARCHAR(512) <<UQ>>
+  expires_at : TIMESTAMPTZ
+  revoked : BOOLEAN
+  created_at : TIMESTAMPTZ
+}
+
+entity "password_reset_tokens" as PasswordResetTokens {
+  * id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  token : VARCHAR(512) <<UQ>>
+  expires_at : TIMESTAMPTZ
+  used : BOOLEAN
+  created_at : TIMESTAMPTZ
+}
+
+Users ||--o{ RefreshTokens
+Users ||--o{ PasswordResetTokens
+Users ||--o{ Favorites
+Users ||--o{ Ratings
+Users ||--o{ WatchHistory
+
+Movies ||--o{ MovieGenres
+Genres ||--o{ MovieGenres
+
+Movies ||--o{ Favorites
+Movies ||--o{ Uploads
+Movies ||--o{ Ratings
+Movies ||--o{ WatchHistory
+
+@enduml

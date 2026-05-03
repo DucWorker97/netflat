@@ -42,6 +42,19 @@ enum UploadStatus {
   failed
 }
 
+enum SubscriptionStatus {
+  active
+  canceled
+  expired
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
 // ─────────────────────────────────────────────────────────────
 // Models
 // ─────────────────────────────────────────────────────────────
@@ -64,6 +77,9 @@ model User {
   favorites          Favorite[]
   ratings            Rating[]
   watchHistory       WatchHistory[]
+  subscription       Subscription?
+  payments           Payment[]
+  monthlyUsage       MonthlyUsage[]
 
   @@map("users")
 }
@@ -157,13 +173,6 @@ model MovieGenre {
   @@map("movie_genres")
 }
 
-model Actor {
-  id   String @id @default(uuid()) @db.Uuid
-  name String @unique @db.VarChar(255)
-
-  @@map("actors")
-}
-
 model Favorite {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
@@ -227,4 +236,96 @@ model WatchHistory {
   @@unique([userId, movieId])
   @@index([userId, lastWatchedAt(sort: Desc)])
   @@map("watch_history")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Subscription Models
+// ─────────────────────────────────────────────────────────────
+
+model SubscriptionPlan {
+  id                   String   @id @default(uuid()) @db.Uuid
+  name                 String   @unique @db.VarChar(50)  // "free", "pro", "premium"
+  displayName          String   @db.VarChar(100)          // "Free", "Pro", "Premium"
+  description          String?  @db.VarChar(500)
+  maxMoviesPerMonth    Int      @default(5)
+  maxQualityResolution String   @default("480p") @db.VarChar(50)  // "480p", "1080p", "4K"
+  maxFavorites         Int      @default(10)
+  maxDevices           Int      @default(1)
+  showAds              Boolean  @default(true)
+  monthlyPrice         Float    @default(0)
+  annualPrice          Float?
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String   @unique     @map("user_id") @db.Uuid
+  planId       String               @map("plan_id") @db.Uuid
+  status       SubscriptionStatus   @default(active)
+  startDate    DateTime             @default(now()) @map("start_date") @db.Timestamptz
+  endDate      DateTime             @map("end_date") @db.Timestamptz
+  autoRenew    Boolean              @default(true) @map("auto_renew")
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan  SubscriptionPlan   @relation(fields: [planId], references: [id])
+  payments Payment[]
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @map("user_id") @db.Uuid
+  subscriptionId  String        @map("subscription_id") @db.Uuid
+  transactionId   String?       @unique @map("transaction_id") @db.VarChar(255)
+  paymentMethod   String        @default("mock") @map("payment_method") @db.VarChar(50)
+  planName        String?       @map("plan_name") @db.VarChar(50)
+  billingCycle    String?       @map("billing_cycle") @db.VarChar(20)
+  providerReference String?     @unique @map("provider_reference") @db.VarChar(255)
+  providerTransactionId String? @map("provider_transaction_id") @db.VarChar(255)
+  providerResponseCode String?  @map("provider_response_code") @db.VarChar(20)
+  providerTransactionStatus String? @map("provider_transaction_status") @db.VarChar(20)
+  providerPayload Json?         @map("provider_payload")
+  amount          Float
+  currency        String        @default("VND") @db.VarChar(10)
+  status          PaymentStatus @default(pending)
+  invoiceUrl      String?       @map("invoice_url") @db.VarChar(1000)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription  Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([providerTransactionId])
+  @@map("payments")
+}
+
+model MonthlyUsage {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  year           Int
+  month          Int      @db.SmallInt
+  moviesWatched  Int      @default(0) @map("movies_watched")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
+  @@index([userId])
+  @@map("monthly_usage")
 }

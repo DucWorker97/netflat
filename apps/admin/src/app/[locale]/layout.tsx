@@ -12,7 +12,7 @@ export default async function LocaleLayout({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
-    if (!['vi', 'en'].includes(locale)) {
+    if (!['vi'].includes(locale)) {
         notFound();
     }
 

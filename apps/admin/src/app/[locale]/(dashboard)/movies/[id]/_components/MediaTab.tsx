@@ -7,6 +7,7 @@ import {
     useUploadComplete,
     useMoviePolling,
 } from '@/lib/queries';
+import { normalizeMediaUrl } from '@/lib/media-url';
 
 interface MediaTabProps {
     movie: any;
@@ -46,19 +47,28 @@ const AlertIcon = () => (
 );
 
 /* ── Stepper Steps ─────────────────────────── */
-const stepperSteps = ['Upload', 'Processing', 'Ready'];
+const stepperSteps = ['Tải lên', 'Đang xử lý', 'Sẵn sàng'];
 
 export default function MediaTab({ movie }: MediaTabProps) {
     const queryClient = useQueryClient();
     const movieId = movie.id;
 
+    const getInitialVideoStatus = (status?: string): 'idle' | 'uploading' | 'processing' | 'ready' | 'failed' => {
+        if (status === 'processing') return 'processing';
+        if (status === 'ready') return 'ready';
+        if (status === 'failed') return 'failed';
+        return 'idle';
+    };
+
     // Polling for encode status
-    useMoviePolling(movieId, movie?.encodeStatus === 'processing' || movie?.encodeStatus === 'pending');
+    useMoviePolling(movieId, movie?.encodeStatus === 'processing');
 
     // -- Video Upload State --
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [videoProgress, setVideoProgress] = useState(0);
-    const [videoStatus, setVideoStatus] = useState<'idle' | 'uploading' | 'processing' | 'ready' | 'failed'>('idle');
+    const [videoStatus, setVideoStatus] = useState<'idle' | 'uploading' | 'processing' | 'ready' | 'failed'>(
+        getInitialVideoStatus(movie?.encodeStatus)
+    );
     const [videoError, setVideoError] = useState<string | null>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
     const [dragOver, setDragOver] = useState(false);
@@ -89,7 +99,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
     useEffect(() => {
         if (movie?.encodeStatus) {
             if (videoStatus !== 'uploading') {
-                const newStatus = movie.encodeStatus as any;
+                const newStatus = getInitialVideoStatus(movie.encodeStatus);
                 if (newStatus === 'ready' && videoStatus !== 'ready') {
                     setShowToast(true);
                     setTimeout(() => setShowToast(false), 10000);
@@ -98,6 +108,22 @@ export default function MediaTab({ movie }: MediaTabProps) {
             }
         }
     }, [movie?.encodeStatus, videoStatus]);
+
+    // Reset local transient state when switching to another movie record.
+    useEffect(() => {
+        setVideoFile(null);
+        setVideoProgress(0);
+        setVideoError(null);
+        setVideoStatus(getInitialVideoStatus(movie?.encodeStatus));
+
+        if (posterPreviewUrl && posterPreviewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(posterPreviewUrl);
+        }
+        setPosterFile(null);
+        setPosterPreviewUrl(null);
+        setPosterProgress(0);
+        setPosterStatus('idle');
+    }, [movieId]);
 
     // Prevent accidental tab close during upload
     useEffect(() => {
@@ -205,7 +231,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
         } catch (err) {
             console.error(err);
             setVideoStatus('failed');
-            setVideoError('Upload failed. Please try again.');
+            setVideoError(err instanceof Error ? err.message : 'Tải video thất bại. Vui lòng thử lại.');
         }
     };
 
@@ -221,9 +247,17 @@ export default function MediaTab({ movie }: MediaTabProps) {
         await new Promise<void>((resolve, reject) => {
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) resolve();
-                else reject(new Error('Upload failed'));
+                else {
+                    const statusText = xhr.statusText ? ` ${xhr.statusText}` : '';
+                    const responseSnippet = (xhr.responseText || '')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .slice(0, 220);
+                    const detail = responseSnippet ? `: ${responseSnippet}` : '';
+                    reject(new Error(`Upload failed (HTTP ${xhr.status}${statusText})${detail}`));
+                }
             };
-            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.onerror = () => reject(new Error('Lỗi mạng'));
             xhr.send(file);
         });
     };
@@ -242,7 +276,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
         : videoStatus === 'processing' ? 1
         : 2;
 
-    const displayPosterUrl = posterPreviewUrl || movie.posterUrl || null;
+    const displayPosterUrl = posterPreviewUrl || normalizeMediaUrl(movie.posterUrl) || null;
 
     return (
         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -252,8 +286,8 @@ export default function MediaTab({ movie }: MediaTabProps) {
                     <div className="flex items-center gap-3">
                         <CheckIcon className="section-header-icon" />
                         <div>
-                            <p className="font-semibold text-sm text-foreground">Encoding Complete!</p>
-                            <p className="text-xs text-muted">Video is ready for playback.</p>
+                            <p className="font-semibold text-sm text-foreground">Mã hóa hoàn tất!</p>
+                            <p className="text-xs text-muted">Video đã sẵn sàng để phát.</p>
                         </div>
                     </div>
                 </div>
@@ -263,7 +297,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
             <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div className="flex items-center gap-2">
                     <FilmIcon className="section-header-icon" />
-                    <h3 className="section-title">Video Source</h3>
+                    <h3 className="section-title">Nguồn video</h3>
                 </div>
 
                 {/* Stepper */}
@@ -300,16 +334,16 @@ export default function MediaTab({ movie }: MediaTabProps) {
                         <div className="flex items-center gap-3">
                             <CheckIcon className="text-success" />
                             <div>
-                                <p className="font-medium text-foreground">Video ready to stream</p>
+                                <p className="font-medium text-foreground">Video đã sẵn sàng để phát</p>
                                 <p className="text-xs text-muted font-mono">{movie.playbackUrl}</p>
                             </div>
                         </div>
                         <div className="flex gap-3">
                             <button onClick={() => window.open(`/watch/${movie.id}`, '_blank')} className="btn btn-secondary" style={{ borderRadius: '8px', gap: '8px' }}>
-                                <PlayIcon /> Preview
+                                <PlayIcon /> Xem thử
                             </button>
                             <button onClick={() => { setVideoStatus('idle'); setVideoFile(null); }} className="btn btn-ghost" style={{ borderRadius: '8px', gap: '8px' }}>
-                                <RefreshIcon /> Replace
+                                <RefreshIcon /> Thay thế
                             </button>
                         </div>
                     </div>
@@ -326,7 +360,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                         <div className="progress-bar">
                             <div className="progress-bar-fill" style={{ width: `${videoProgress}%` }} />
                         </div>
-                        <p className="text-xs text-muted text-center">Do not close this tab</p>
+                        <p className="text-xs text-muted text-center">Không đóng tab này</p>
                     </div>
                 ) : videoStatus === 'processing' ? (
                     <div className="text-center py-8" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
@@ -336,8 +370,8 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             ))}
                         </div>
                         <div>
-                            <p className="font-medium text-foreground">Encoding in progress...</p>
-                            <p className="text-sm text-muted mt-1">Transcoding to HLS adaptive streaming • This may take a few minutes</p>
+                            <p className="font-medium text-foreground">Đang mã hóa...</p>
+                            <p className="text-sm text-muted mt-1">Đang chuyển mã sang HLS adaptive streaming • Có thể mất vài phút</p>
                         </div>
                     </div>
                 ) : videoStatus === 'failed' ? (
@@ -345,12 +379,12 @@ export default function MediaTab({ movie }: MediaTabProps) {
                         <div className="flex items-center gap-3">
                             <AlertIcon />
                             <div>
-                                <p className="font-medium text-foreground">Upload failed</p>
-                                <p className="text-xs text-muted">{videoError || 'Network error. Please try again.'}</p>
+                                <p className="font-medium text-foreground">Tải lên thất bại</p>
+                                <p className="text-xs text-muted">{videoError || 'Lỗi mạng. Vui lòng thử lại.'}</p>
                             </div>
                         </div>
                         <button onClick={() => setVideoStatus('idle')} className="gradient-btn" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500, width: 'fit-content' }}>
-                            Try Again
+                            Thử lại
                         </button>
                     </div>
                 ) : videoFile ? (
@@ -363,8 +397,8 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             <p className="text-xs text-muted mt-1">{formatBytes(videoFile.size)} · {videoFile.type || 'video/mp4'}</p>
                         </div>
                         <div className="flex gap-2 shrink-0">
-                            <button onClick={startVideoUpload} className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }}>Upload</button>
-                            <button onClick={() => setVideoFile(null)} className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }}>Remove</button>
+                            <button onClick={startVideoUpload} className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }}>Tải lên</button>
+                            <button onClick={() => setVideoFile(null)} className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }}>Xóa</button>
                         </div>
                     </div>
                 ) : (
@@ -378,8 +412,8 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             className={`drop-zone ${dragOver ? 'dragover' : ''}`}
                         >
                             <CloudIcon />
-                            <p className="font-medium text-foreground mb-1" style={{ marginTop: '1rem' }}>Drop your video file here</p>
-                            <p className="text-sm text-muted">or click to browse • MP4, MKV, AVI up to 10GB</p>
+                            <p className="font-medium text-foreground mb-1" style={{ marginTop: '1rem' }}>Thả tệp video vào đây</p>
+                            <p className="text-sm text-muted">hoặc bấm để chọn • MP4, MKV, AVI tối đa 10GB</p>
                         </div>
                     </>
                 )}
@@ -389,7 +423,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
             <div className="glass-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="flex items-center gap-2">
                     <ImageIcon className="section-header-icon" />
-                    <h3 className="section-title">Poster</h3>
+                    <h3 className="section-title">Ảnh poster</h3>
                 </div>
 
                 <input ref={posterInputRef} type="file" accept="image/*" onChange={handlePosterSelect} className="hidden" />
@@ -401,7 +435,7 @@ export default function MediaTab({ movie }: MediaTabProps) {
                             <img src={displayPosterUrl} alt="Poster" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <div className="poster-overlay">
                                 <button onClick={() => posterInputRef.current?.click()} className="gradient-btn" style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500 }}>
-                                    Replace
+                                    Thay ảnh
                                 </button>
                             </div>
                         </div>
@@ -415,19 +449,19 @@ export default function MediaTab({ movie }: MediaTabProps) {
                                     </div>
                                 ) : (
                                     <div className="flex gap-2">
-                                        <button className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }} onClick={startPosterUpload}>Upload</button>
-                                        <button className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }} onClick={handlePosterRemove}>Remove</button>
+                                        <button className="gradient-btn" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 500 }} onClick={startPosterUpload}>Tải lên</button>
+                                        <button className="btn btn-ghost text-error" style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '0.8125rem' }} onClick={handlePosterRemove}>Xóa</button>
                                     </div>
                                 )}
-                                {posterStatus === 'error' && <p className="text-xs text-error">Upload failed. Try again.</p>}
+                                {posterStatus === 'error' && <p className="text-xs text-error">Tải ảnh thất bại. Vui lòng thử lại.</p>}
                             </div>
                         )}
                     </div>
                 ) : (
                     <div onClick={() => posterInputRef.current?.click()} className="drop-zone drop-zone-sm" style={{ aspectRatio: '2/3', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                         <ImageIcon className="text-muted-dim" />
-                        <p className="text-sm text-muted" style={{ marginTop: '8px' }}>Click to upload poster</p>
-                        <p className="text-xs text-muted-dim mt-1">JPG, PNG · 2:3 ratio</p>
+                        <p className="text-sm text-muted" style={{ marginTop: '8px' }}>Bấm để tải poster</p>
+                        <p className="text-xs text-muted-dim mt-1">JPG, PNG · Tỷ lệ 2:3</p>
                     </div>
                 )}
             </div>

@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import styles from './login.module.css';
 
+const ADMIN_DEMO_ACCOUNT = {
+    email: 'admin@netflat.local',
+    password: 'admin123',
+};
+
 export default function LoginPage() {
     const { login, isLoading } = useAuth();
 
@@ -21,7 +26,7 @@ export default function LoginPage() {
         try {
             await login(email.trim(), password);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Login failed');
+            setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
         } finally {
             setIsSubmitting(false);
         }
@@ -41,7 +46,7 @@ export default function LoginPage() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <h1 className={styles.title}>netflat</h1>
-                <p className={styles.subtitle}>Admin Dashboard</p>
+                <p className={styles.subtitle}>Bảng điều khiển quản trị</p>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.field}>
@@ -52,13 +57,13 @@ export default function LoginPage() {
                             className="input"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@netflat.local"
+                            placeholder={ADMIN_DEMO_ACCOUNT.email}
                             required
                         />
                     </div>
 
                     <div className={styles.field}>
-                        <label className="label" htmlFor="password">Password</label>
+                        <label className="label" htmlFor="password">Mật khẩu</label>
                         <div className={styles.passwordWrapper}>
                             <input
                                 id="password"
@@ -66,7 +71,7 @@ export default function LoginPage() {
                                 className="input"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
+                                placeholder="Nhập mật khẩu"
                                 required
                             />
                             <button
@@ -74,7 +79,7 @@ export default function LoginPage() {
                                 className={styles.showPasswordBtn}
                                 onClick={() => setShowPassword((v) => !v)}
                             >
-                                {showPassword ? 'Hide' : 'Show'}
+                                {showPassword ? 'Ẩn' : 'Hiện'}
                             </button>
                         </div>
                     </div>
@@ -87,12 +92,12 @@ export default function LoginPage() {
                         style={{ width: '100%', marginTop: '1rem' }}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? 'Signing in...' : 'Sign In'}
+                        {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
                     </button>
                 </form>
 
-                <p className={styles.hint}>
-                    Demo: admin@netflat.local / admin123
+                <p className={styles.accountHint}>
+                    Tài khoản quản trị mẫu: <code>{ADMIN_DEMO_ACCOUNT.email} / {ADMIN_DEMO_ACCOUNT.password}</code>
                 </p>
             </div>
         </div>

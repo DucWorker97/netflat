@@ -82,7 +82,7 @@ export class UsersController {
         if (req.user.role !== 'admin') {
             throw new Error('Forbidden');
         }
-        await this.usersService.disableUser(id, dto.reason);
+        await this.usersService.toggleUserStatus(id, false);
         return { data: { message: 'User account disabled' } };
     }
 
@@ -98,7 +98,7 @@ export class UsersController {
         if (req.user.role !== 'admin') {
             throw new Error('Forbidden');
         }
-        await this.usersService.enableUser(id);
+        await this.usersService.toggleUserStatus(id, true);
         return { data: { message: 'User account re-enabled' } };
     }
 }

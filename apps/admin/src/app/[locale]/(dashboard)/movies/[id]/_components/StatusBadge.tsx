@@ -9,13 +9,13 @@ function getBadgeStyle(status: string, type: 'publish' | 'encode'): { className:
         if (status === 'published') {
             return {
                 className: 'badge badge-neon-green',
-                label: 'Published',
+                label: 'Đã xuất bản',
                 style: {},
             };
         }
         return {
             className: 'badge badge-neon-cyan',
-            label: 'Draft',
+            label: 'Bản nháp',
             style: {},
         };
     }
@@ -23,14 +23,14 @@ function getBadgeStyle(status: string, type: 'publish' | 'encode'): { className:
     // encode type
     switch (status) {
         case 'ready':
-            return { className: 'badge badge-neon-green glow-green', label: 'Ready', style: {} };
+            return { className: 'badge badge-neon-green glow-green', label: 'Sẵn sàng', style: {} };
         case 'processing':
         case 'pending':
-            return { className: 'badge badge-neon-cyan', label: status === 'processing' ? 'Processing' : 'Pending', style: {} };
+            return { className: 'badge badge-neon-cyan', label: status === 'processing' ? 'Đang xử lý' : 'Chờ xử lý', style: {} };
         case 'failed':
-            return { className: 'badge', label: 'Failed', style: { background: 'rgba(239,68,68,0.15)', color: 'var(--error)', border: '1px solid rgba(239,68,68,0.3)' } };
+            return { className: 'badge', label: 'Thất bại', style: { background: 'rgba(239,68,68,0.15)', color: 'var(--error)', border: '1px solid rgba(239,68,68,0.3)' } };
         default:
-            return { className: 'badge badge-outline-mono', label: 'Idle', style: {} };
+            return { className: 'badge badge-outline-mono', label: 'Chưa có', style: {} };
     }
 }
 

@@ -8,8 +8,8 @@ interface FeatureDisabledProps {
 }
 
 export function FeatureDisabled({
-    title = 'Feature temporarily paused',
-    message = 'This screen is paused while we focus on core streaming features.',
+    title = 'Tính năng đang tạm dừng',
+    message = 'Màn hình này đang tạm dừng trong lúc chúng tôi tập trung vào các tính năng phát phim cốt lõi.',
 }: FeatureDisabledProps) {
     return (
         <div style={{
@@ -30,7 +30,7 @@ export function FeatureDisabled({
                 {message}
             </p>
             <Link href="/" className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-                Back to Home
+                Về trang chủ
             </Link>
         </div>
     );

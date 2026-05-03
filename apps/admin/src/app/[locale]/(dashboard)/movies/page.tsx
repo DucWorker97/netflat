@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useMovies, useDeleteMovie, usePublishMovie, type Movie } from '@/lib/queries';
 import { useLocalePath } from '@/lib/use-locale-path';
+import { normalizeMediaUrl } from '@/lib/media-url';
 import styles from './movies.module.css';
 
 function StatusBadge({ status }: { status: string }) {
@@ -22,7 +23,19 @@ function StatusBadge({ status }: { status: string }) {
 
     return (
         <span className="badge" style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.03em', ...badgeStyle }}>
-            {status}
+            {status === 'published'
+                ? 'ĐÃ XUẤT BẢN'
+                : status === 'draft'
+                ? 'BẢN NHÁP'
+                : status === 'ready'
+                ? 'SẴN SÀNG'
+                : status === 'processing'
+                ? 'ĐANG XỬ LÝ'
+                : status === 'pending'
+                ? 'CHỜ XỬ LÝ'
+                : status === 'failed'
+                ? 'THẤT BẠI'
+                : status}
         </span>
     );
 }
@@ -34,14 +47,15 @@ function MovieRow({ movie, onDelete, onPublish }: {
 }) {
     const { localePath } = useLocalePath();
     const isPublished = movie.movieStatus === 'published';
+    const normalizedPosterUrl = normalizeMediaUrl(movie.posterUrl);
 
     return (
         <tr>
             <td>
                 <div className={styles.movieInfo}>
-                    {movie.posterUrl ? (
+                    {normalizedPosterUrl ? (
                         <Image
-                            src={movie.posterUrl}
+                            src={normalizedPosterUrl}
                             alt=""
                             className={styles.poster}
                             width={44}
@@ -60,12 +74,12 @@ function MovieRow({ movie, onDelete, onPublish }: {
             <td><StatusBadge status={movie.movieStatus} /></td>
             <td><StatusBadge status={movie.encodeStatus} /></td>
             <td className={styles.textMuted}>
-                {new Date(movie.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date(movie.updatedAt).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric', year: 'numeric' })}
             </td>
             <td>
                 <div className={styles.actions}>
                     <Link href={localePath(`/movies/${movie.id}`)} className="btn btn-ghost" style={{ borderRadius: '8px' }}>
-                        Edit
+                        Sửa
                     </Link>
 
                     <button
@@ -73,16 +87,16 @@ function MovieRow({ movie, onDelete, onPublish }: {
                         className={`btn ${isPublished ? 'btn-secondary' : 'btn-success'}`}
                         style={{ borderRadius: '8px' }}
                         disabled={movie.encodeStatus !== 'ready'}
-                        title={movie.encodeStatus !== 'ready' ? 'Encode must be ready to publish' : ''}
+                        title={movie.encodeStatus !== 'ready' ? 'Mã hóa phải ở trạng thái sẵn sàng trước khi xuất bản' : ''}
                     >
-                        {isPublished ? 'Unpublish' : 'Publish'}
+                        {isPublished ? 'Gỡ xuất bản' : 'Xuất bản'}
                     </button>
                     <button
                         onClick={() => onDelete(movie.id)}
                         className="btn btn-danger"
                         style={{ borderRadius: '8px' }}
                     >
-                        Delete
+                        Xóa
                     </button>
                 </div>
             </td>
@@ -107,11 +121,11 @@ export default function MoviesPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this movie?')) return;
+        if (!confirm('Bạn có chắc muốn xóa phim này không?')) return;
         try {
             await deleteMutation.mutateAsync(id);
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Delete failed');
+            alert(err instanceof Error ? err.message : 'Xóa phim thất bại');
         }
     };
 
@@ -119,7 +133,7 @@ export default function MoviesPage() {
         try {
             await publishMutation.mutateAsync({ id, published });
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Publish failed');
+            alert(err instanceof Error ? err.message : 'Cập nhật trạng thái xuất bản thất bại');
         }
     };
 
@@ -127,10 +141,10 @@ export default function MoviesPage() {
         <div className="animate-fade-in">
             {/* Header */}
             <div className={styles.header}>
-                <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 700 }}>Movies</h1>
+                <h1 className="gradient-text" style={{ fontSize: '1.75rem', fontWeight: 700 }}>Phim</h1>
                 <Link href={localePath('/movies/new')} className="gradient-btn" style={{ padding: '10px 20px', borderRadius: '10px', fontWeight: 600, fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', color: '#fff' }}>
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                    New Movie
+                    Thêm phim mới
                 </Link>
             </div>
 
@@ -139,13 +153,13 @@ export default function MoviesPage() {
                 <input
                     type="text"
                     className="form-input"
-                    placeholder="Search movies..."
+                    placeholder="Tìm phim..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     style={{ maxWidth: 300 }}
                 />
                 <button type="submit" className="btn btn-secondary" style={{ borderRadius: '8px' }}>
-                    Search
+                    Tìm
                 </button>
                 {search && (
                     <button
@@ -154,7 +168,7 @@ export default function MoviesPage() {
                         style={{ borderRadius: '8px' }}
                         onClick={() => { setSearch(''); setSearchInput(''); }}
                     >
-                        Clear
+                        Xóa lọc
                     </button>
                 )}
             </form>
@@ -162,7 +176,7 @@ export default function MoviesPage() {
             {/* Error */}
             {error && (
                 <div className={styles.error}>
-                    {error instanceof Error ? error.message : 'Failed to load movies'}
+                    {error instanceof Error ? error.message : 'Không thể tải danh sách phim'}
                 </div>
             )}
 
@@ -180,9 +194,9 @@ export default function MoviesPage() {
                 <>
                     {data.data.length === 0 ? (
                         <div className={styles.empty}>
-                            <p>No movies found</p>
+                            <p>Không tìm thấy phim</p>
                             <Link href={localePath('/movies/new')} className="gradient-btn" style={{ padding: '10px 20px', borderRadius: '10px', fontWeight: 600, fontSize: '0.875rem', display: 'inline-flex', color: '#fff', textDecoration: 'none' }}>
-                                Create your first movie
+                                Tạo phim đầu tiên
                             </Link>
                         </div>
                     ) : (
@@ -190,11 +204,11 @@ export default function MoviesPage() {
                             <table className="table">
                                 <thead>
                                     <tr>
-                                        <th>Movie</th>
-                                        <th>Status</th>
-                                        <th>Encode</th>
-                                        <th>Updated</th>
-                                        <th>Actions</th>
+                                        <th>Phim</th>
+                                        <th>Trạng thái</th>
+                                        <th>Mã hóa</th>
+                                        <th>Cập nhật</th>
+                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -220,10 +234,10 @@ export default function MoviesPage() {
                                 className="btn btn-secondary"
                                 style={{ borderRadius: '8px' }}
                             >
-                                Previous
+                                Trước
                             </button>
                             <span className={styles.pageInfo}>
-                                Page {data.meta.page} of {data.meta.totalPages}
+                                Trang {data.meta.page} / {data.meta.totalPages}
                             </span>
                             <button
                                 onClick={() => setPage(page + 1)}
@@ -231,7 +245,7 @@ export default function MoviesPage() {
                                 className="btn btn-secondary"
                                 style={{ borderRadius: '8px' }}
                             >
-                                Next
+                                Sau
                             </button>
                         </div>
                     )}

@@ -20,7 +20,7 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
         ? `${window.location.origin}/movies/${movieId}`
         : '';
 
-    const shareText = `Check out "${movieTitle}" on Netflat!`;
+    const shareText = `Xem ngay "${movieTitle}" trên Netflat!`;
 
     useEffect(() => {
         if (!isOpen || !shareUrl) return;
@@ -79,7 +79,7 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
 
     const shareOptions = [
         {
-            name: 'Copy Link',
+            name: 'Sao chép liên kết',
             icon: '🔗',
             action: handleCopyLink,
         },
@@ -140,7 +140,7 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className={styles.header}>
-                    <h2>Share</h2>
+                    <h2>Chia sẻ</h2>
                     <button className={styles.closeBtn} onClick={onClose}>×</button>
                 </div>
 
@@ -169,7 +169,7 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
                         >
                             <span className={styles.optionIcon}>{option.icon}</span>
                             <span className={styles.optionName}>
-                                {option.name === 'Copy Link' && copied ? 'Copied!' : option.name}
+                                {option.name === 'Sao chép liên kết' && copied ? 'Đã sao chép!' : option.name}
                             </span>
                         </button>
                     ))}
@@ -179,14 +179,14 @@ export function ShareModal({ movieId, movieTitle, posterUrl, isOpen, onClose }: 
                 <div className={styles.qrSection}>
                     <div className={styles.qrCode}>
                         {qrLoading ? (
-                            <span>Generating...</span>
+                            <span>Đang tạo...</span>
                         ) : qrDataUrl ? (
                             <img src={qrDataUrl} alt={`QR code for ${movieTitle}`} />
                         ) : (
                             <span>📱</span>
                         )}
                     </div>
-                    <p>Scan to open on mobile</p>
+                    <p>Quét mã để mở trên điện thoại</p>
                 </div>
             </div>
         </div>

@@ -55,15 +55,15 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                 className="pagination-btn"
                 style={{
                     padding: '0.5rem 1rem',
-                    background: currentPage === 1 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
-                    border: 'none',
+                    background: currentPage === 1 ? 'var(--bg-card)' : 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
                     borderRadius: '4px',
-                    color: currentPage === 1 ? 'rgba(255,255,255,0.4)' : 'white',
+                    color: currentPage === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                 }}
             >
-                ← Prev
+                ← Trước
             </button>
 
             {getPageNumbers().map((page, index) => (
@@ -74,10 +74,10 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                         className="pagination-btn"
                         style={{
                             padding: '0.5rem 0.75rem',
-                            background: page === currentPage ? 'var(--accent)' : 'rgba(255,255,255,0.1)',
-                            border: 'none',
+                            background: page === currentPage ? 'var(--accent)' : 'var(--bg-secondary)',
+                            border: page === currentPage ? '1px solid var(--accent)' : '1px solid var(--border)',
                             borderRadius: '4px',
-                            color: 'white',
+                            color: page === currentPage ? 'white' : 'var(--text-primary)',
                             cursor: 'pointer',
                             fontWeight: page === currentPage ? 600 : 400,
                             minWidth: '40px',
@@ -87,7 +87,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                         {page}
                     </button>
                 ) : (
-                    <span key={index} style={{ color: 'rgba(255,255,255,0.5)', padding: '0 0.25rem' }}>
+                    <span key={index} style={{ color: 'var(--text-muted)', padding: '0 0.25rem' }}>
                         {page}
                     </span>
                 )
@@ -99,15 +99,15 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                 className="pagination-btn"
                 style={{
                     padding: '0.5rem 1rem',
-                    background: currentPage === totalPages ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
-                    border: 'none',
+                    background: currentPage === totalPages ? 'var(--bg-card)' : 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
                     borderRadius: '4px',
-                    color: currentPage === totalPages ? 'rgba(255,255,255,0.4)' : 'white',
+                    color: currentPage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s'
                 }}
             >
-                Next →
+                Tiếp →
             </button>
         </div>
     );

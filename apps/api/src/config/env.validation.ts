@@ -8,6 +8,7 @@ type EnvRecord = Record<string, unknown>;
 
 const BOOLEAN_KEYS = [
     'CORS_CREDENTIALS',
+    'VNPAY_ALLOW_RETURN_COMPLETION',
 ] as const;
 
 const DURATION_KEYS = [
@@ -25,6 +26,26 @@ export function validateEnvironment(config: EnvRecord): EnvRecord {
         const value = env[key]?.trim();
         if (!value) {
             errors.push(`${key} is required`);
+        }
+    }
+
+    const paymentProvider = (env.PAYMENT_PROVIDER || 'mock').trim();
+    if (!['mock', 'vnpay'].includes(paymentProvider)) {
+        errors.push('PAYMENT_PROVIDER must be one of: mock, vnpay');
+    }
+
+    const nodeEnv = (env.NODE_ENV || 'development').trim();
+    const strictMockWebhookSecret = paymentProvider === 'mock'
+        && (nodeEnv === 'production' || nodeEnv === 'staging');
+    if (strictMockWebhookSecret && !env.MOCK_WEBHOOK_SECRET?.trim()) {
+        errors.push('MOCK_WEBHOOK_SECRET is required when PAYMENT_PROVIDER=mock in production/staging');
+    }
+
+    if (paymentProvider === 'vnpay') {
+        for (const key of ['VNPAY_TMN_CODE', 'VNPAY_HASH_SECRET', 'VNPAY_URL', 'VNPAY_RETURN_URL']) {
+            if (!env[key]?.trim()) {
+                errors.push(`${key} is required when PAYMENT_PROVIDER=vnpay`);
+            }
         }
     }
 

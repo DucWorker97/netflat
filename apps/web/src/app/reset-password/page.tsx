@@ -29,7 +29,7 @@ function ResetPasswordForm() {
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError('Mật khẩu xác nhận không khớp');
             return;
         }
 
@@ -39,7 +39,7 @@ function ResetPasswordForm() {
             await api.post('/api/auth/reset-password', { token, newPassword: password });
             setSuccess(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Request failed');
+            setError(err instanceof Error ? err.message : 'Yêu cầu thất bại');
         } finally {
             setIsSubmitting(false);
         }
@@ -51,14 +51,14 @@ function ResetPasswordForm() {
                 <div className={styles.card}>
                     <Link href="/" className={styles.title}>netflat</Link>
                     <p style={{ textAlign: 'center', color: 'var(--danger)' }}>
-                        Invalid reset link. Please request a new one.
+                        Liên kết khôi phục không hợp lệ. Vui lòng yêu cầu liên kết mới.
                     </p>
                     <Link
                         href="/forgot-password"
                         className="btn btn-primary"
                         style={{ display: 'block', textAlign: 'center', width: '100%', marginTop: '1rem' }}
                     >
-                        Request New Link
+                        Yêu cầu liên kết mới
                     </Link>
                 </div>
             </div>
@@ -69,25 +69,25 @@ function ResetPasswordForm() {
         <div className={styles.container}>
             <div className={styles.card}>
                 <Link href="/" className={styles.title}>netflat</Link>
-                <p className={styles.subtitle}>Set your new password</p>
+                <p className={styles.subtitle}>Đặt mật khẩu mới</p>
 
                 {success ? (
                     <div>
                         <p style={{ color: 'var(--success)', textAlign: 'center', marginBottom: '1rem' }}>
-                            Password reset successfully!
+                            Đặt lại mật khẩu thành công!
                         </p>
                         <Link
                             href="/login"
                             className="btn btn-primary"
                             style={{ display: 'block', textAlign: 'center', width: '100%' }}
                         >
-                            Sign In
+                            Đăng nhập
                         </Link>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className={styles.form}>
                         <div className={styles.field}>
-                            <label htmlFor="password">New Password</label>
+                            <label htmlFor="password">Mật khẩu mới</label>
                             <div className={styles.passwordWrapper}>
                                 <input
                                     id="password"
@@ -95,7 +95,7 @@ function ResetPasswordForm() {
                                     className="input"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter new password"
+                                    placeholder="Nhập mật khẩu mới"
                                     required
                                     minLength={8}
                                 />
@@ -104,7 +104,7 @@ function ResetPasswordForm() {
                                     className={styles.showPasswordBtn}
                                     onClick={() => setShowPassword((v) => !v)}
                                 >
-                                    {showPassword ? 'Hide' : 'Show'}
+                                    {showPassword ? 'Ẩn' : 'Hiện'}
                                 </button>
                             </div>
                         </div>
@@ -112,14 +112,14 @@ function ResetPasswordForm() {
                         <p className={styles.helperText}>{PASSWORD_REQUIREMENTS_HINT}</p>
 
                         <div className={styles.field}>
-                            <label htmlFor="confirmPassword">Confirm Password</label>
+                            <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                             <input
                                 id="confirmPassword"
                                 type={showPassword ? 'text' : 'password'}
                                 className="input"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Enter password again"
+                                placeholder="Nhập lại mật khẩu"
                                 required
                                 minLength={8}
                             />
@@ -133,7 +133,7 @@ function ResetPasswordForm() {
                             style={{ width: '100%', marginTop: '0.5rem' }}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'Resetting...' : 'Reset Password'}
+                            {isSubmitting ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
                         </button>
                     </form>
                 )}

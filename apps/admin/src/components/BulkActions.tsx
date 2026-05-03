@@ -57,9 +57,9 @@ export function BulkActions({ movies, onAction }: BulkActionsProps) {
 
     const getActionLabel = (action: BulkAction) => {
         switch (action) {
-            case 'publish': return 'Publish';
-            case 'unpublish': return 'Unpublish';
-            case 'delete': return 'Delete';
+            case 'publish': return 'Xuất bản';
+            case 'unpublish': return 'Gỡ xuất bản';
+            case 'delete': return 'Xóa';
         }
     };
 
@@ -77,32 +77,32 @@ export function BulkActions({ movies, onAction }: BulkActionsProps) {
                                 if (el) el.indeterminate = someSelected && !allSelected;
                             }}
                         />
-                        <span>Select All ({movies.length})</span>
+                        <span>Chọn tất cả ({movies.length})</span>
                     </label>
                 </div>
 
                 {someSelected && (
                     <div className={styles.actions}>
                         <span className={styles.selectedCount}>
-                            {selectedIds.size} selected
+                            Đã chọn {selectedIds.size}
                         </span>
                         <button
                             className={`${styles.actionBtn} ${styles.publish}`}
                             onClick={() => handleAction('publish')}
                         >
-                            ▶️ Publish
+                            ▶️ Xuất bản
                         </button>
                         <button
                             className={`${styles.actionBtn} ${styles.unpublish}`}
                             onClick={() => handleAction('unpublish')}
                         >
-                            ⏸️ Unpublish
+                            ⏸️ Gỡ xuất bản
                         </button>
                         <button
                             className={`${styles.actionBtn} ${styles.delete}`}
                             onClick={() => handleAction('delete')}
                         >
-                            🗑️ Delete
+                            🗑️ Xóa
                         </button>
                     </div>
                 )}
@@ -141,20 +141,20 @@ export function BulkActions({ movies, onAction }: BulkActionsProps) {
             {showConfirm && (
                 <div className={styles.modalOverlay} onClick={() => setShowConfirm(null)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                        <h3>Confirm {getActionLabel(showConfirm)}</h3>
+                        <h3>Xác nhận {getActionLabel(showConfirm).toLowerCase()}</h3>
                         <p>
-                            Are you sure you want to {getActionLabel(showConfirm).toLowerCase()}{' '}
-                            <strong>{selectedIds.size}</strong> movie(s)?
+                            Bạn có chắc muốn {getActionLabel(showConfirm).toLowerCase()}{' '}
+                            <strong>{selectedIds.size}</strong> phim không?
                         </p>
                         {showConfirm === 'delete' && (
-                            <p className={styles.warning}>⚠️ This action cannot be undone!</p>
+                            <p className={styles.warning}>⚠️ Hành động này không thể hoàn tác!</p>
                         )}
                         <div className={styles.modalActions}>
                             <button
                                 className={styles.cancelBtn}
                                 onClick={() => setShowConfirm(null)}
                             >
-                                Cancel
+                                Hủy
                             </button>
                             <button
                                 className={`${styles.confirmBtn} ${showConfirm === 'delete' ? styles.confirmDanger : ''}`}

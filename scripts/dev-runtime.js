@@ -23,7 +23,7 @@ const GRACEFUL_STOP_TIMEOUT_MS = 5_000;
 const MODES = {
     web: {
         profile: '.env.web.local',
-        services: ['api', 'web'],
+        services: ['api', 'admin', 'web'],
     },
 };
 
@@ -60,6 +60,27 @@ function getPnpmRunner() {
         command: getPnpmCmd(),
         prefixArgs: [],
     };
+}
+
+function sleepSync(ms) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function quoteWindowsCmdArg(value) {
+    const stringValue = String(value);
+    if (stringValue.length === 0) {
+        return '""';
+    }
+
+    if (!/[\s"&()\[\]{}^=;!'+,`~|<>]/.test(stringValue)) {
+        return stringValue;
+    }
+
+    return `"${stringValue.replace(/"/g, '""')}"`;
+}
+
+function buildWindowsCmdInvocation(command, args) {
+    return [command, ...args].map(quoteWindowsCmdArg).join(' ');
 }
 
 function parseArgs(argv) {
@@ -127,12 +148,20 @@ function parseArgs(argv) {
 }
 
 function runSync(cmd, args, extra = {}) {
-    const result = spawnSync(cmd, args, {
+    const options = {
         cwd: ROOT,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         ...extra,
-    });
+    };
+
+    const result = process.platform === 'win32' && /\.(cmd|bat)$/i.test(cmd)
+        ? spawnSync(
+            process.env.ComSpec || 'cmd.exe',
+            ['/d', '/s', '/c', buildWindowsCmdInvocation(cmd, args)],
+            options,
+        )
+        : spawnSync(cmd, args, options);
 
     return {
         status: result.status ?? 1,
@@ -195,7 +224,7 @@ function killPid(pid) {
             // Wait up to GRACEFUL_STOP_TIMEOUT_MS for process to exit
             const deadline = Date.now() + GRACEFUL_STOP_TIMEOUT_MS;
             while (Date.now() < deadline && isProcessAlive(pid)) {
-                spawnSync('timeout', ['/T', '1', '/NOBREAK'], { stdio: 'ignore', shell: true });
+                sleepSync(250);
             }
         }
         if (isProcessAlive(pid)) {
@@ -460,12 +489,12 @@ async function ensureInfra(skipInfra) {
         return;
     }
 
-    log('Starting infrastructure (postgres, redis, minio) ...');
-    runSyncOrThrow('docker', ['compose', 'up', '-d', 'postgres', 'redis', 'minio'], 'docker compose up');
-    await waitForTcpPort(5432, DEFAULT_TIMEOUTS.infra, 'Postgres');
-    await waitForTcpPort(6379, DEFAULT_TIMEOUTS.infra, 'Redis');
-    await waitForTcpPort(9000, DEFAULT_TIMEOUTS.infra, 'MinIO');
-    log('Infrastructure is reachable on ports 5432/6379/9000');
+    log('Starting infrastructure (postgres, redis, minio, minio-init) ...');
+    runSyncOrThrow('docker', ['compose', 'up', '-d', 'postgres', 'redis', 'minio', 'minio-init'], 'docker compose up');
+    await waitForTcpPort(5433, DEFAULT_TIMEOUTS.infra, 'Postgres');
+    await waitForTcpPort(6380, DEFAULT_TIMEOUTS.infra, 'Redis');
+    await waitForTcpPort(9002, DEFAULT_TIMEOUTS.infra, 'MinIO');
+    log('Infrastructure is reachable on ports 5433/6380/9002');
 }
 
 function runMigrations(skipMigrate) {
@@ -474,9 +503,9 @@ function runMigrations(skipMigrate) {
         return;
     }
 
-    log('Running database migrations ...');
+    log('Preparing local database schema and seed data ...');
     const runner = getPnpmRunner();
-    runSyncOrThrow(runner.command, [...runner.prefixArgs, 'db:migrate:deploy'], 'db:migrate:deploy');
+    runSyncOrThrow(runner.command, [...runner.prefixArgs, 'db:prepare:local'], 'db:prepare:local');
 }
 
 async function runDoctor(mode) {
@@ -485,7 +514,7 @@ async function runDoctor(mode) {
     copyEnvProfile(modeConfig.profile);
     const env = parseEnvFile(path.join(ROOT, '.env'));
     ensureModeConsistency(mode, env);
-    await assertPortsFree([3000, 3002, 8081]);
+    await assertPortsFree([3000, 3001, 3002]);
     await ensureInfra(false);
     log('Doctor checks passed');
 }
@@ -567,6 +596,11 @@ async function waitServiceReady(name) {
         return;
     }
 
+    if (name === 'admin') {
+        await waitForHttp('http://localhost:3001', DEFAULT_TIMEOUTS.web, 'Admin');
+        return;
+    }
+
     if (name === 'web') {
         await waitForHttp('http://localhost:3002', DEFAULT_TIMEOUTS.web, 'Web');
         return;
@@ -577,14 +611,16 @@ async function runCrossPlatformGate(mode) {
     const env = parseEnvFile(path.join(ROOT, '.env'));
     ensureModeConsistency(mode, env);
     await waitForHttp('http://localhost:3000/health', DEFAULT_TIMEOUTS.api, 'API health gate');
+    await waitForHttp('http://localhost:3001', DEFAULT_TIMEOUTS.web, 'Admin gate');
     await waitForHttp('http://localhost:3002', DEFAULT_TIMEOUTS.web, 'Web gate');
 }
 
 const serviceRestartCounters = {};
 
 const serviceArgs = {
-    api: ['--filter', '@NETFLAT/api', 'dev'],
-    web: ['--filter', '@NETFLAT/web', 'dev'],
+    api: ['--filter', '@netflat/api', 'dev'],
+    admin: ['--filter', '@netflat/admin', 'dev'],
+    web: ['--filter', '@netflat/web', 'dev'],
 };
 
 function startProcessMonitor() {
@@ -643,7 +679,7 @@ async function startRuntime(options) {
     const env = parseEnvFile(path.join(ROOT, '.env'));
     ensureModeConsistency(options.mode, env);
 
-    const runtimePorts = [3000, 3002];
+    const runtimePorts = [3000, 3001, 3002];
     let busyPorts = await findBusyPorts(runtimePorts);
     if (busyPorts.length > 0 && options.forcePorts) {
         forceFreePorts(busyPorts);
@@ -702,6 +738,7 @@ async function startRuntime(options) {
     log('Runtime started successfully');
     log('URLs:');
     log('  API:    http://localhost:3000/health');
+    log('  Admin:  http://localhost:3001');
     log('  Web:    http://localhost:3002');
     log(`Logs: ${LOG_DIR}`);
 }

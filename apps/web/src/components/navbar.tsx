@@ -22,29 +22,35 @@ export function Navbar() {
                         href="/"
                         style={{ color: isActive('/') ? 'var(--text-primary)' : undefined }}
                     >
-                        Home
+                        Trang chủ
                     </Link>
                     {FEATURE_FLAGS.search && (
                         <Link
                             href="/search"
                             style={{ color: isActive('/search') ? 'var(--text-primary)' : undefined }}
                         >
-                            Search
+                            Tìm kiếm
                         </Link>
                     )}
 
                     <Link
                         href="/movies"
-                        className="text-sm font-medium text-gray-300 transition-colors hover:text-white"
+                        style={{ color: isActive('/movies') ? 'var(--text-primary)' : undefined }}
                     >
-                        Movies
+                        Phim
+                    </Link>
+                    <Link
+                        href="/pricing"
+                        style={{ color: isActive('/pricing') ? 'var(--text-primary)' : undefined }}
+                    >
+                        Gói cước
                     </Link>
                     {isAuthenticated && (
                         <Link
                             href="/favorites"
                             style={{ color: isActive('/favorites') ? 'var(--text-primary)' : undefined }}
                         >
-                            Favorites
+                            Yêu thích
                         </Link>
                     )}
                     {isAuthenticated && (
@@ -52,7 +58,15 @@ export function Navbar() {
                             href="/history"
                             style={{ color: isActive('/history') ? 'var(--text-primary)' : undefined }}
                         >
-                            History
+                            Lịch sử
+                        </Link>
+                    )}
+                    {isAuthenticated && (
+                        <Link
+                            href="/profile/billing"
+                            style={{ color: isActive('/profile/billing') ? 'var(--text-primary)' : undefined }}
+                        >
+                            Thanh toán
                         </Link>
                     )}
                 </div>
@@ -69,12 +83,12 @@ export function Navbar() {
                                 {user?.displayName || user?.email}
                             </Link>
                             <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                                Logout
+                                Đăng xuất
                             </button>
                         </>
                     ) : (
                         <Link href="/login" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-                            Sign In
+                            Đăng nhập
                         </Link>
                     )}
                 </div>

@@ -1,180 +1,260 @@
-﻿// @ts-nocheck
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import axios from 'axios';
+import {
+    LOCAL_GENRES,
+    LOCAL_MOVIES,
+    TEST_USERS,
+    type LocalMovieSeed,
+    type TestUserSeed,
+} from '../scripts/seed-shared';
+import {
+    getTmdbCredentials,
+    hasTmdbCredentials,
+    syncTmdbPopularMovies,
+} from '../scripts/tmdb-shared';
 
 const prisma = new PrismaClient();
 
-const TMDB_API_KEY = '1370fd1e67f2b60baa8e595035a68e1d';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
-
-// Mappers
-const mapGenre = (tmdbGenre: any) => ({
-    name: tmdbGenre.name,
-    slug: tmdbGenre.name.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and'),
-    tmdbId: tmdbGenre.id,
-});
-
-async function main() {
-    console.log('đŸŒ± Seeding database...');
-
-    // 1. CLEAR DATA (Preserve Users)
-    console.log('đŸ§¹ Clearing old movie data...');
-    // 1. CLEAR DATA
-    console.log('đŸ§¹ Clearing old movie data...');
-    try {
-        if (prisma.rating) {
-            console.log('  - Deleting Rating...');
-            await prisma.rating.deleteMany({});
-        }
-        if (prisma.favorite) {
-            console.log('  - Deleting Favorite...');
-            await prisma.favorite.deleteMany({});
-        }
-        if (prisma.upload) {
-            console.log('  - Deleting Upload...');
-            await prisma.upload.deleteMany({});
-        }
-        if (prisma.movieGenre) {
-            console.log('  - Deleting MovieGenre...');
-            await prisma.movieGenre.deleteMany({});
-        }
-        if (prisma.movie) {
-            console.log('  - Deleting Movie...');
-            await prisma.movie.deleteMany({});
-        }
-        if (prisma.actor) {
-            console.log('  - Deleting Actor...');
-            await prisma.actor.deleteMany({});
-        }
-        if (prisma.genre) {
-            console.log('  - Deleting Genre...');
-            await prisma.genre.deleteMany({});
-        }
-    } catch (err) {
-        console.error('âŒ Error during cleanup:', err);
-        throw err;
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
     }
 
-    // 2. CREATE USERS (Idempotent)
-    const adminPassword = await bcrypt.hash('admin123', 10);
-    await prisma.user.upsert({
-        where: { email: 'admin@netflat.local' },
-        update: {},
-        create: {
-            email: 'admin@netflat.local',
-            passwordHash: adminPassword,
-            role: UserRole.admin,
-        },
-    });
+    return String(error);
+}
 
-    const viewerPassword = await bcrypt.hash('viewer123', 10);
-    await prisma.user.upsert({
-        where: { email: 'viewer@netflat.local' },
-        update: {},
-        create: {
-            email: 'viewer@netflat.local',
-            passwordHash: viewerPassword,
-            role: UserRole.viewer,
-        },
-    });
-    console.log('âœ… Users verified (admin@netflat.local / viewer@netflat.local)');
-
-    // 3. FETCH GENRES
-    console.log('đŸ“¥ Fetching users genres from TMDB...');
-    const genresResponse = await axios.get(`${TMDB_BASE_URL}/genre/movie/list`, {
-        params: { api_key: TMDB_API_KEY }
-    });
-    const tmdbGenres = genresResponse.data.genres;
-    const genreMap = new Map(); // tmdbId -> dbId
-
-    for (const g of tmdbGenres) {
-        const mapped = mapGenre(g);
-        const created = await prisma.genre.create({ data: { name: mapped.name, slug: mapped.slug } });
-        genreMap.set(g.id, created.id);
-    }
-    console.log(`âœ… Created ${tmdbGenres.length} genres`);
-
-    // 4. FETCH MOVIES
-    console.log('đŸ“¥ Fetching popular movies from TMDB...');
-    // Fetch 2 pages (40 movies)
-    let movies: any[] = [];
-    for (let page = 1; page <= 2; page++) {
-        const res = await axios.get(`${TMDB_BASE_URL}/movie/popular`, {
-            params: { api_key: TMDB_API_KEY, page }
+async function seedUsers(users: TestUserSeed[]): Promise<void> {
+    for (const user of users) {
+        const passwordHash = await bcrypt.hash(user.password, 10);
+        await prisma.user.upsert({
+            where: { email: user.email },
+            update: {
+                passwordHash,
+                role: user.role,
+            },
+            create: {
+                email: user.email,
+                passwordHash,
+                role: user.role,
+            },
         });
-        movies = [...movies, ...res.data.results];
+    }
+}
+
+async function seedSubscriptionPlans(): Promise<void> {
+    const plans = [
+        {
+            name: 'free',
+            displayName: 'Free',
+            description: 'Starter plan for demo users',
+            maxMoviesPerMonth: 5,
+            maxQualityResolution: '480p',
+            maxFavorites: 10,
+            maxDevices: 1,
+            showAds: true,
+            monthlyPrice: 0,
+            annualPrice: 0,
+            isActive: true,
+        },
+        {
+            name: 'pro',
+            displayName: 'Pro',
+            description: 'No ads, better quality, more devices',
+            maxMoviesPerMonth: 9999,
+            maxQualityResolution: '1080p',
+            maxFavorites: 100,
+            maxDevices: 2,
+            showAds: false,
+            monthlyPrice: 139000,
+            annualPrice: 1390000,
+            isActive: true,
+        },
+        {
+            name: 'premium',
+            displayName: 'Premium',
+            description: 'Best quality and family usage',
+            maxMoviesPerMonth: 9999,
+            maxQualityResolution: '4K',
+            maxFavorites: 200,
+            maxDevices: 4,
+            showAds: false,
+            monthlyPrice: 299000,
+            annualPrice: 2990000,
+            isActive: true,
+        },
+    ];
+
+    for (const plan of plans) {
+        await prisma.subscriptionPlan.upsert({
+            where: { name: plan.name },
+            update: plan,
+            create: plan,
+        });
+    }
+}
+
+async function seedDefaultSubscriptions(): Promise<void> {
+    const freePlan = await prisma.subscriptionPlan.findUnique({
+        where: { name: 'free' },
+        select: { id: true },
+    });
+
+    if (!freePlan) {
+        return;
     }
 
-    // Process each movie
-    for (const m of movies) {
-        // Fetch details for runtime and credits
+    const users = await prisma.user.findMany({
+        select: { id: true },
+    });
+
+    const now = new Date();
+    const nextYear = new Date(now);
+    nextYear.setUTCFullYear(nextYear.getUTCFullYear() + 1);
+
+    for (const user of users) {
+        await prisma.subscription.upsert({
+            where: { userId: user.id },
+            update: {},
+            create: {
+                userId: user.id,
+                planId: freePlan.id,
+                status: 'active',
+                startDate: now,
+                endDate: nextYear,
+                autoRenew: true,
+            },
+        });
+    }
+}
+
+async function upsertLocalGenres(): Promise<Map<string, string>> {
+    const genreMap = new Map<string, string>();
+
+    for (const genre of LOCAL_GENRES) {
+        const record = await prisma.genre.upsert({
+            where: { slug: genre.slug },
+            update: { name: genre.name },
+            create: {
+                name: genre.name,
+                slug: genre.slug,
+            },
+        });
+
+        genreMap.set(genre.slug, record.id);
+    }
+
+    return genreMap;
+}
+
+async function upsertLocalMovie(movie: LocalMovieSeed, genreMap: Map<string, string>): Promise<void> {
+    const existing = await prisma.movie.findFirst({
+        where: { title: movie.title },
+        select: { id: true },
+    });
+
+    const record = existing
+        ? await prisma.movie.update({
+            where: { id: existing.id },
+            data: {
+                description: movie.description,
+                releaseYear: movie.releaseYear,
+                durationSeconds: movie.durationSeconds,
+                playbackUrl: movie.playbackUrl,
+                posterUrl: movie.posterUrl,
+                backdropUrl: movie.backdropUrl,
+                movieStatus: 'published',
+                encodeStatus: 'ready',
+                originalLanguage: movie.originalLanguage,
+                actors: movie.actors,
+            },
+        })
+        : await prisma.movie.create({
+            data: {
+                title: movie.title,
+                description: movie.description,
+                releaseYear: movie.releaseYear,
+                durationSeconds: movie.durationSeconds,
+                playbackUrl: movie.playbackUrl,
+                posterUrl: movie.posterUrl,
+                backdropUrl: movie.backdropUrl,
+                movieStatus: 'published',
+                encodeStatus: 'ready',
+                originalLanguage: movie.originalLanguage,
+                actors: movie.actors,
+            },
+        });
+
+    const genreIds = movie.genres
+        .map((genreSlug) => genreMap.get(genreSlug))
+        .filter((genreId): genreId is string => Boolean(genreId));
+
+    await prisma.movieGenre.deleteMany({ where: { movieId: record.id } });
+    if (genreIds.length > 0) {
+        await prisma.movieGenre.createMany({
+            data: genreIds.map((genreId) => ({ movieId: record.id, genreId })),
+            skipDuplicates: true,
+        });
+    }
+}
+
+async function seedLocalContent(): Promise<void> {
+    console.log('TMDB credentials are missing or unavailable. Seeding local sample content without clearing the existing catalog...');
+
+    const genreMap = await upsertLocalGenres();
+    for (const movie of LOCAL_MOVIES) {
+        await upsertLocalMovie(movie, genreMap);
+        console.log(`Upserted local movie: ${movie.title}`);
+    }
+}
+
+async function main(): Promise<void> {
+    console.log('Seeding database...');
+
+    await seedUsers(TEST_USERS);
+    console.log(`Seeded ${TEST_USERS.length} test users.`);
+
+    await seedSubscriptionPlans();
+    console.log('Seeded subscription plans.');
+
+    await seedDefaultSubscriptions();
+    console.log('Seeded default subscriptions.');
+
+    const existingMovieCount = await prisma.movie.count();
+    const tmdbCredentials = getTmdbCredentials();
+
+    if (hasTmdbCredentials(tmdbCredentials)) {
         try {
-            const detailRes = await axios.get(`${TMDB_BASE_URL}/movie/${m.id}`, {
-                params: { api_key: TMDB_API_KEY, append_to_response: 'credits' }
-            });
-            const details = detailRes.data;
-
-            // Create Movie
-            const createdMovie = await prisma.movie.create({
-                data: {
-                    title: details.title,
-                    description: details.overview || '',
-                    releaseYear: details.release_date ? new Date(details.release_date).getFullYear() : 2024,
-                    durationSeconds: (details.runtime || 90) * 60,
-                    posterUrl: details.poster_path ? `${IMAGE_BASE_URL}${details.poster_path}` : null,
-                    backdropUrl: details.backdrop_path ? `${IMAGE_BASE_URL}${details.backdrop_path}` : null,
-                    movieStatus: 'published',
-                    encodeStatus: 'ready', // Pretend it's ready
-                    tmdbId: details.id,
-                    popularity: details.popularity,
-                    voteAverage: details.vote_average,
-                    voteCount: details.vote_count,
-                    originalLanguage: details.original_language,
-                }
+            const result = await syncTmdbPopularMovies(prisma, {
+                credentials: tmdbCredentials,
+                delayMs: 250,
+                log: (message) => console.log(message),
+                pages: 3,
             });
 
-            // Link Genres
-            for (const g of details.genres) {
-                const dbGenreId = genreMap.get(g.id);
-                if (dbGenreId) {
-                    await prisma.movieGenre.create({
-                        data: { movieId: createdMovie.id, genreId: dbGenreId }
-                    });
-                }
-            }
+            console.log(
+                `TMDB sync completed. Imported: ${result.imported}, updated: ${result.updated}, failed: ${result.failed}. Catalog size: ${result.movieCount} movie(s).`,
+            );
+        } catch (error: unknown) {
+            console.warn(`TMDB sync failed: ${getErrorMessage(error)}`);
 
-            // Link Actors (Top 5) — stored as String[] on Movie
-            const cast = details.credits?.cast?.slice(0, 5) || [];
-            const actorNames = cast.map((c: any) => c.name).filter(Boolean);
-            if (actorNames.length > 0) {
-                await prisma.movie.update({
-                    where: { id: createdMovie.id },
-                    data: { actors: actorNames },
-                });
-                // Also sync to Actor dictionary
-                for (const name of actorNames) {
-                    await prisma.actor.upsert({
-                        where: { name },
-                        update: {},
-                        create: { name },
-                    });
-                }
+            if (existingMovieCount === 0) {
+                await seedLocalContent();
+            } else {
+                console.log(`Catalog already has ${existingMovieCount} movie(s). Keeping the existing dataset.`);
             }
-            console.log(`  Processed: ${m.title}`);
-
-        } catch (e) {
-            console.error(`  Failed to process movie ${m.title}: ${e.message}`);
         }
+    } else if (existingMovieCount === 0) {
+        await seedLocalContent();
+    } else {
+        console.log(`Catalog already has ${existingMovieCount} movie(s). Skipping local fallback seed.`);
     }
 
-    console.log('đŸ‰ Seeding completed!');
+    console.log('Seeding completed.');
 }
 
 main()
-    .catch((e) => {
-        console.error('âŒ Seeding failed:', e);
+    .catch((error: unknown) => {
+        console.error('Seeding failed:', getErrorMessage(error));
         process.exit(1);
     })
     .finally(async () => {

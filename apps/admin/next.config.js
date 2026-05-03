@@ -13,6 +13,22 @@ const nextConfig = {
                 port: '9000',
                 pathname: '/netflat-media/**',
             },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '9002',
+                pathname: '/netflat-media/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'image.tmdb.org',
+                pathname: '/t/p/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'images.unsplash.com',
+                pathname: '/**',
+            },
         ],
     },
     env: {
