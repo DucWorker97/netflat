@@ -7,6 +7,7 @@ export interface CreateCheckoutSessionParams {
     planName: string;
     billingCycle: BillingCycle;
     userId: string;
+    ipAddress?: string;
     returnUrl?: string;
 }
 
@@ -16,9 +17,15 @@ export interface CheckoutSession {
 }
 
 export interface WebhookEvent {
-    paymentId: string;
+    paymentId?: string;
     eventType: 'payment.completed' | 'payment.failed';
     providerRef?: string;
+    providerReference?: string;
+    providerTransactionId?: string;
+    responseCode?: string;
+    transactionStatus?: string;
+    amount?: number;
+    rawPayload?: Record<string, string>;
 }
 
 export interface PaymentProvider {

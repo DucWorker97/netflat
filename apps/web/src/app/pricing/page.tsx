@@ -80,13 +80,24 @@ export default function PricingPage() {
                 billingCycle,
             });
 
-            await completeMockPayment.mutateAsync({
-                paymentId: checkout.paymentId,
-                planName,
-                billingCycle,
-            });
+            if (checkout.provider === 'mock') {
+                await completeMockPayment.mutateAsync({
+                    paymentId: checkout.paymentId,
+                    planName,
+                    billingCycle,
+                });
 
-            setMessage('Thanh toán mô phỏng thành công. Gói cước đã được cập nhật.');
+                setMessage('Thanh toán mô phỏng thành công. Gói cước đã được cập nhật.');
+                return;
+            }
+
+            if (checkout.provider === 'vnpay') {
+                setMessage('Đang chuyển sang cổng thanh toán VNPay...');
+                window.location.assign(checkout.checkoutUrl);
+                return;
+            }
+
+            throw new Error('Nhà cung cấp thanh toán không hợp lệ.');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Không thể xử lý nâng cấp gói cước.');
         } finally {

@@ -15,6 +15,7 @@ export function HeroBanner({ movie, isLoading }: HeroBannerProps) {
                 height: '70vh',
                 minHeight: '400px',
                 background: '#1a1a1a',
+                color: 'var(--text-on-dark)',
                 animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
             }} />
         );
@@ -28,6 +29,7 @@ export function HeroBanner({ movie, isLoading }: HeroBannerProps) {
             height: '70vh',
             minHeight: '400px',
             background: '#000',
+            color: 'var(--text-on-dark)',
             overflow: 'hidden'
         }}>
             {/* Backdrop Image or Gradient Fallback */}
@@ -76,6 +78,7 @@ export function HeroBanner({ movie, isLoading }: HeroBannerProps) {
                         maxWidth: '600px',
                         marginBottom: '2rem',
                         lineHeight: 1.6,
+                        color: 'var(--text-on-dark-secondary)',
                         textShadow: '1px 1px 4px rgba(0,0,0,0.8)',
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
@@ -103,7 +106,7 @@ export function HeroBanner({ movie, isLoading }: HeroBannerProps) {
                     {movie.releaseYear && (
                         <span style={{
                             fontSize: '1rem',
-                            color: 'rgba(255,255,255,0.7)'
+                            color: 'var(--text-on-dark-secondary)'
                         }}>
                             {movie.releaseYear}
                         </span>

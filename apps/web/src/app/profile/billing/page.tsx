@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useBillingHistory, useCancelSubscription, useMySubscription } from '@/lib/queries';
@@ -28,14 +28,26 @@ function getStatusLabel(status: 'active' | 'canceled' | 'expired') {
     return 'Đã hết hạn';
 }
 
+function getVnpayMessage(status: string | null) {
+    if (status === 'success') return 'Thanh toan VNPay thanh cong. Goi cuoc da duoc cap nhat.';
+    if (status === 'pending') return 'Thanh toan VNPay da ghi nhan. He thong dang cho IPN xac nhan.';
+    if (status === 'failed') return 'Thanh toan VNPay khong thanh cong hoac da bi huy.';
+    return '';
+}
+
 export default function BillingPage() {
     const { isAuthenticated } = useAuth();
     const [page, setPage] = useState(1);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [vnpayStatus, setVnpayStatus] = useState<string | null>(null);
     const subscription = useMySubscription(isAuthenticated);
     const payments = useBillingHistory(page, 20, isAuthenticated);
     const cancelSubscription = useCancelSubscription();
+    const vnpayMessage = getVnpayMessage(vnpayStatus);
+    const vnpayMessageClassName = vnpayStatus === 'failed' ? styles.error : styles.success;
+    const { refetch: refetchSubscription } = subscription;
+    const { refetch: refetchPayments } = payments;
 
     const currentSubscription = subscription.data;
     const daysUntilExpiry = currentSubscription ? getDaysUntil(currentSubscription.endDate) : null;
@@ -46,6 +58,19 @@ export default function BillingPage() {
         daysUntilExpiry !== null &&
         daysUntilExpiry >= 0,
     );
+
+    useEffect(() => {
+        setVnpayStatus(new URLSearchParams(window.location.search).get('vnpay'));
+    }, []);
+
+    useEffect(() => {
+        if (!vnpayStatus || !isAuthenticated) {
+            return;
+        }
+
+        void refetchSubscription();
+        void refetchPayments();
+    }, [isAuthenticated, refetchPayments, refetchSubscription, vnpayStatus]);
 
     const handleCancelSubscription = async () => {
         setMessage('');
@@ -87,6 +112,7 @@ export default function BillingPage() {
             </section>
 
             {message ? <p className={styles.success}>{message}</p> : null}
+            {vnpayMessage && !message ? <p className={vnpayMessageClassName}>{vnpayMessage}</p> : null}
             {error ? <p className={styles.error}>{error}</p> : null}
 
             {currentSubscription &&

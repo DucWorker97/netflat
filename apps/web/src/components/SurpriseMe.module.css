@@ -74,7 +74,7 @@
 
 .card:hover:not(:disabled) {
     border-style: solid;
-    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    background: linear-gradient(135deg, #24315f 0%, #30235a 100%);
     transform: translateY(-2px);
 }
 
@@ -114,7 +114,7 @@
 
 .cardContent p {
     margin: 0;
-    color: #888;
+    color: var(--text-on-dark-secondary);
     font-size: 0.875rem;
 }
 

@@ -6,9 +6,9 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.75);
     border: none;
-    color: #fff;
+    color: #111111;
     padding: 0.5rem 0.75rem;
     border-radius: 4px;
     cursor: pointer;
@@ -17,7 +17,7 @@
 }
 
 .trigger:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .trigger:disabled {
@@ -45,11 +45,11 @@
     bottom: 100%;
     right: 0;
     margin-bottom: 0.5rem;
-    background: #181818;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
     min-width: 160px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     z-index: 100;
     animation: fadeIn 0.15s ease-out;
 }
@@ -69,9 +69,9 @@
 .header {
     padding: 0.75rem 1rem;
     font-size: 0.75rem;
-    color: #888;
+    color: #6b7280;
     text-transform: uppercase;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .options {
@@ -85,20 +85,20 @@
     gap: 0.5rem;
     background: none;
     border: none;
-    color: #ccc;
+    color: #374151;
     padding: 0.625rem 1rem;
     cursor: pointer;
     text-align: left;
 }
 
 .option:hover {
-    background: #2a2a2a;
-    color: #fff;
+    background: #f3f4f6;
+    color: #111111;
 }
 
 .optionActive {
-    color: #fff;
-    background: rgba(229, 9, 20, 0.15);
+    color: #111111;
+    background: rgba(37, 99, 235, 0.08);
 }
 
 .optionLabel {
@@ -106,16 +106,16 @@
 }
 
 .optionHint {
-    color: #666;
+    color: #9ca3af;
     font-size: 0.75rem;
 }
 
 .optionActive .optionHint {
-    color: #888;
+    color: #6b7280;
 }
 
 .checkmark {
     margin-left: auto;
-    color: #3b82f6;
+    color: #2563eb;
 }
 

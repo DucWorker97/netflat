@@ -15,13 +15,13 @@ export function ErrorState({
         <div style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            color: 'rgba(255,255,255,0.7)'
+            color: 'var(--text-secondary)'
         }}>
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
             <h3 style={{
                 fontSize: '1.5rem',
                 marginBottom: '0.5rem',
-                color: 'white'
+                color: 'var(--text-primary)'
             }}>
                 {title}
             </h3>
@@ -52,13 +52,13 @@ export function EmptyState({
         <div style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            color: 'rgba(255,255,255,0.5)'
+            color: 'var(--text-secondary)'
         }}>
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>{icon}</div>
             <h3 style={{
                 fontSize: '1.5rem',
                 marginBottom: '0.5rem',
-                color: 'rgba(255,255,255,0.7)'
+                color: 'var(--text-primary)'
             }}>
                 {title}
             </h3>

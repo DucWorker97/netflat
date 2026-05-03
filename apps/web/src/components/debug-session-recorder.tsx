@@ -3,7 +3,7 @@
 // DEBUG-ONLY COMPONENT
 // Remove this file (and its mount line in app/layout.tsx) when requested to strip debugging code.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type RecorderEvent = {
     ts: string;
@@ -69,6 +69,8 @@ function buildFilename(appName: string): string {
 export function DebugSessionRecorder({ appName }: { appName: 'web' | 'admin' }) {
     const [enabled, setEnabled] = useState(true);
     const [eventCount, setEventCount] = useState(0);
+    const eventCountRef = useRef(0);
+    const eventCountFrameRef = useRef<number | null>(null);
     const badgeLabel = useMemo(() => (enabled ? `REC ${eventCount}` : 'REC OFF'), [enabled, eventCount]);
 
     useEffect(() => {
@@ -89,10 +91,23 @@ export function DebugSessionRecorder({ appName }: { appName: 'web' | 'admin' }) 
 
         const events: RecorderEvent[] = [];
         const startedAt = new Date().toISOString();
+        eventCountRef.current = 0;
+        setEventCount(0);
 
         const pushEvent = (type: string, data: Record<string, unknown>) => {
             events.push({ ts: new Date().toISOString(), type, data });
-            setEventCount(events.length);
+            eventCountRef.current = events.length;
+
+            if (eventCountFrameRef.current !== null) {
+                return;
+            }
+
+            // Defer the badge update so router/history patches do not schedule state updates
+            // during React's insertion phase.
+            eventCountFrameRef.current = window.requestAnimationFrame(() => {
+                eventCountFrameRef.current = null;
+                setEventCount(eventCountRef.current);
+            });
         };
 
         const originalFetch = window.fetch.bind(window);
@@ -238,6 +253,10 @@ export function DebugSessionRecorder({ appName }: { appName: 'web' | 'admin' }) 
 
         return () => {
             stop();
+            if (eventCountFrameRef.current !== null) {
+                window.cancelAnimationFrame(eventCountFrameRef.current);
+                eventCountFrameRef.current = null;
+            }
             delete window.__netflatRecorderExport;
         };
     }, [enabled, appName]);

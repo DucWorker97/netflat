@@ -290,6 +290,13 @@ model Payment {
   subscriptionId  String        @map("subscription_id") @db.Uuid
   transactionId   String?       @unique @map("transaction_id") @db.VarChar(255)
   paymentMethod   String        @default("mock") @map("payment_method") @db.VarChar(50)
+  planName        String?       @map("plan_name") @db.VarChar(50)
+  billingCycle    String?       @map("billing_cycle") @db.VarChar(20)
+  providerReference String?     @unique @map("provider_reference") @db.VarChar(255)
+  providerTransactionId String? @map("provider_transaction_id") @db.VarChar(255)
+  providerResponseCode String?  @map("provider_response_code") @db.VarChar(20)
+  providerTransactionStatus String? @map("provider_transaction_status") @db.VarChar(20)
+  providerPayload Json?         @map("provider_payload")
   amount          Float
   currency        String        @default("VND") @db.VarChar(10)
   status          PaymentStatus @default(pending)
@@ -303,6 +310,7 @@ model Payment {
   @@index([userId])
   @@index([subscriptionId])
   @@index([status])
+  @@index([providerTransactionId])
   @@map("payments")
 }
 

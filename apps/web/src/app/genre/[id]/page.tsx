@@ -25,12 +25,13 @@ export default function GenrePage({ params }: { params: Promise<{ id: string }> 
             {/* Header */}
             <div style={{
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                color: 'var(--text-on-dark)',
                 padding: '3rem 0',
                 marginBottom: '2rem'
             }}>
                 <div className="container">
                     <Link href="/" style={{
-                        color: 'rgba(255,255,255,0.7)',
+                        color: 'var(--text-on-dark-secondary)',
                         marginBottom: '1rem',
                         display: 'inline-block'
                     }}>
@@ -39,7 +40,7 @@ export default function GenrePage({ params }: { params: Promise<{ id: string }> 
                     <h1 style={{ fontSize: '3rem', fontWeight: 700 }}>
                         {genre?.name || 'Thể loại'}
                     </h1>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '0.5rem' }}>
+                    <p style={{ color: 'var(--text-on-dark-secondary)', marginTop: '0.5rem' }}>
                         {movies.length} phim
                     </p>
                 </div>

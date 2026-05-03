@@ -4,10 +4,10 @@ import { FEATURE_FLAGS } from '@/lib/feature-flags';
 export function Footer() {
     return (
         <footer style={{
-            background: 'var(--background-secondary)',
+            background: 'var(--bg-secondary)',
             padding: '3rem 0',
             marginTop: 'auto',
-            borderTop: '1px solid rgba(255,255,255,0.1)'
+            borderTop: '1px solid var(--border)'
         }}>
             <div className="container">
                 <div style={{
@@ -55,7 +55,7 @@ export function Footer() {
                 </div>
 
                 <div style={{
-                    borderTop: '1px solid rgba(255,255,255,0.05)',
+                    borderTop: '1px solid var(--border)',
                     paddingTop: '1.5rem',
                     textAlign: 'center',
                     color: 'var(--text-secondary)',

@@ -68,7 +68,8 @@ export default function StatusPage() {
 
             <section
                 style={{
-                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
                     borderRadius: 10,
                     padding: 16,
                     marginBottom: 12,
@@ -80,7 +81,8 @@ export default function StatusPage() {
 
             <section
                 style={{
-                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
                     borderRadius: 10,
                     padding: 16,
                 }}

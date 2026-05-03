@@ -35,7 +35,7 @@ export function Navbar() {
 
                     <Link
                         href="/movies"
-                        className="text-sm font-medium text-gray-300 transition-colors hover:text-white"
+                        style={{ color: isActive('/movies') ? 'var(--text-primary)' : undefined }}
                     >
                         Phim
                     </Link>

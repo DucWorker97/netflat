@@ -7,14 +7,35 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { Payment, PaymentStatus, SubscriptionPlan, User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { Payment, PaymentStatus, Prisma, SubscriptionPlan, User } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
-import { BillingCycle, PaymentProvider } from './providers/payment-provider.interface';
+import { BillingCycle, PaymentProvider, WebhookEvent } from './providers/payment-provider.interface';
 import { PAYMENT_PROVIDER } from './providers/payment-provider.token';
 
 type PaymentWithUser = Payment & { user: User };
+
+interface ProviderPaymentMetadata {
+    transactionId?: string;
+    providerTransactionId?: string;
+    providerResponseCode?: string;
+    providerTransactionStatus?: string;
+    providerPayload?: Prisma.InputJsonValue;
+}
+
+interface PaymentTarget {
+    planName: string;
+    billingCycle: BillingCycle;
+}
+
+export interface VnpayIpnResponse {
+    RspCode: string;
+    Message: string;
+}
+
+export type VnpayReturnStatus = 'success' | 'failed' | 'pending';
 
 @Injectable()
 export class PaymentsService {
@@ -24,11 +45,17 @@ export class PaymentsService {
         private readonly prisma: PrismaService,
         private readonly subscriptionsService: SubscriptionsService,
         private readonly mailService: MailService,
+        private readonly configService: ConfigService,
         @Inject(PAYMENT_PROVIDER)
         private readonly paymentProvider: PaymentProvider,
     ) {}
 
-    async createCheckout(userId: string, planName: string, billingCycle: BillingCycle) {
+    async createCheckout(
+        userId: string,
+        planName: string,
+        billingCycle: BillingCycle,
+        ipAddress?: string,
+    ) {
         const plan = await this.prisma.subscriptionPlan.findFirst({
             where: {
                 name: planName,
@@ -52,7 +79,9 @@ export class PaymentsService {
                 subscriptionId: subscription.id,
                 amount,
                 currency: 'VND',
-                paymentMethod: 'mock',
+                paymentMethod: this.paymentProvider.name,
+                planName,
+                billingCycle,
                 status: PaymentStatus.pending,
             },
         });
@@ -64,6 +93,14 @@ export class PaymentsService {
             planName,
             billingCycle,
             userId,
+            ipAddress,
+        });
+
+        await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+                providerReference: checkout.providerRef,
+            },
         });
 
         return {
@@ -103,7 +140,7 @@ export class PaymentsService {
         paymentId: string,
         requestingUserId: string,
         planName?: string,
-        billingCycle: BillingCycle = 'monthly',
+        billingCycle?: BillingCycle,
     ) {
         const payment = await this.findPaymentWithUser(paymentId);
 
@@ -114,22 +151,8 @@ export class PaymentsService {
             });
         }
 
-        if (planName) {
-            await this.assertPaymentMatchesPlan(payment, planName, billingCycle);
-        }
-
-        const wasPending = payment.status === PaymentStatus.pending;
-        const completedPayment = await this.completePayment(paymentId);
-
-        if (planName && wasPending) {
-            const subscription = await this.subscriptionsService.upgradePlan(
-                completedPayment.userId,
-                planName,
-                billingCycle,
-            );
-            await this.sendPaymentSuccessEmail(completedPayment, subscription, billingCycle);
-        }
-
+        const target = this.resolvePaymentTarget(payment, planName, billingCycle);
+        const completedPayment = await this.completePaymentAndUpgrade(payment, target);
         return this.stripUser(completedPayment);
     }
 
@@ -154,21 +177,83 @@ export class PaymentsService {
         }
 
         const payment = await this.findPaymentWithUser(event.paymentId);
-        await this.assertPaymentMatchesPlan(payment, payload.planName, payload.billingCycle);
+        const target = this.resolvePaymentTarget(payment, payload.planName, payload.billingCycle);
+        const completedPayment = await this.completePaymentAndUpgrade(payment, target);
+        return this.stripUser(completedPayment);
+    }
 
-        const wasPending = payment.status === PaymentStatus.pending;
-        const completedPayment = await this.completePayment(event.paymentId);
-
-        if (wasPending) {
-            const subscription = await this.subscriptionsService.upgradePlan(
-                completedPayment.userId,
-                payload.planName,
-                payload.billingCycle,
-            );
-            await this.sendPaymentSuccessEmail(completedPayment, subscription, payload.billingCycle);
+    async processVnpayIpn(query: Record<string, unknown>): Promise<VnpayIpnResponse> {
+        if (this.paymentProvider.name !== 'vnpay') {
+            return { RspCode: '99', Message: 'VNPay provider is not enabled' };
         }
 
-        return this.stripUser(completedPayment);
+        if (!this.paymentProvider.verifyWebhookSignature(query)) {
+            return { RspCode: '97', Message: 'Invalid Checksum' };
+        }
+
+        const event = await this.paymentProvider.parseWebhookEvent(query);
+        if (!event.providerReference) {
+            return { RspCode: '99', Message: 'Missing transaction reference' };
+        }
+
+        const payment = await this.findPaymentByProviderReference(event.providerReference);
+        if (!payment) {
+            return { RspCode: '01', Message: 'Order not Found' };
+        }
+
+        if (!this.isProviderAmountValid(payment, event.amount)) {
+            return { RspCode: '04', Message: 'Invalid Amount' };
+        }
+
+        if (payment.status !== PaymentStatus.pending) {
+            return { RspCode: '02', Message: 'Order already confirmed' };
+        }
+
+        const metadata = this.buildProviderMetadata(event);
+        if (event.eventType === 'payment.completed') {
+            const target = this.resolvePaymentTarget(payment);
+            await this.completePaymentAndUpgrade(payment, target, metadata);
+            return { RspCode: '00', Message: 'Confirm Success' };
+        }
+
+        await this.failPayment(payment, metadata);
+        return { RspCode: '00', Message: 'Confirm Success' };
+    }
+
+    async processVnpayReturn(query: Record<string, unknown>): Promise<VnpayReturnStatus> {
+        if (this.paymentProvider.name !== 'vnpay') {
+            return 'failed';
+        }
+
+        if (!this.paymentProvider.verifyWebhookSignature(query)) {
+            return 'failed';
+        }
+
+        const event = await this.paymentProvider.parseWebhookEvent(query);
+        if (event.eventType !== 'payment.completed' || !event.providerReference) {
+            return 'failed';
+        }
+
+        const payment = await this.findPaymentByProviderReference(event.providerReference);
+        if (!payment || !this.isProviderAmountValid(payment, event.amount)) {
+            return 'failed';
+        }
+
+        if (payment.status === PaymentStatus.completed) {
+            return 'success';
+        }
+
+        if (payment.status !== PaymentStatus.pending) {
+            return 'failed';
+        }
+
+        if (!this.allowReturnCompletion()) {
+            return 'pending';
+        }
+
+        const target = this.resolvePaymentTarget(payment);
+        await this.completePaymentAndUpgrade(payment, target, this.buildProviderMetadata(event));
+        return 'success';
     }
 
     private async findPaymentWithUser(paymentId: string): Promise<PaymentWithUser> {
@@ -187,27 +272,139 @@ export class PaymentsService {
         return payment;
     }
 
-    private async completePayment(paymentId: string): Promise<PaymentWithUser> {
-        const payment = await this.findPaymentWithUser(paymentId);
+    private async findPaymentByProviderReference(providerReference: string): Promise<PaymentWithUser | null> {
+        return this.prisma.payment.findUnique({
+            where: { providerReference },
+            include: { user: true },
+        });
+    }
 
+    private async completePaymentAndUpgrade(
+        payment: PaymentWithUser,
+        target: PaymentTarget,
+        metadata?: ProviderPaymentMetadata,
+    ): Promise<PaymentWithUser> {
+        await this.assertPaymentMatchesPlan(payment, target.planName, target.billingCycle);
+
+        const wasPending = payment.status === PaymentStatus.pending;
+        const completedPayment = await this.completePayment(payment, metadata);
+
+        if (wasPending) {
+            const subscription = await this.subscriptionsService.upgradePlan(
+                completedPayment.userId,
+                target.planName,
+                target.billingCycle,
+            );
+            await this.sendPaymentSuccessEmail(completedPayment, subscription, target.billingCycle);
+        }
+
+        return completedPayment;
+    }
+
+    private async completePayment(
+        payment: PaymentWithUser,
+        metadata?: ProviderPaymentMetadata,
+    ): Promise<PaymentWithUser> {
         if (payment.status !== PaymentStatus.pending) {
             return payment;
         }
 
+        const data: Prisma.PaymentUpdateInput = {
+            status: PaymentStatus.completed,
+            transactionId: metadata?.transactionId ?? payment.transactionId ?? this.buildTransactionId(payment),
+        };
+
+        this.assignProviderMetadata(data, metadata);
+
         return this.prisma.payment.update({
-            where: { id: paymentId },
-            data: {
-                status: PaymentStatus.completed,
-                transactionId: `mock_${paymentId.replace(/-/g, '')}`,
-            },
+            where: { id: payment.id },
+            data,
             include: { user: true },
         });
+    }
+
+    private async failPayment(
+        payment: PaymentWithUser,
+        metadata?: ProviderPaymentMetadata,
+    ): Promise<PaymentWithUser> {
+        const data: Prisma.PaymentUpdateInput = {
+            status: PaymentStatus.failed,
+        };
+
+        this.assignProviderMetadata(data, metadata);
+
+        return this.prisma.payment.update({
+            where: { id: payment.id },
+            data,
+            include: { user: true },
+        });
+    }
+
+    private assignProviderMetadata(
+        data: Prisma.PaymentUpdateInput,
+        metadata?: ProviderPaymentMetadata,
+    ) {
+        if (!metadata) {
+            return;
+        }
+
+        if (metadata.providerTransactionId !== undefined) {
+            data.providerTransactionId = metadata.providerTransactionId;
+        }
+        if (metadata.providerResponseCode !== undefined) {
+            data.providerResponseCode = metadata.providerResponseCode;
+        }
+        if (metadata.providerTransactionStatus !== undefined) {
+            data.providerTransactionStatus = metadata.providerTransactionStatus;
+        }
+        if (metadata.providerPayload !== undefined) {
+            data.providerPayload = metadata.providerPayload;
+        }
     }
 
     private stripUser(payment: PaymentWithUser): Payment {
         const paymentRecord: Partial<PaymentWithUser> = { ...payment };
         delete paymentRecord.user;
         return paymentRecord as Payment;
+    }
+
+    private resolvePaymentTarget(
+        payment: Payment,
+        requestedPlanName?: string,
+        requestedBillingCycle?: BillingCycle,
+    ): PaymentTarget {
+        if (payment.planName && requestedPlanName && payment.planName !== requestedPlanName) {
+            throw new BadRequestException({
+                code: 'PAYMENT_PLAN_MISMATCH',
+                message: 'Payment plan does not match the selected plan',
+            });
+        }
+
+        if (
+            payment.billingCycle &&
+            requestedBillingCycle &&
+            payment.billingCycle !== requestedBillingCycle
+        ) {
+            throw new BadRequestException({
+                code: 'PAYMENT_BILLING_CYCLE_MISMATCH',
+                message: 'Payment billing cycle does not match the selected billing cycle',
+            });
+        }
+
+        const planName = payment.planName ?? requestedPlanName;
+        if (!planName) {
+            throw new BadRequestException({
+                code: 'PAYMENT_PLAN_REQUIRED',
+                message: 'Payment target plan is missing',
+            });
+        }
+
+        const billingCycle = this.parseBillingCycle(payment.billingCycle) ?? requestedBillingCycle ?? 'monthly';
+        return { planName, billingCycle };
+    }
+
+    private parseBillingCycle(value: string | null): BillingCycle | undefined {
+        return value === 'monthly' || value === 'annual' ? value : undefined;
     }
 
     private async assertPaymentMatchesPlan(
@@ -242,6 +439,37 @@ export class PaymentsService {
         return billingCycle === 'annual'
             ? (plan.annualPrice ?? plan.monthlyPrice * 12)
             : plan.monthlyPrice;
+    }
+
+    private isProviderAmountValid(payment: Payment, providerAmount?: number) {
+        return providerAmount !== undefined && Math.abs(payment.amount - providerAmount) <= 0.01;
+    }
+
+    private buildProviderMetadata(event: WebhookEvent): ProviderPaymentMetadata {
+        const providerReference = event.providerReference ?? event.providerRef;
+        const transactionId = event.providerTransactionId
+            ? `vnpay_${event.providerTransactionId}`
+            : providerReference
+                ? `vnpay_${providerReference}`
+                : undefined;
+
+        return {
+            transactionId,
+            providerTransactionId: event.providerTransactionId,
+            providerResponseCode: event.responseCode,
+            providerTransactionStatus: event.transactionStatus,
+            providerPayload: event.rawPayload as Prisma.InputJsonObject | undefined,
+        };
+    }
+
+    private buildTransactionId(payment: Payment) {
+        return `${payment.paymentMethod}_${payment.id.replace(/-/g, '')}`;
+    }
+
+    private allowReturnCompletion() {
+        const nodeEnv = this.configService.get<string>('NODE_ENV') || 'development';
+        const allow = this.configService.get<string>('VNPAY_ALLOW_RETURN_COMPLETION') || 'false';
+        return nodeEnv === 'development' && allow.toLowerCase() === 'true';
     }
 
     private async sendPaymentSuccessEmail(

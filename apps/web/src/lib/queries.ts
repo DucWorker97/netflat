@@ -458,6 +458,7 @@ export function useCreateCheckout() {
                     currency: string;
                     status: 'pending' | 'completed' | 'failed' | 'refunded';
                     checkoutUrl: string;
+                    provider: 'mock' | 'vnpay' | string;
                 };
             }>('/api/payments/checkout', payload);
             return res.data;
@@ -474,24 +475,6 @@ export function useCompleteMockPayment() {
             billingCycle?: 'monthly' | 'annual';
         }) => {
             const res = await api.post<{ data: PaymentRecord }>('/api/payments/mock-complete', payload);
-            return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['payments'] });
-            queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-        },
-    });
-}
-
-export function useMockPaymentWebhook() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (payload: {
-            paymentId: string;
-            planName: string;
-            billingCycle: 'monthly' | 'annual';
-        }) => {
-            const res = await api.post<{ data: PaymentRecord }>('/api/payments/mock-webhook', payload);
             return res.data;
         },
         onSuccess: () => {
